@@ -1,0 +1,96 @@
+{
+  "title": "Elige el mundo visual de EnCaja",
+  "question": "La tirada asignó el Rótulo de taller. Quédatelo, toma una alternativa o vuelve a tirar.",
+  "options": [
+    {
+      "id": "assigned",
+      "label": "Rótulo de taller",
+      "kicker": "THE ROLL",
+      "lineage": "Rótulos pintados a mano de talleres, llanteras y refaccionarias de Guadalajara",
+      "thesis": "La tienda habla como la barda pintada del taller: lo que embona se PINTA en letra de rótulo con su sombra.",
+      "palette": ["#1B3FA8", "#F2C12E", "#E1301A", "#F3F4EF", "#14161C"],
+      "materials": ["esmalte plano en barda encalada", "letra de block con sombra desplazada", "fotos de pieza sobre placa blanca"],
+      "viewport": "Barra azul rey con logo EC pintado, buscador ancho y la placa del auto activo; debajo, la franja amarilla con el auto en letra de rótulo; rejilla de piezas con cinta 'EMBONA' pintada y la nota a la derecha.",
+      "risk": "Si la letra de rótulo se usa en todo, se vuelve disfraz; vive solo en títulos, cintas de ajuste y el logo.",
+      "raised": [
+        {"from": "challenger-gate-board", "raise": "Color de alerta reservado: un cambio de stock en vivo destella en amarillo y se queda marcado hasta que lo ves."},
+        {"from": "challenger-botanical", "raise": "Todas las fotos de pieza en la misma placa blanca y la misma escala, para comparar de un vistazo."},
+        {"from": "challenger-emigre", "raise": "Una sola familia de rótulo en una escala de tamaños estricta, nunca mezclada con otra display."}
+      ]
+    },
+    {
+      "id": "model-pick",
+      "label": "Catálogo de aplicaciones",
+      "kicker": "IMPECCABLE’S PICK",
+      "lineage": "Catálogos impresos de aplicación (Marca / Modelo / Año / Motor) de las refaccionarias",
+      "thesis": "Cada pieza es un renglón del catálogo de aplicaciones: la tabla de compatibilidad es la interfaz.",
+      "palette": ["#FFFFFF", "#101828", "#0B6E4F", "#E1301A"],
+      "materials": ["tablas de aplicación densas", "diagramas despiezados", "papel couché"],
+      "viewport": "Tabla densa con columnas Marca/Modelo/Año/Motor y la fila de tu auto resaltada; foto chica por renglón.",
+      "risk": "Es la dirección más familiar de la categoría; muy clara para mecánicos, fría para dueños de auto."
+    },
+    {
+      "id": "challenger-gate-board",
+      "label": "Tablero de salidas",
+      "verdict": "competitive",
+      "lineage": "Pase de abordar + tablero de salidas de aeropuerto",
+      "thesis": "El stock en vivo como tablero que reordena filas en su lugar; tu pedido como pase segmentado con folio.",
+      "palette": ["#0E1116", "#F4F4F0", "#FFB000", "#E1301A"],
+      "materials": ["paneles neutros de alto contraste", "bloque escaneable monoespaciado"],
+      "viewport": "Tablero de piezas ordenado por existencias con cambios que destellan; la nota como pase de abordar segmentado.",
+      "case": "Gana en honestidad del stock en vivo; pierde en identificación: nadie compra balatas en un aeropuerto.",
+      "risk": "Se siente ajeno al mundo del taller."
+    },
+    {
+      "id": "challenger-streaming",
+      "label": "Muro de streaming",
+      "verdict": "declined",
+      "lineage": "Filas horizontales de pósters",
+      "palette": ["#111111", "#E50914", "#FFFFFF"],
+      "materials": ["fondo oscuro", "arte a sangre"],
+      "thesis": "Filas de piezas por categoría que crecen al enfocar.",
+      "viewport": "Filas horizontales por categoría.",
+      "case": "Esconde la compatibilidad y el número de parte; pierde en ambos ejes.",
+      "kept": "Las fotos son el único color dentro de la rejilla.",
+      "risk": "Entretenimiento, no compra."
+    },
+    {
+      "id": "challenger-botanical",
+      "label": "Folio botánico",
+      "verdict": "declined",
+      "lineage": "Láminas botánicas de escala fija",
+      "palette": ["#F2EBDD", "#3F5A2A", "#B3261E"],
+      "materials": ["láminas crema", "filetes sepia"],
+      "thesis": "Láminas a escala fija.",
+      "viewport": "Láminas alineadas.",
+      "case": "Ajeno al público; pierde en ambos ejes.",
+      "kept": "Misma escala y misma placa para cada imagen.",
+      "risk": "Museo, no tienda."
+    },
+    {
+      "id": "challenger-emigre",
+      "label": "Espécimen bitmap Emigre",
+      "verdict": "declined",
+      "lineage": "Especímenes tipográficos bitmap",
+      "palette": ["#FFFFFF", "#000000", "#FF3B00"],
+      "materials": ["pixel", "medio tono"],
+      "thesis": "Tipografía pixelada a escala de póster.",
+      "viewport": "Titular pixelado sobre columnas.",
+      "case": "Ni mecánicos ni dueños se identifican; pierde en ambos ejes.",
+      "kept": "Una familia, tamaños disciplinados.",
+      "risk": "Ruido gráfico."
+    }
+  ],
+  "reroll": {"registers": ["safer", "bolder"]},
+  "buildPath": {"value": "code", "toggle": false},
+  "canon": true,
+  "canonCard": {
+    "label": "El estándar de la categoría",
+    "thesis": "Tienda de refacciones limpia tipo AutoZone, ejecutada impecable.",
+    "palette": ["#FFFFFF", "#111827", "#E1301A"],
+    "materials": ["rejilla limpia", "fotografía de producto"],
+    "viewport": "Header blanco, filtros a la izquierda, rejilla de tarjetas.",
+    "risk": "Indistinguible de la competencia por diseño."
+  },
+  "steer": true
+}

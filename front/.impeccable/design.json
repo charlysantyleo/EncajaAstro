@@ -1,0 +1,544 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-02T20:05:23.738946+00:00",
+  "title": "Design System: EnCaja Autopartes",
+  "extensions": {
+    "colorMeta": {
+      "azul": {
+        "role": "primary",
+        "displayName": "Azul Rey Esmalte",
+        "tonalRamp": [
+          "oklch(15% 0.174 264.9)",
+          "oklch(26% 0.174 264.9)",
+          "oklch(38% 0.174 264.9)",
+          "oklch(49% 0.174 264.9)",
+          "oklch(61% 0.174 264.9)",
+          "oklch(72% 0.174 264.9)",
+          "oklch(84% 0.174 264.9)",
+          "oklch(95% 0.174 264.9)"
+        ],
+        "canonical": "oklch(41.5% 0.174 264.9)"
+      },
+      "azul-hondo": {
+        "role": "primary",
+        "displayName": "Azul Hondo",
+        "tonalRamp": [
+          "oklch(15% 0.15 265)",
+          "oklch(26% 0.15 265)",
+          "oklch(38% 0.15 265)",
+          "oklch(49% 0.15 265)",
+          "oklch(61% 0.15 265)",
+          "oklch(72% 0.15 265)",
+          "oklch(84% 0.15 265)",
+          "oklch(95% 0.15 265)"
+        ]
+      },
+      "azul-noche": {
+        "role": "primary",
+        "displayName": "Azul Noche",
+        "tonalRamp": [
+          "oklch(15% 0.12 265)",
+          "oklch(26% 0.12 265)",
+          "oklch(38% 0.12 265)",
+          "oklch(49% 0.12 265)",
+          "oklch(61% 0.12 265)",
+          "oklch(72% 0.12 265)",
+          "oklch(84% 0.12 265)",
+          "oklch(95% 0.12 265)"
+        ]
+      },
+      "azul-tinte": {
+        "role": "primary",
+        "displayName": "Azul Tinte",
+        "tonalRamp": [
+          "oklch(15% 0.03 265)",
+          "oklch(26% 0.03 265)",
+          "oklch(38% 0.03 265)",
+          "oklch(49% 0.03 265)",
+          "oklch(61% 0.03 265)",
+          "oklch(72% 0.03 265)",
+          "oklch(84% 0.03 265)",
+          "oklch(95% 0.03 265)"
+        ]
+      },
+      "amarillo": {
+        "role": "secondary",
+        "displayName": "Amarillo Cromo",
+        "tonalRamp": [
+          "oklch(15% 0.159 88.6)",
+          "oklch(26% 0.159 88.6)",
+          "oklch(38% 0.159 88.6)",
+          "oklch(49% 0.159 88.6)",
+          "oklch(61% 0.159 88.6)",
+          "oklch(72% 0.159 88.6)",
+          "oklch(84% 0.159 88.6)",
+          "oklch(95% 0.159 88.6)"
+        ],
+        "canonical": "oklch(83.2% 0.159 88.6)"
+      },
+      "amarillo-hondo": {
+        "role": "secondary",
+        "displayName": "Amarillo Hondo",
+        "tonalRamp": [
+          "oklch(15% 0.155 88)",
+          "oklch(26% 0.155 88)",
+          "oklch(38% 0.155 88)",
+          "oklch(49% 0.155 88)",
+          "oklch(61% 0.155 88)",
+          "oklch(72% 0.155 88)",
+          "oklch(84% 0.155 88)",
+          "oklch(95% 0.155 88)"
+        ]
+      },
+      "amarillo-tinte": {
+        "role": "secondary",
+        "displayName": "Amarillo Tinte",
+        "tonalRamp": [
+          "oklch(15% 0.05 90)",
+          "oklch(26% 0.05 90)",
+          "oklch(38% 0.05 90)",
+          "oklch(49% 0.05 90)",
+          "oklch(61% 0.05 90)",
+          "oklch(72% 0.05 90)",
+          "oklch(84% 0.05 90)",
+          "oklch(95% 0.05 90)"
+        ]
+      },
+      "amarillo-claro": {
+        "role": "secondary",
+        "displayName": "Amarillo Claro",
+        "tonalRamp": [
+          "oklch(15% 0.16 92)",
+          "oklch(26% 0.16 92)",
+          "oklch(38% 0.16 92)",
+          "oklch(49% 0.16 92)",
+          "oklch(61% 0.16 92)",
+          "oklch(72% 0.16 92)",
+          "oklch(84% 0.16 92)",
+          "oklch(95% 0.16 92)"
+        ]
+      },
+      "chile": {
+        "role": "tertiary",
+        "displayName": "Rojo Chile",
+        "tonalRamp": [
+          "oklch(15% 0.215 30.8)",
+          "oklch(26% 0.215 30.8)",
+          "oklch(38% 0.215 30.8)",
+          "oklch(49% 0.215 30.8)",
+          "oklch(61% 0.215 30.8)",
+          "oklch(72% 0.215 30.8)",
+          "oklch(84% 0.215 30.8)",
+          "oklch(95% 0.215 30.8)"
+        ],
+        "canonical": "oklch(59.2% 0.215 30.8)"
+      },
+      "chile-hondo": {
+        "role": "tertiary",
+        "displayName": "Chile Hondo",
+        "tonalRamp": [
+          "oklch(15% 0.19 31)",
+          "oklch(26% 0.19 31)",
+          "oklch(38% 0.19 31)",
+          "oklch(49% 0.19 31)",
+          "oklch(61% 0.19 31)",
+          "oklch(72% 0.19 31)",
+          "oklch(84% 0.19 31)",
+          "oklch(95% 0.19 31)"
+        ]
+      },
+      "ok": {
+        "role": "tertiary",
+        "displayName": "Verde Ok",
+        "tonalRamp": [
+          "oklch(15% 0.103 160.1)",
+          "oklch(26% 0.103 160.1)",
+          "oklch(38% 0.103 160.1)",
+          "oklch(49% 0.103 160.1)",
+          "oklch(61% 0.103 160.1)",
+          "oklch(72% 0.103 160.1)",
+          "oklch(84% 0.103 160.1)",
+          "oklch(95% 0.103 160.1)"
+        ],
+        "canonical": "oklch(48.4% 0.103 160.1)"
+      },
+      "barda": {
+        "role": "neutral",
+        "displayName": "Barda",
+        "tonalRamp": [
+          "oklch(15% 0.008 114.2)",
+          "oklch(26% 0.008 114.2)",
+          "oklch(38% 0.008 114.2)",
+          "oklch(49% 0.008 114.2)",
+          "oklch(61% 0.008 114.2)",
+          "oklch(72% 0.008 114.2)",
+          "oklch(84% 0.008 114.2)",
+          "oklch(95% 0.008 114.2)"
+        ],
+        "canonical": "oklch(95.9% 0.008 114.2)"
+      },
+      "barda-2": {
+        "role": "neutral",
+        "displayName": "Barda 2",
+        "tonalRamp": [
+          "oklch(15% 0.01 114)",
+          "oklch(26% 0.01 114)",
+          "oklch(38% 0.01 114)",
+          "oklch(49% 0.01 114)",
+          "oklch(61% 0.01 114)",
+          "oklch(72% 0.01 114)",
+          "oklch(84% 0.01 114)",
+          "oklch(95% 0.01 114)"
+        ]
+      },
+      "placa": {
+        "role": "neutral",
+        "displayName": "Placa",
+        "tonalRamp": [
+          "oklch(15% 0 0)",
+          "oklch(26% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(49% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(72% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
+        ]
+      },
+      "carbon": {
+        "role": "neutral",
+        "displayName": "Carbón",
+        "tonalRamp": [
+          "oklch(15% 0.012 270.8)",
+          "oklch(26% 0.012 270.8)",
+          "oklch(38% 0.012 270.8)",
+          "oklch(49% 0.012 270.8)",
+          "oklch(61% 0.012 270.8)",
+          "oklch(72% 0.012 270.8)",
+          "oklch(84% 0.012 270.8)",
+          "oklch(95% 0.012 270.8)"
+        ],
+        "canonical": "oklch(20.5% 0.012 270.8)"
+      },
+      "carbon-2": {
+        "role": "neutral",
+        "displayName": "Carbón 2",
+        "tonalRamp": [
+          "oklch(15% 0.015 268)",
+          "oklch(26% 0.015 268)",
+          "oklch(38% 0.015 268)",
+          "oklch(49% 0.015 268)",
+          "oklch(61% 0.015 268)",
+          "oklch(72% 0.015 268)",
+          "oklch(84% 0.015 268)",
+          "oklch(95% 0.015 268)"
+        ]
+      },
+      "carbon-3": {
+        "role": "neutral",
+        "displayName": "Carbón 3",
+        "tonalRamp": [
+          "oklch(15% 0.015 265)",
+          "oklch(26% 0.015 265)",
+          "oklch(38% 0.015 265)",
+          "oklch(49% 0.015 265)",
+          "oklch(61% 0.015 265)",
+          "oklch(72% 0.015 265)",
+          "oklch(84% 0.015 265)",
+          "oklch(95% 0.015 265)"
+        ]
+      },
+      "linea": {
+        "role": "neutral",
+        "displayName": "Línea",
+        "tonalRamp": [
+          "oklch(15% 0.012 270.8)",
+          "oklch(26% 0.012 270.8)",
+          "oklch(38% 0.012 270.8)",
+          "oklch(49% 0.012 270.8)",
+          "oklch(61% 0.012 270.8)",
+          "oklch(72% 0.012 270.8)",
+          "oklch(84% 0.012 270.8)",
+          "oklch(95% 0.012 270.8)"
+        ]
+      },
+      "linea-fuerte": {
+        "role": "neutral",
+        "displayName": "Línea fuerte",
+        "tonalRamp": [
+          "oklch(15% 0.012 270.8)",
+          "oklch(26% 0.012 270.8)",
+          "oklch(38% 0.012 270.8)",
+          "oklch(49% 0.012 270.8)",
+          "oklch(61% 0.012 270.8)",
+          "oklch(72% 0.012 270.8)",
+          "oklch(84% 0.012 270.8)",
+          "oklch(95% 0.012 270.8)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "rotulo-banda": {
+        "displayName": "Rotulo Banda",
+        "purpose": "Painted name of the active vehicle in the banda; the largest thing in the system."
+      },
+      "display": {
+        "displayName": "Display",
+        "purpose": "h1 page titles, azul with chile letter shadow."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "h2 section titles, chile letter shadow."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "h3 card and dialog titles."
+      },
+      "title-sm": {
+        "displayName": "Title Sm",
+        "purpose": "h4 minor painted titles."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Running text, max 68ch."
+      },
+      "pieza-nombre": {
+        "displayName": "Pieza Nombre",
+        "purpose": "Product names, two-line clamp."
+      },
+      "precio": {
+        "displayName": "Precio",
+        "purpose": "Card prices, tabular."
+      },
+      "folio": {
+        "displayName": "Folio",
+        "purpose": "Part numbers, folios, piece counts; semi-condensed tabular."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Uppercase data-list terms and in-dialog section labels; never a kicker above a heading."
+      },
+      "button": {
+        "displayName": "Button",
+        "purpose": "All button labels."
+      },
+      "sello": {
+        "displayName": "Sello",
+        "purpose": "Painted fit tapes (EMBONA, EQUIVALENTE, AGOTADO, COMPATIBLE)."
+      }
+    },
+    "shadows": [
+      {
+        "name": "esmalte",
+        "value": "4px 4px 0 rgb(19 46 126 / 0.16)",
+        "purpose": "Cards at rest, nota, sheets, banda, garage cards."
+      },
+      {
+        "name": "esmalte-alto",
+        "value": "6px 6px 0 rgb(19 46 126 / 0.24)",
+        "purpose": "Card hover, order ticket, banda photo."
+      },
+      {
+        "name": "boton",
+        "value": "3px 3px 0 #0e2160",
+        "purpose": "Primary buttons; press state 1px 1px 0 with translate(2px, 2px)."
+      },
+      {
+        "name": "capa",
+        "value": "8px 8px 0 rgb(14 33 96 / 0.35)",
+        "purpose": "Dialogs and side drawer, over a blurred azul-noche scrim (rgb(14 33 96 / 0.42), blur 6px)."
+      },
+      {
+        "name": "letra",
+        "value": "0.055em 0.055em 0 #e1301a",
+        "purpose": "Text shadow on h1, h2, the painted vehicle name and the nota total."
+      },
+      {
+        "name": "foco",
+        "value": "0 0 0 3px rgb(27 63 168 / 0.22)",
+        "purpose": "Field focus ring; solid yellow 3px ring in the header search."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Default for state transitions (0.2 to 0.35s) and entrances (Aparece 0.7s, 14px rise, once)."
+      },
+      {
+        "name": "ease-brocha",
+        "value": "cubic-bezier(0.7, 0, 0.2, 1)",
+        "purpose": "Brush sweep: Sello 0.55s clip-path left to right, Pintado 0.8s; staggered after the card."
+      },
+      {
+        "name": "resorte",
+        "value": "spring stiffness 420, damping 30",
+        "purpose": "Rolling digits (NumeroGiro), switch knob."
+      },
+      {
+        "name": "importe",
+        "value": "spring stiffness 140, damping 22",
+        "purpose": "Amounts and totals springing to their new value."
+      },
+      {
+        "name": "cambio",
+        "value": "sustained state + 1.2s pulse",
+        "purpose": "Stock change: yellow badge holds until hover/focus on the card; the dot pulses once."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "prefers-reduced-motion: reduce",
+        "purpose": "Sweeps, springs and entrances become instant."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "nota-to-bar",
+        "value": "1180px"
+      },
+      {
+        "name": "stack",
+        "value": "900px"
+      },
+      {
+        "name": "phone",
+        "value": "560px"
+      },
+      {
+        "name": "narrow",
+        "value": "400px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button (island)",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Azul enamel with a solid azul-noche shadow; primary CTAs carry a trailing island icon that turns yellow on hover. Press moves it into its shadow.",
+      "html": "<button class=\"ds-btn ds-btn-primario ds-btn-isla\">Finalizar compra<span class=\"ds-isla\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M7 7h10v10\"/><path d=\"M7 17 17 7\"/></svg></span></button>",
+      "css": ".ds-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 42px; padding: 0 var(--e5); border: 1px solid transparent; border-radius: var(--r); font-family: var(--f-ui); font-variation-settings: 'wdth' 92; font-weight: 680; font-size: 15px; line-height: 1; letter-spacing: 0.005em; white-space: nowrap; cursor: pointer; transition: background-color .25s var(--ease), color .25s var(--ease), border-color .25s var(--ease), box-shadow .25s var(--ease), transform .2s var(--ease); } .ds-btn:focus-visible { outline: 2px solid var(--azul); outline-offset: 2px; } .ds-btn-primario { background: var(--azul); color: #fff; box-shadow: var(--sombra-boton); } .ds-btn-primario:hover { background: var(--azul-hondo); } .ds-btn-primario:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--azul-noche); } .ds-btn-isla { padding-right: 5px; gap: var(--e3); justify-content: space-between; } .ds-isla { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: rgb(255 255 255 / 0.16); transition: transform .35s var(--ease), background-color .25s var(--ease); } .ds-btn-isla:hover .ds-isla { transform: translate(3px, -1px) scale(1.06); background: var(--amarillo); color: var(--carbon); }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "White plate with a strong hairline; azul border, text and tint on hover.",
+      "html": "<button class=\"ds-btn ds-btn-secundario\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M5 12h14\"/><path d=\"M12 5v14\"/></svg>Agregar a la nota</button>",
+      "css": ".ds-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 42px; padding: 0 var(--e5); border: 1px solid transparent; border-radius: var(--r); font-family: var(--f-ui); font-variation-settings: 'wdth' 92; font-weight: 680; font-size: 15px; line-height: 1; letter-spacing: 0.005em; white-space: nowrap; cursor: pointer; transition: background-color .25s var(--ease), color .25s var(--ease), border-color .25s var(--ease), box-shadow .25s var(--ease), transform .2s var(--ease); } .ds-btn:focus-visible { outline: 2px solid var(--azul); outline-offset: 2px; } .ds-btn-secundario { background: var(--placa); color: var(--carbon); border-color: var(--linea-fuerte); } .ds-btn-secundario:hover { border-color: var(--azul); color: var(--azul); background: var(--azul-tinte); } .ds-btn-secundario:active { transform: translate(2px, 2px); }"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "White field, 4px corners, azul border and soft azul ring on focus.",
+      "html": "<label class=\"ds-campo\"><span>Código postal</span><input class=\"ds-input\" placeholder=\"44100\"></label>",
+      "css": ".ds-campo { display: flex; flex-direction: column; gap: 6px; font-family: var(--f-ui); } .ds-campo > span { font-size: 13px; font-weight: 650; color: var(--carbon-2); } .ds-input { min-height: 44px; padding: 0 var(--e3); background: var(--placa); color: var(--carbon); border: 1px solid var(--linea-fuerte); border-radius: var(--r-in); font: inherit; font-size: 15px; transition: border-color .2s var(--ease), box-shadow .2s var(--ease); } .ds-input::placeholder { color: var(--carbon-3); } .ds-input:hover { border-color: var(--carbon-3); } .ds-input:focus-visible { outline: none; border-color: var(--azul); box-shadow: 0 0 0 3px rgb(27 63 168 / 0.22); }"
+    },
+    {
+      "name": "Casco (header)",
+      "kind": "nav",
+      "refersTo": "cabecera",
+      "description": "Sticky azul hull: painted EC logo plate, wide white search, yellow vehicle plate.",
+      "html": "<header class=\"ds-casco\"><span class=\"ds-logo\">EC</span><span class=\"ds-marca\">EnCaja</span><label class=\"ds-busca\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"11\" cy=\"11\" r=\"8\"/><path d=\"m21 21-4.3-4.3\"/></svg><input placeholder=\"Balatas, filtros, número de parte…\"></label><button class=\"ds-placa\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2\"/><circle cx=\"7\" cy=\"17\" r=\"2\"/><path d=\"M9 17h6\"/><circle cx=\"17\" cy=\"17\" r=\"2\"/></svg>Versa 2019</button></header>",
+      "css": ".ds-casco { display: flex; align-items: center; gap: var(--e4); padding: var(--e3) var(--e6); background: var(--azul); color: #fff; font-family: var(--f-ui); } .ds-logo { display: grid; place-items: center; width: 44px; height: 44px; background: var(--amarillo); color: var(--azul); border-radius: 8px; font-family: var(--f-rotulo); font-size: 19px; text-shadow: 0.08em 0.08em 0 var(--chile); transform: rotate(-3deg); transition: transform .4s var(--ease); } .ds-casco:hover .ds-logo { transform: rotate(0) scale(1.04); } .ds-marca { font-family: var(--f-rotulo); font-size: 23px; text-shadow: 0.07em 0.07em 0 var(--azul-noche); } .ds-busca { position: relative; flex: 1; color: var(--carbon-3); } .ds-busca svg { position: absolute; left: 14px; top: 50%; translate: 0 -50%; } .ds-busca input { width: 100%; min-height: 44px; padding: 0 16px 0 42px; border: 0; border-radius: var(--r); background: #fff; font: inherit; color: var(--carbon); } .ds-busca input:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--amarillo); } .ds-placa { display: inline-flex; align-items: center; gap: 9px; min-height: 42px; padding: 0 var(--e4) 0 var(--e3); background: var(--amarillo); color: var(--carbon); border: 0; border-radius: var(--r); outline: 1.5px solid rgb(21 23 29 / 0.55); outline-offset: -4px; font: inherit; font-weight: 700; font-size: 14px; cursor: pointer; } .ds-placa:hover { background: #ffd44d; } .ds-placa:active { transform: scale(0.98); }"
+    },
+    {
+      "name": "Chips",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "Barda chips; solid azul when active.",
+      "html": "<div class=\"ds-chips\"><button class=\"ds-chip ds-activo\">Todas</button><button class=\"ds-chip\">Frenos</button><button class=\"ds-chip\">Filtros</button></div>",
+      "css": ".ds-chips { display: flex; gap: 6px; } .ds-chip { min-height: 34px; padding: 0 var(--e4); background: var(--barda); border: 0; border-radius: var(--r); font-family: var(--f-ui); font-size: 13.5px; font-weight: 620; color: var(--carbon-2); cursor: pointer; transition: background-color .2s var(--ease), color .2s var(--ease); } .ds-chip:hover { background: var(--barda-2); color: var(--carbon); } .ds-chip.ds-activo { background: var(--azul); color: #fff; } .ds-chip:focus-visible { outline: 2px solid var(--azul); outline-offset: 2px; }"
+    },
+    {
+      "name": "Pieza (product card)",
+      "kind": "card",
+      "refersTo": "pieza-card",
+      "description": "White enamel card: photo plate with painted EMBONA tape, condensed part number, tabular price, stock with blue dot.",
+      "html": "<article class=\"ds-pieza\"><div class=\"ds-foto\"><span class=\"ds-sello\">Embona</span><span>BA</span></div><div class=\"ds-nombre\">Balata delantera cerámica</div><div class=\"ds-parte\">BREMBO · BA3120</div><div class=\"ds-pie\"><span class=\"ds-precio\">$689.00</span><span class=\"ds-stock\"><i></i>12 en stock</span><button class=\"ds-agregar\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M5 12h14\"/><path d=\"M12 5v14\"/></svg>Agregar a la nota</button></div></article>",
+      "css": ".ds-pieza { width: 240px; display: flex; flex-direction: column; gap: 6px; background: var(--placa); border: 1px solid var(--linea-fuerte); border-radius: var(--r); box-shadow: var(--sombra); overflow: hidden; font-family: var(--f-ui); color: var(--carbon); transition: box-shadow .35s var(--ease), transform .35s var(--ease); } .ds-pieza:hover { box-shadow: var(--sombra-alta); transform: translateY(-3px); } .ds-foto { position: relative; display: grid; place-items: center; aspect-ratio: 4/3; background: #fff; border-bottom: 1px solid var(--linea); font-family: var(--f-rotulo); font-size: 34px; color: var(--barda-2); } .ds-sello { position: absolute; left: 8px; top: 10px; padding: 6px 10px 5px; border-radius: 3px; background: var(--amarillo); color: var(--carbon); font-family: var(--f-rotulo); font-size: 13px; line-height: 1; letter-spacing: .02em; rotate: -2deg; animation: ds-cinta .55s cubic-bezier(.7,0,.2,1) .3s both; } @keyframes ds-cinta { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } } @media (prefers-reduced-motion: reduce) { .ds-sello { animation: none; } } .ds-nombre { padding: 4px 8px 0; font-weight: 720; font-size: 16.5px; line-height: 1.22; font-variation-settings: 'wdth' 90; } .ds-parte { padding: 0 8px; font-variation-settings: 'wdth' 80; font-weight: 600; font-size: 12.5px; letter-spacing: .04em; color: var(--carbon-3); } .ds-pie { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: var(--e3); padding: var(--e3) var(--e4) var(--e4); border-top: 1px dashed var(--linea-fuerte); } .ds-precio { font-weight: 780; font-size: 21px; line-height: 1; font-variant-numeric: tabular-nums; } .ds-stock { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 650; color: var(--carbon-2); font-variant-numeric: tabular-nums; } .ds-stock i { width: 7px; height: 7px; border-radius: 50%; background: var(--azul); } .ds-agregar { grid-column: 1 / -1; display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 36px; border: 1px solid var(--linea-fuerte); border-radius: var(--r); background: var(--placa); font: inherit; font-weight: 680; font-size: 14px; cursor: pointer; transition: background-color .25s var(--ease), color .25s var(--ease); } .ds-agregar:hover { background: var(--azul); border-color: var(--azul); color: #fff; } .ds-agregar:focus-visible { outline: 2px solid var(--azul); outline-offset: 2px; }"
+    },
+    {
+      "name": "Existencias (stock states)",
+      "kind": "custom",
+      "refersTo": "existencias-cambio",
+      "description": "Stock at rest (carbon, blue dot), sustained change alert (yellow, carbon dot, halo; held until hover/focus), sold out (chile).",
+      "html": "<div class=\"ds-ex-fila\"><span class=\"ds-ex\"><i></i>12 en stock</span><span class=\"ds-ex ds-cambio\"><i></i>11 en stock</span><span class=\"ds-ex ds-cero\"><i></i>0 sin existencias</span></div>",
+      "css": ".ds-ex-fila { display: flex; gap: 12px; font-family: var(--f-ui); } .ds-ex { display: inline-flex; align-items: center; gap: 6px; padding: 3px 9px 3px 7px; border-radius: var(--r); font-size: 12.5px; font-weight: 650; color: var(--carbon-2); font-variant-numeric: tabular-nums; transition: background-color .3s var(--ease), box-shadow .3s var(--ease); } .ds-ex i { width: 7px; height: 7px; border-radius: 50%; background: var(--azul); } .ds-cambio { background: var(--amarillo); color: var(--carbon); box-shadow: 0 0 0 3px rgb(242 193 46 / 0.35); } .ds-cambio i { background: var(--carbon); } .ds-cero { color: var(--chile-hondo); } .ds-cero i { background: var(--chile); }"
+    },
+    {
+      "name": "Banda (vehicle band)",
+      "kind": "custom",
+      "refersTo": "banda",
+      "description": "Yellow enamel band: vehicle name painted large with chile shadow, MARCA/ODÓMETRO ficha with blue COMPATIBLE tape, hazard-stripe hem.",
+      "html": "<section class=\"ds-banda\"><div><span class=\"ds-previo\">Piezas que sí embonan en tu</span><span class=\"ds-auto\">Versa 2019</span></div><dl class=\"ds-ficha\"><div><dt>Marca</dt><dd>Nissan</dd></div><div><dt>Odómetro</dt><dd>84,200 km</dd></div><span class=\"ds-compatible\">Compatible</span></dl></section>",
+      "css": ".ds-banda { position: relative; display: grid; grid-template-columns: minmax(0,1fr) auto; gap: var(--e6); align-items: center; padding: var(--e8); background: var(--amarillo); border-radius: var(--r); box-shadow: var(--sombra); overflow: hidden; font-family: var(--f-ui); color: var(--carbon); } .ds-banda::after { content: ''; position: absolute; inset: auto 0 0 0; height: 6px; background: repeating-linear-gradient(-45deg, var(--carbon) 0 10px, var(--amarillo) 10px 20px); opacity: .85; } .ds-previo { display: block; margin-bottom: 8px; font-weight: 700; font-size: 17px; } .ds-auto { display: block; font-family: var(--f-rotulo); font-size: clamp(44px, 6.6vw, 92px); line-height: .95; color: var(--azul); text-shadow: var(--sombra-letra); animation: ds-brocha .8s cubic-bezier(.7,0,.2,1) .1s both; } @keyframes ds-brocha { from { clip-path: inset(-10% 100% -10% 0); } to { clip-path: inset(-10% -4% -10% 0); } } @media (prefers-reduced-motion: reduce) { .ds-auto { animation: none; } } .ds-ficha { display: flex; flex-direction: column; gap: 8px; align-items: flex-end; margin: 0; text-align: right; } .ds-ficha dt { font-size: 11.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--carbon-2); } .ds-ficha dd { margin: 0 0 8px; font-weight: 750; font-size: 17px; font-variant-numeric: tabular-nums; } .ds-compatible { padding: 8px 12px 7px; border-radius: 3px; background: var(--azul); color: #fff; font-family: var(--f-rotulo); font-size: 15px; line-height: 1; text-shadow: .07em .07em 0 var(--azul-noche); rotate: -2deg; }"
+    },
+    {
+      "name": "Nota total",
+      "kind": "custom",
+      "refersTo": "nota",
+      "description": "Sticky order pad close: painted Bungee total with chile shadow above the island CTA.",
+      "html": "<aside class=\"ds-nota\"><div class=\"ds-total\"><span>Total</span><strong>$1,378.00</strong></div><button class=\"ds-cta\">Finalizar compra<span class=\"ds-isla2\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M7 7h10v10\"/><path d=\"M7 17 17 7\"/></svg></span></button></aside>",
+      "css": ".ds-nota { width: 300px; padding: var(--e5); background: var(--placa); border: 1px solid var(--linea); border-radius: var(--r); box-shadow: var(--sombra); font-family: var(--f-ui); } .ds-total { display: flex; align-items: baseline; justify-content: space-between; padding-top: var(--e4); border-top: 1px solid var(--linea-fuerte); } .ds-total span { font-weight: 650; color: var(--carbon-2); } .ds-total strong { font-family: var(--f-rotulo); font-weight: 400; font-size: 28px; color: var(--azul); text-shadow: .06em .06em 0 var(--chile); font-variant-numeric: tabular-nums; } .ds-cta { margin-top: var(--e5); width: 100%; display: flex; align-items: center; justify-content: space-between; min-height: 42px; padding: 0 5px 0 var(--e5); background: var(--azul); color: #fff; border: 0; border-radius: var(--r); box-shadow: var(--sombra-boton); font: inherit; font-weight: 680; font-variation-settings: 'wdth' 92; cursor: pointer; transition: background-color .25s var(--ease), box-shadow .25s var(--ease), transform .2s var(--ease); } .ds-cta:hover { background: var(--azul-hondo); } .ds-cta:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 var(--azul-noche); } .ds-cta:focus-visible { outline: 2px solid var(--azul); outline-offset: 2px; } .ds-isla2 { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: rgb(255 255 255 / .16); transition: transform .35s var(--ease), background-color .25s var(--ease); } .ds-cta:hover .ds-isla2 { background: var(--amarillo); color: var(--carbon); transform: translate(3px,-1px) scale(1.06); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Rótulo de taller",
+    "overview": "The store speaks like the hand-painted wall of a Guadalajara repair shop. A cold whitewashed wall (barda) is the ground; royal-blue enamel forms the hull (header, footer, primary buttons); chrome yellow marks what fits your car; chile red is the brand's own paint. Whatever belongs to the visitor's vehicle gets painted: in Bungee sign lettering, with a solid offset shadow, swept on left to right like a brush stroke.\n\nEverything you operate is set in Archivo: tabular figures for prices and stock, semi-condensed widths for part numbers and folios. Density is that of a parts counter. The grid is tight, product photos sit at one scale on identical white plates, and the order note stays pinned at the side like a carbon-copy pad. Depth comes from enamel: solid offset shadows with no blur, the same way a painted letter throws its shadow on a wall.\n\nThis world replaces the earlier \"nota de remisión\" stationery look, which is now an anti-reference, as is the grey card store with a red accent.",
+    "keyCharacteristics": [
+      "Whitewashed barda ground, royal-blue enamel hull, chrome yellow reserved for fit and change.",
+      "Bungee lettering only on painted elements, with a chile-red offset shadow on the big painted lines.",
+      "Solid offset \"enamel\" shadows on surfaces and primary buttons. Pressing a button moves it into its shadow.",
+      "6px corners as the house radius. Round shapes are reserved for a short list of mechanisms.",
+      "Brush-sweep reveal (clip-path, left to right) for fit tapes and the painted vehicle name.",
+      "Product photos on normalized white plates at one scale, each raster carrying its provenance."
+    ],
+    "rules": [
+      {
+        "name": "The Two Yellows Rule",
+        "body": "Yellow carries exactly two meanings: this fits / this is your active vehicle (banda, EMBONA tape, active tab, header plate), and the stock just changed. Don't use it for decoration, promotion or generic emphasis.",
+        "section": "colors"
+      },
+      {
+        "name": "The Enamel Hull Rule",
+        "body": "Blue is the structure you stand on (header, footer, primary actions). Content surfaces are white plates on the barda, never blue panels.",
+        "section": "colors"
+      },
+      {
+        "name": "The Painted-Only Rule",
+        "body": "Bungee appears only on painted elements: h1 to h4, the logo and wordmark, fit tapes, vehicle names and emblems, the nota total, the footer mark, and the initials placeholder on a photo plate. Never on buttons, inputs, body or prices in lists.",
+        "section": "typography"
+      },
+      {
+        "name": "The Chile Shadow Rule",
+        "body": "h1, h2, the painted vehicle name and the nota total always carry a solid chile letter shadow (0.055em to 0.06em offset, no blur). White Bungee on blue carries an azul-noche shadow instead.",
+        "section": "typography"
+      },
+      {
+        "name": "The No-Blur Rule",
+        "body": "Surface and button shadows are solid offsets with zero blur. Interaction states (focus rings, the stock-change halo) are spread rings, not soft glows.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** use the solid offset shadows (4px / 6px / 8px, zero blur) for surfaces, and the 3px azul-noche shadow under primary buttons. Pressing translates the button into its shadow.",
+      "**Do** keep corners at 6px, with 4px for fields and nested thumbnails. Reserve full rounding for switches, count badges, the shipping bar, icon circles and status dots.",
+      "**Do** set h1, h2, the painted vehicle name and the nota total in Bungee with the chile offset letter shadow.",
+      "**Do** give primary CTAs the trailing island icon.",
+      "**Do** show stock at rest in carbon with a blue dot (chile when sold out), and hold the yellow change state until the visitor sees it.",
+      "**Do** place every product photo on the white plate at the shared scale, and keep provenance with every shipped raster.",
+      "**Do** close the banda with the hazard-stripe hem and keep the MARCA / ODÓMETRO ficha with its blue COMPATIBLE tape.",
+      "**Do** reveal fit tapes and painted names with the left-to-right brush sweep, and drop it under prefers-reduced-motion."
+    ],
+    "donts": [
+      "**Don't** use yellow for anything other than fit / active vehicle and the stock-change alert.",
+      "**Don't** use Bungee for buttons, inputs, prices in lists or body text.",
+      "**Don't** use blurred or diffuse drop shadows on surfaces or buttons.",
+      "**Don't** round cards, buttons, chips or tabs into pills.",
+      "**Don't** fall back to the grey card store with a red accent, or to the earlier \"nota de remisión\" stationery costume.",
+      "**Don't** put an uppercase tracked label above a heading. Uppercase labels name data only."
+    ]
+  }
+}
