@@ -1,4 +1,4 @@
-import { Plus } from 'lucide-react';
+import { Plus } from './ui/Iconos';
 import { useTienda } from '../store/useTienda';
 import { useVehiculos } from '../hooks/useCatalogo';
 import Capa from './ui/Capa';

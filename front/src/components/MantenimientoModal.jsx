@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Loader2 } from 'lucide-react';
+import { Loader2 } from './ui/Iconos';
 import { useTienda } from '../store/useTienda';
 import { leerParametros, rutaActual } from '../lib/rutas';
 import { useProductos } from '../hooks/useCatalogo';

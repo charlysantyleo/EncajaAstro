@@ -1,6 +1,6 @@
 ---
-import '@fontsource/bungee/latin-400.css';
-import '@fontsource-variable/archivo/wdth.css';
+import '@fontsource-variable/geist';
+import '@fontsource-variable/geist-mono';
 import '../styles/global.css';
 
 const { titulo = 'EnCaja Autopartes' } = Astro.props;
@@ -12,9 +12,18 @@ const { titulo = 'EnCaja Autopartes' } = Astro.props;
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content="Catálogo de refacciones con compatibilidad vehicular verificada" />
-    <meta name="theme-color" content="#1B3FA8" />
+    <meta name="theme-color" content="#F7F7F5" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0D0D0D" media="(prefers-color-scheme: dark)" />
+    <meta name="color-scheme" content="light dark" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>{titulo}</title>
+    <!-- Aplica el tema guardado antes de pintar, para que no parpadee. -->
+    <script is:inline>
+      try {
+        const tema = localStorage.getItem('encaja-tema');
+        if (tema === 'claro' || tema === 'oscuro') document.documentElement.dataset.tema = tema;
+      } catch {}
+    </script>
   </head>
   <body>
     <slot />

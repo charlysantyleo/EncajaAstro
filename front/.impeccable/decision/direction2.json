@@ -1,0 +1,121 @@
+{
+  "title": "Nuevo mundo visual de EnCaja (rojo, blanco y negro)",
+  "question": "La tirada asignó la Rejilla suiza. Quédatela, toma una alternativa o vuelve a tirar.",
+  "options": [
+    {
+      "id": "assigned",
+      "label": "Rejilla suiza",
+      "kicker": "THE ROLL",
+      "lineage": "Estilo Tipográfico Internacional: carteles y sistemas de ingeniería suizos (Müller-Brockmann, Ruder)",
+      "thesis": "La tienda como sistema tipográfico de precisión: rejilla de 12 columnas, grotesca neutra en escalas extremas y el rojo solo para lo que embona y la acción.",
+      "palette": ["#FAFAF8", "#0E0E0E", "#E10600", "#8A8A86", "#161616"],
+      "materials": ["rejilla modular visible", "grotesca neutra a escala de cartel", "cifras tabulares mono para N.P. y precio", "modo claro y oscuro"],
+      "viewport": "Barra negra delgada con buscador; a la izquierda el vehículo activo a escala de cartel ('VERSA 2018' enorme) sobre bloque rojo; el catálogo es un índice tipográfico (no tarjetas): renglones con N.P. grande, nombre, ajuste, stock y precio alineados a la rejilla; la nota es una franja inferior fija.",
+      "risk": "Rojo-negro-blanco suizo es la lectura más obvia de esa paleta; se gana solo con rejilla y escalas llevadas al extremo.",
+      "raised": [
+        {"from": "challenger-saville", "raise": "El número de parte es el titular de cada pieza, a escala grande; el nombre va debajo."},
+        {"from": "challenger-acetato", "raise": "Economía tipográfica: una familia, cuatro tamaños, nada más."},
+        {"from": "challenger-zonas", "raise": "Neutros en una escala fija de pasos; ningún gris suelto."}
+      ]
+    },
+    {
+      "id": "model-pick",
+      "label": "Catálogo de despiece OEM",
+      "kicker": "IMPECCABLE’S PICK",
+      "lineage": "Catálogos electrónicos de partes de fabricante (despiece con números de llamada)",
+      "thesis": "Se compra como en el mostrador de agencia: eliges sistema del auto, ves el despiece y cada número de llamada es una pieza que embona.",
+      "palette": ["#FFFFFF", "#111111", "#D90000", "#9A9A9A"],
+      "materials": ["diagramas de despiece", "tablas de partes numeradas"],
+      "viewport": "Selector de sistema del vehículo a la izquierda, despiece al centro con números rojos y la lista de partes ligada a la derecha.",
+      "risk": "Necesita ilustraciones de despiece por sistema que hoy no existen; sin ellas se queda en tabla."
+    },
+    {
+      "id": "challenger-tablero",
+      "label": "Tablero de salidas",
+      "verdict": "competitive",
+      "lineage": "Pase de abordar y tablero de salidas",
+      "thesis": "El stock en vivo como tablero que reordena renglones en su lugar; la nota como pase segmentado.",
+      "palette": ["#0E0E0E", "#F5F5F2", "#E10600"],
+      "materials": ["paneles de alto contraste", "bloque monoespaciado"],
+      "viewport": "Tablero de piezas ordenado por existencias, cambios en rojo sostenido; nota como pase.",
+      "case": "Gana en honestidad del stock en vivo; pierde en identificación con el taller.",
+      "risk": "Ajeno al mundo automotriz."
+    },
+    {
+      "id": "challenger-senaletica",
+      "label": "Señalética de terminal",
+      "verdict": "competitive",
+      "lineage": "Sistemas de señalización de aeropuerto",
+      "thesis": "Encontrar la pieza como una cadena de decisiones: vehículo, sistema, pieza; cada paso solo muestra lo que sigue.",
+      "palette": ["#E10600", "#0E0E0E", "#FFFFFF"],
+      "materials": ["bandas de señal fijas", "flechas a escala"],
+      "viewport": "Banda roja fija con la siguiente decisión; números de parte monumentales.",
+      "case": "Muy claro para quien no sabe qué pieza busca; pierde en identificación.",
+      "risk": "Lento para el mecánico que ya sabe el número de parte."
+    },
+    {
+      "id": "challenger-saville",
+      "label": "Catálogo Factory (Saville)",
+      "verdict": "declined",
+      "lineage": "Identidad de catálogo con número FAC",
+      "palette": ["#0E0E0E", "#FFFFFF", "#E10600"],
+      "materials": ["negro mate", "códigos de color"],
+      "thesis": "Todo es una entrada numerada del catálogo.",
+      "viewport": "Índice numerado.",
+      "case": "Esconde nombres; pierde en ambos ejes.",
+      "kept": "El número de parte como titular.",
+      "risk": "Críptico."
+    },
+    {
+      "id": "challenger-acetato",
+      "label": "Manual con acetatos",
+      "verdict": "declined",
+      "lineage": "Manual de software con separadores",
+      "palette": ["#F2F0EA", "#E07A1F", "#1F3FB8"],
+      "materials": ["acetato", "pestañas"],
+      "thesis": "Hojas de acetato sobre separadores de color.",
+      "viewport": "Manual abierto.",
+      "case": "Rompe la paleta pedida; pierde en ambos ejes.",
+      "kept": "Una familia tipográfica, pocos tamaños.",
+      "risk": "Disfraz de manual."
+    },
+    {
+      "id": "challenger-zonas",
+      "label": "Registro de exposición",
+      "verdict": "declined",
+      "lineage": "Cuarto oscuro fotográfico",
+      "palette": ["#1A1A1A", "#BDBDBD", "#C2185B"],
+      "materials": ["escala de zonas", "tramas"],
+      "thesis": "Hojas translúcidas sobre una escala de grises.",
+      "viewport": "Hojas superpuestas.",
+      "case": "Ajeno al público; pierde en ambos ejes.",
+      "kept": "Neutros en escala fija de pasos.",
+      "risk": "Abstracto."
+    },
+    {
+      "id": "challenger-atlas",
+      "label": "Atlas estelar",
+      "verdict": "declined",
+      "lineage": "Cartas celestes",
+      "palette": ["#0B1530", "#F4F1E8", "#D23C2C"],
+      "materials": ["puntos por magnitud"],
+      "thesis": "Jerarquía por tamaño de punto.",
+      "viewport": "Carta celeste.",
+      "case": "Pierde en ambos ejes.",
+      "kept": "Jerarquía por escala fija.",
+      "risk": "Decorativo."
+    }
+  ],
+  "reroll": {"registers": ["safer", "bolder"]},
+  "buildPath": {"value": "code", "toggle": false},
+  "canon": true,
+  "canonCard": {
+    "label": "El estándar de la categoría",
+    "thesis": "Tienda de refacciones limpia en rojo, blanco y negro, ejecutada impecable.",
+    "palette": ["#FFFFFF", "#111111", "#E10600"],
+    "materials": ["rejilla de tarjetas", "fotografía de producto"],
+    "viewport": "Header, filtros a la izquierda, rejilla de tarjetas.",
+    "risk": "Es justo lo que ya te parece genérico."
+  },
+  "steer": true
+}

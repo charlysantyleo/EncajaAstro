@@ -1,4 +1,4 @@
-import { Plus } from 'lucide-react';
+import { Plus } from './ui/Iconos';
 import { motion } from 'motion/react';
 import { useTienda } from '../store/useTienda';
 import { useVehiculos } from '../hooks/useCatalogo';
@@ -96,11 +96,11 @@ export default function GarageView() {
                   </div>
                   <div>
                     <dt>Motor</dt>
-                    <dd>{vehiculo.motor ?? '—'}</dd>
+                    <dd>{vehiculo.motor ?? 'Sin dato'}</dd>
                   </div>
                   <div>
                     <dt>Odómetro</dt>
-                    <dd>{kilometros(vehiculo.kilometraje) ?? '—'}</dd>
+                    <dd>{kilometros(vehiculo.kilometraje) ?? 'Sin dato'}</dd>
                   </div>
                 </dl>
                 <div className="auto-acciones">

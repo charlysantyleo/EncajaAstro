@@ -1,4 +1,4 @@
-import { ArrowLeft, NotebookPen } from 'lucide-react';
+import { ArrowLeft, NotebookPen } from './ui/Iconos';
 import { useTienda } from '../store/useTienda';
 import { leerParametros } from '../lib/rutas';
 import { useVehiculo } from '../hooks/useCatalogo';
@@ -48,7 +48,7 @@ export default function VehiculoView() {
             <div>
               {vehiculo.apodo && <span className="etiqueta relleno">“{vehiculo.apodo}”</span>}
               <h1 style={{ marginTop: vehiculo.apodo ? 14 : 0 }}>
-                {vehiculo.marca} {vehiculo.modelo} {vehiculo.anio}
+                {vehiculo.marca} {vehiculo.modelo} <span className="cartel-anio">{vehiculo.anio}</span>
               </h1>
               <p className="folio" style={{ margin: '14px 0 0', fontSize: 14.5 }}>
                 {vehiculo.motor ?? 'motor no especificado'} · {vehiculo.tipoCombustible.toLowerCase()}

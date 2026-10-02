@@ -1,7 +1,7 @@
 import { createPortal } from 'react-dom';
 import { useEffect, useRef } from 'react';
 import { motion } from 'motion/react';
-import { X } from 'lucide-react';
+import { X } from './Iconos';
 
 // Dialogo centrado o cajon lateral (patrones Modal / Drawer de beUI):
 // entra y sale con resorte (AnimatePresence en Shell), Esc cierra, el foco queda dentro.

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Loader2 } from 'lucide-react';
+import { Loader2 } from './ui/Iconos';
 import { useTienda } from '../store/useTienda';
 import { graphqlRequest } from '../graphql/client';
 import { QUERY_YO } from '../graphql/queries';

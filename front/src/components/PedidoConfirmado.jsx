@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'motion/react';
-import { NotebookPen, X } from 'lucide-react';
+import { NotebookPen, X } from './ui/Iconos';
 import { useTienda } from '../store/useTienda';
 import { pesos } from '../lib/formato';
 import { Sello } from './ui/Movimiento';

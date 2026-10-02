@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { CircleCheck, CircleAlert, Plus } from 'lucide-react';
+import { CircleCheck, CircleAlert, Plus } from './ui/Iconos';
 import { useTienda } from '../store/useTienda';
 import { useProducto } from '../hooks/useCatalogo';
 import { imagenDe } from '../imagenes';
@@ -72,7 +72,7 @@ export default function ProductoModal() {
               style={{ display: 'flex', gap: 8, alignItems: 'flex-start', margin: 0, fontWeight: 600, fontSize: 14 }}
               className={ajusteActivo ? '' : 'error'}
             >
-              {ajusteActivo ? <CircleCheck size={18} color="var(--azul)" style={{ flex: 'none', marginTop: 2 }} /> : <CircleAlert size={18} style={{ flex: 'none', marginTop: 2 }} />}
+              {ajusteActivo ? <CircleCheck size={18} color="var(--rojo)" style={{ flex: 'none', marginTop: 2 }} /> : <CircleAlert size={18} style={{ flex: 'none', marginTop: 2 }} />}
               <span>
                 {ajusteActivo
                   ? `Embona en tu ${vehiculoActivo.modelo} ${vehiculoActivo.anio} (${ajusteActivo.tipo === 'DIRECTO' ? 'ajuste directo' : 'equivalencia'})`

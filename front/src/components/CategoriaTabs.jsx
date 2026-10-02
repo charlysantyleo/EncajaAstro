@@ -1,14 +1,13 @@
-import { useState } from 'react';
 import { motion } from 'motion/react';
 import { useTienda } from '../store/useTienda';
 import { leerParametros, rutaActual } from '../lib/rutas';
 import { useCategorias } from '../hooks/useCatalogo';
 
-// Tabs con indicador compartido (layoutId) y pastilla que sigue al cursor, como en beUI.
+// Indice de sistemas: columna izquierda fija en escritorio, fila deslizable en movil.
+// El cuadro rojo marca el sistema activo y viaja entre renglones (layoutId).
 export default function CategoriaTabs() {
   const ir = useTienda((estado) => estado.ir);
   const { categorias, cargando } = useCategorias();
-  const [sobre, setSobre] = useState(null);
 
   const { id: categoriaId, q } = leerParametros();
   const enHome = rutaActual() === '/';
@@ -22,37 +21,33 @@ export default function CategoriaTabs() {
   }
 
   return (
-    <nav className="tabs-cat" aria-label="Categorías">
-      <div className="tabs-cat-fila" onMouseLeave={() => setSobre(null)}>
-        {opciones.map((opcion) => (
-          <button
-            key={opcion.id}
-            className={opcion.id === activa ? 'tab activo' : 'tab'}
-            aria-current={opcion.id === activa ? 'page' : undefined}
-            onMouseEnter={() => setSobre(opcion.id)}
-            onFocus={() => setSobre(opcion.id)}
-            onBlur={() => setSobre(null)}
-            onClick={() => elegir(opcion)}
-          >
-            {sobre === opcion.id && (
-              <motion.span
-                layoutId="tab-sobre"
-                className="tab-hover"
-                transition={{ type: 'spring', stiffness: 500, damping: 38 }}
-              />
-            )}
-            <span className="tab-texto">{opcion.nombre}</span>
-            {opcion.id === activa && (
-              <motion.span
-                layoutId="tab-activo"
-                className="tab-indicador"
-                transition={{ type: 'spring', stiffness: 420, damping: 34 }}
-              />
-            )}
-          </button>
-        ))}
-        {cargando && categorias.length === 0 && <span className="tab apagado">Cargando categorías…</span>}
-      </div>
+    <nav className="sistemas" aria-label="Sistemas del vehículo">
+      <h5 className="sistemas-titulo">Sistemas</h5>
+      <ul>
+        {opciones.map((opcion) => {
+          const esActiva = opcion.id === activa;
+          return (
+            <li key={opcion.id}>
+              <button
+                type="button"
+                className={esActiva ? 'sistema activo' : 'sistema'}
+                aria-current={esActiva ? 'page' : undefined}
+                onClick={() => elegir(opcion)}
+              >
+                {esActiva && (
+                  <motion.span
+                    layoutId="sistema-activo"
+                    className="sistema-marca"
+                    transition={{ type: 'spring', duration: 0.35, bounce: 0 }}
+                  />
+                )}
+                {opcion.nombre}
+              </button>
+            </li>
+          );
+        })}
+        {cargando && categorias.length === 0 && <li className="apagado">Cargando…</li>}
+      </ul>
     </nav>
   );
 }

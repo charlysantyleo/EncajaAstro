@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Car, ChevronsUpDown, LogIn, LogOut, Receipt, Search, UserRound, Warehouse } from 'lucide-react';
+import { Car, ChevronsUpDown, LogIn, LogOut, Moon, Receipt, Search, Sun, Warehouse } from './ui/Iconos';
 import { useTienda } from '../store/useTienda';
 import { leerParametros, rutaActual } from '../lib/rutas';
+import { cambiarTema, temaActual } from '../lib/tema';
 
 export default function TopBar() {
   const vehiculoActivo = useTienda((estado) => estado.vehiculoActivo);
@@ -12,6 +13,7 @@ export default function TopBar() {
   const cerrarSesion = useTienda((estado) => estado.cerrarSesion);
 
   const [busqueda, setBusqueda] = useState(() => leerParametros().q);
+  const [tema, setTema] = useState(() => temaActual());
   const campo = useRef(null);
   const ruta = rutaActual();
 
@@ -30,111 +32,122 @@ export default function TopBar() {
     return () => window.removeEventListener('keydown', tecla);
   }, []);
 
+  function alternarTema() {
+    const nuevo = tema === 'oscuro' ? 'claro' : 'oscuro';
+    cambiarTema(nuevo);
+    setTema(nuevo);
+  }
+
   function manejarBusqueda(evento) {
     evento.preventDefault();
     ir('buscar', { texto: busqueda.trim() });
   }
 
+  const enGarage = ruta.startsWith('/garage') || ruta.startsWith('/vehiculo');
+
   return (
     <header className="cabecera">
-      <button className="marca" onClick={() => ir('irAHome')} aria-label="EnCaja Autopartes, inicio">
-        <span className="marca-logo">EC</span>
-        <span className="marca-texto">
-          EnCaja
-          <small>AUTOPARTES</small>
-        </span>
-      </button>
-
-      <form className="buscador" role="search" onSubmit={manejarBusqueda}>
-        <Search size={18} />
-        <input
-          ref={campo}
-          className="input"
-          type="search"
-          value={busqueda}
-          aria-label="Buscar refacciones"
-          placeholder="Balatas, filtros, número de parte…"
-          onChange={(evento) => setBusqueda(evento.target.value)}
-        />
-        <AnimatePresence>
-          {!busqueda && (
-            <motion.kbd
-              className="buscador-tecla"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              /
-            </motion.kbd>
-          )}
-        </AnimatePresence>
-      </form>
-
-      <div className="cab-acciones">
-        {sesion ? (
-          <span className="cuenta">
-            <span className="cuenta-nombre" title={sesion.usuario.email}>
-              <UserRound size={18} />
-              <span>{sesion.usuario.nombre.split(' ')[0]}</span>
-            </span>
-            <button className="btn-icono cuenta-salir" onClick={cerrarSesion} aria-label="Cerrar sesión" title="Cerrar sesión">
-              <LogOut size={17} />
-            </button>
-          </span>
-        ) : (
-          <button className="cab-enlace" onClick={() => ir('abrirEntrar')}>
-            <LogIn size={18} />
-            <span>Entrar</span>
-          </button>
-        )}
-
-        <button
-          className={ruta.startsWith('/garage') || ruta.startsWith('/vehiculo') ? 'cab-enlace activo' : 'cab-enlace'}
-          onClick={() => ir('irAGarage')}
-        >
-          <Warehouse size={18} />
-          <span>Mi garage</span>
+      <div className="rejilla cabecera-fila">
+        <button className="marca" onClick={() => ir('irAHome')} aria-label="EnCaja Autopartes, inicio">
+          <span className="marca-cuadro" aria-hidden="true" />
+          <span className="marca-texto">EnCaja</span>
+          <span className="marca-sub">Autopartes</span>
         </button>
 
-        <button
-          className={vehiculoActivo ? 'placa' : 'placa placa-vacia'}
-          onClick={() => ir('abrirSelectorVehiculo')}
-          aria-label={vehiculoActivo ? 'Cambiar vehículo activo' : 'Elegir vehículo'}
-        >
-          <Car size={18} />
-          {vehiculoActivo ? (
-            <>
-              <span>
-                <span className="placa-marca">{vehiculoActivo.marca} </span>
-                {vehiculoActivo.modelo}
-                <span className="placa-anio"> {vehiculoActivo.anio}</span>
-              </span>
-              <span className="placa-cambiar">Cambiar</span>
-            </>
-          ) : (
-            'Elegir vehículo'
-          )}
-          {vehiculoActivo && <ChevronsUpDown size={14} />}
-        </button>
-
-        <motion.button className="btn-nota" aria-label={`Nota, ${totalItems} piezas`} onClick={() => ir('irACarrito')} whileTap={{ scale: 0.95 }}>
-          <Receipt size={18} />
-          <span className="btn-nota-texto">Nota</span>
-          <AnimatePresence initial={false}>
-            {totalItems > 0 && (
-              <motion.span
-                key={totalItems}
-                className="insignia"
-                initial={{ scale: 0.4, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.4, opacity: 0 }}
-                transition={{ type: 'spring', stiffness: 600, damping: 18 }}
-              >
-                {totalItems}
-              </motion.span>
+        <form className="buscador" role="search" onSubmit={manejarBusqueda}>
+          <Search size={18} />
+          <input
+            ref={campo}
+            className="input"
+            type="search"
+            value={busqueda}
+            aria-label="Buscar refacciones"
+            placeholder="Pieza o número de parte"
+            onChange={(evento) => setBusqueda(evento.target.value)}
+          />
+          <AnimatePresence>
+            {!busqueda && (
+              <motion.kbd className="buscador-tecla" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                /
+              </motion.kbd>
             )}
           </AnimatePresence>
-        </motion.button>
+        </form>
+
+        <nav className="cab-acciones" aria-label="Cuenta y navegación">
+          <button
+            className={enGarage ? 'cab-enlace activo' : 'cab-enlace'}
+            aria-current={enGarage ? 'page' : undefined}
+            aria-label="Garage"
+            onClick={() => ir('irAGarage')}
+          >
+            <Warehouse />
+            <span>Garage</span>
+          </button>
+
+          <button
+            className={vehiculoActivo ? 'cab-enlace placa' : 'cab-enlace placa placa-vacia'}
+            onClick={() => ir('abrirSelectorVehiculo')}
+            aria-label={vehiculoActivo ? `Vehículo activo: ${vehiculoActivo.marca} ${vehiculoActivo.modelo} ${vehiculoActivo.anio}. Cambiar` : 'Elegir vehículo'}
+          >
+            <Car />
+            <span>
+              {vehiculoActivo ? (
+                <>
+                  {vehiculoActivo.modelo}
+                  <span className="placa-anio mono"> {vehiculoActivo.anio}</span>
+                </>
+              ) : (
+                'Elegir vehículo'
+              )}
+            </span>
+            <ChevronsUpDown size={14} />
+          </button>
+
+          <button className="cab-enlace" onClick={() => ir('irACarrito')} aria-label={`Nota, ${totalItems} piezas`}>
+            <Receipt />
+            <span>Nota</span>
+            <AnimatePresence initial={false} mode="popLayout">
+              {totalItems > 0 && (
+                <motion.span
+                  key={totalItems}
+                  className="insignia mono"
+                  initial={{ opacity: 0, y: -6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 6 }}
+                  transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
+                >
+                  {totalItems}
+                </motion.span>
+              )}
+            </AnimatePresence>
+          </button>
+
+          {sesion ? (
+            <span className="cuenta">
+              <span className="cuenta-nombre" title={sesion.usuario.email}>
+                {sesion.usuario.nombre.split(' ')[0]}
+              </span>
+              <button className="btn-icono" onClick={cerrarSesion} aria-label="Cerrar sesión" title="Cerrar sesión">
+                <LogOut />
+              </button>
+            </span>
+          ) : (
+            <button className="cab-enlace" onClick={() => ir('abrirEntrar')} aria-label="Entrar">
+              <LogIn />
+              <span>Entrar</span>
+            </button>
+          )}
+
+          <button
+            className="btn-icono"
+            onClick={alternarTema}
+            aria-label={tema === 'oscuro' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+            title={tema === 'oscuro' ? 'Modo claro' : 'Modo oscuro'}
+          >
+            {tema === 'oscuro' ? <Sun /> : <Moon />}
+          </button>
+        </nav>
       </div>
     </header>
   );

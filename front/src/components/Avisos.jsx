@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { Check } from 'lucide-react';
+import { Check } from './ui/Iconos';
 import { useTienda } from '../store/useTienda';
 
 // Aviso transitorio (patron Toast de beUI): sube con resorte y se va solo.

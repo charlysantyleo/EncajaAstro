@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { TriangleAlert, RotateCw } from 'lucide-react';
+import { TriangleAlert, RotateCw } from './ui/Iconos';
 import Skeleton from './Skeleton';
 
 export function Cargando({ filas = 3, alto = 60, columnas = false }) {

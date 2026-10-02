@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, animate, motion, useMotionValue, useReducedMotion, useTransform } from 'motion/react';
-import { Minus, Plus } from 'lucide-react';
+import { Minus, Plus } from './Iconos';
 import { pesos } from '../../lib/formato';
 
 // Patrones de movimiento (motion): números con resorte, interruptor, cantidad, cinta pintada.
@@ -89,40 +89,37 @@ export function Cantidad({ valor, min = 1, max = 999, onCambio, etiqueta = 'Cant
   );
 }
 
-// Cinta de rótulo: se pinta de izquierda a derecha como un brochazo y queda apenas ladeada.
-// tono: amarillo (ajuste directo), azul (equivalencia), rojo (agotado), verde (estado ok).
-export function Sello({ texto, tono = 'amarillo', retraso = 0, enLinea = false, giro = -2 }) {
+// Marca de ajuste: un cuadro rojo que se dibuja (clip-path) junto a la palabra.
+// tono: amarillo = ajuste directo (cuadro lleno), azul = equivalencia (cuadro hueco),
+// rojo = agotado (gris tachado), verde = estado correcto. Los nombres de tono se conservan por compatibilidad.
+const CLASE_TONO = { amarillo: 'directo', azul: 'equivalente', rojo: 'agotado', verde: 'correcto' };
+
+export function Sello({ texto, tono = 'amarillo', retraso = 0, enLinea = false }) {
   const reducido = useReducedMotion();
-  const clases = [
-    'sello',
-    tono === 'azul' ? 'azul-cinta' : tono === 'rojo' ? 'rojo' : tono === 'verde' ? 'verde' : '',
-    enLinea ? 'en-linea' : '',
-  ]
-    .filter(Boolean)
-    .join(' ');
   return (
-    <motion.span
-      className={clases}
-      style={{ rotate: giro }}
-      initial={reducido ? false : { clipPath: 'inset(0 100% 0 0)' }}
-      animate={{ clipPath: 'inset(0 0% 0 0)' }}
-      transition={{ duration: 0.55, ease: [0.7, 0, 0.2, 1], delay: retraso }}
-    >
+    <span className={['sello', CLASE_TONO[tono] ?? 'directo', enLinea ? 'en-linea' : ''].filter(Boolean).join(' ')}>
+      <motion.span
+        className="sello-cuadro"
+        aria-hidden="true"
+        initial={reducido ? false : { clipPath: 'inset(0 100% 0 0)' }}
+        animate={{ clipPath: 'inset(0 0% 0 0)' }}
+        transition={{ duration: 0.35, ease: [0.77, 0, 0.175, 1], delay: retraso }}
+      />
       {texto}
-    </motion.span>
+    </span>
   );
 }
 
-// Texto de rótulo que se pinta con el mismo brochazo (nombre del vehículo activo).
-export function Pintado({ children, className, retraso = 0.1, como = 'span' }) {
+// Texto a escala de cartel que sube desde su linea base (nombre del vehiculo activo).
+export function Pintado({ children, className, retraso = 0.05, como = 'span' }) {
   const reducido = useReducedMotion();
   const Elemento = motion[como];
   return (
     <Elemento
       className={className}
-      initial={reducido ? false : { clipPath: 'inset(-10% 100% -10% 0)' }}
-      animate={{ clipPath: 'inset(-10% -4% -10% 0)' }}
-      transition={{ duration: 0.8, ease: [0.7, 0, 0.2, 1], delay: retraso }}
+      initial={reducido ? false : { clipPath: 'inset(0 0 100% 0)', y: '0.12em' }}
+      animate={{ clipPath: 'inset(0 0 -10% 0)', y: 0 }}
+      transition={{ duration: 0.7, ease: [0.23, 1, 0.32, 1], delay: retraso }}
     >
       {children}
     </Elemento>
@@ -138,7 +135,7 @@ export function Aparece({ children, retraso = 0, y = 14, className, como = 'div'
       initial={{ opacity: 0, y }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '0px 0px -40px 0px' }}
-      transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: retraso }}
+      transition={{ duration: 0.6, ease: [0.23, 1, 0.32, 1], delay: retraso }}
     >
       {children}
     </Elemento>

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { ArrowLeft, ArrowRight, TriangleAlert, Loader2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, TriangleAlert, Loader2 } from './ui/Iconos';
 import { useTienda } from '../store/useTienda';
 import { graphqlRequest } from '../graphql/client';
 import { MUTATION_REGISTRAR_PEDIDO } from '../graphql/queries';

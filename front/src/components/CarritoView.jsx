@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { ArrowLeft, ArrowRight, Trash2, Truck, PartyPopper } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Trash2, Truck, PartyPopper } from './ui/Iconos';
 import { useTienda } from '../store/useTienda';
 import { graphqlRequest } from '../graphql/client';
 import { QUERY_PRODUCTO_STOCK } from '../graphql/queries';

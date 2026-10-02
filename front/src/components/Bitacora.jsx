@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { Plus } from 'lucide-react';
+import { Plus } from './ui/Iconos';
 import { useTienda } from '../store/useTienda';
 import { kilometros } from '../lib/formato';
 

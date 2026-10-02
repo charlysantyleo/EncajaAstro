@@ -1,11 +1,11 @@
-import { ArrowUpRight, Car, Plus, ScrollText } from 'lucide-react';
+import { ArrowUpRight, Car, Plus } from './ui/Iconos';
 import { useTienda } from '../store/useTienda';
 import { useVehiculos } from '../hooks/useCatalogo';
 import { kilometros } from '../lib/formato';
-import { Aparece, Pintado, Sello } from './ui/Movimiento';
+import { Pintado } from './ui/Movimiento';
 
-// Lo primero que ve el visitante: contra qué vehículo se está comprando.
-// Con vehículo activo, su nombre se pinta en letra de rótulo; sin vehículo, una invitación con atajos a su garage.
+// Lo primero que ve el visitante: contra que vehiculo se esta comprando, a escala de cartel.
+// Con vehiculo activo, su modelo y año ocupan el ancho; sin vehiculo, la pregunta y atajos a su garage.
 export default function BandaVehiculo() {
   const usuarioId = useTienda((estado) => estado.usuarioId);
   const vehiculoActivo = useTienda((estado) => estado.vehiculoActivo);
@@ -15,70 +15,66 @@ export default function BandaVehiculo() {
 
   if (vehiculoActivo) {
     return (
-      <Aparece className="banda">
-        <div>
-          <h2>
-            <span className="banda-previo">
-              Piezas que sí embonan en tu
-            </span>
-            <Pintado key={vehiculoActivo.id} className="banda-auto">
-              {vehiculoActivo.modelo} {vehiculoActivo.anio}
-            </Pintado>
-          </h2>
-          <p className="banda-texto">
-            {vehiculoActivo.marca} {vehiculoActivo.modelo}
-            {vehiculoActivo.kilometraje != null ? ` · ${kilometros(vehiculoActivo.kilometraje)}` : ''}. El catálogo ya está
-            filtrado; cada pieza lleva su cinta de ajuste.
-          </p>
-          <div className="banda-acciones">
-            <button className="btn btn-primario btn-isla" onClick={() => ir('verVehiculo', { vehiculoId: vehiculoActivo.id })}>
-              <ScrollText size={18} /> Ficha y bitácora
-              <span className="btn-isla-icono" aria-hidden="true">
-                <ArrowUpRight size={16} />
-              </span>
+      <section className="cartel" aria-label="Vehículo activo">
+        <p className="cartel-previo">Piezas que sí embonan en tu</p>
+        <h1 className="cartel-auto">
+          <Pintado key={vehiculoActivo.id}>
+            {vehiculoActivo.modelo} <span className="cartel-anio">{vehiculoActivo.anio}</span>
+          </Pintado>
+        </h1>
+        <div className="cartel-pie">
+          <dl className="cartel-datos">
+            <div>
+              <dt>Marca</dt>
+              <dd>{vehiculoActivo.marca}</dd>
+            </div>
+            {vehiculoActivo.motor && (
+              <div>
+                <dt>Motor</dt>
+                <dd className="mono">{vehiculoActivo.motor}</dd>
+              </div>
+            )}
+            {vehiculoActivo.kilometraje != null && (
+              <div>
+                <dt>Odómetro</dt>
+                <dd className="mono">{kilometros(vehiculoActivo.kilometraje)}</dd>
+              </div>
+            )}
+          </dl>
+          <div className="cartel-acciones">
+            <button className="btn btn-primario" onClick={() => ir('verVehiculo', { vehiculoId: vehiculoActivo.id })}>
+              Ficha y bitácora
+              <ArrowUpRight size={18} />
             </button>
             <button className="btn btn-secundario" onClick={() => ir('abrirSelectorVehiculo')}>
               Cambiar vehículo
             </button>
           </div>
         </div>
-        <dl className="banda-ficha">
-          <div>
-            <dt>Marca</dt>
-            <dd>{vehiculoActivo.marca}</dd>
-          </div>
-          {vehiculoActivo.kilometraje != null && (
-            <div>
-              <dt>Odómetro</dt>
-              <dd>{kilometros(vehiculoActivo.kilometraje)}</dd>
-            </div>
-          )}
-          <Sello texto="Compatible" enLinea tono="azul" retraso={0.7} />
-        </dl>
-      </Aparece>
+      </section>
     );
   }
 
   return (
-    <Aparece className="banda">
-      <div>
-        <h2 className="banda-titulo">Dinos qué auto tienes y te enseñamos lo que encaja</h2>
-        <p className="banda-texto">
-          Registra marca, modelo y año una sola vez. Sin adivinar números de parte.
+    <section className="cartel cartel-pregunta" aria-label="Elige tu vehículo">
+      <h1 className="cartel-auto cartel-auto-pregunta">¿Qué auto tienes?</h1>
+      <div className="cartel-pie">
+        <p className="cartel-texto">
+          Dinos marca, modelo y año una sola vez y te enseñamos lo que encaja. Sin adivinar números de parte.
         </p>
-        <div className="rapidos">
+        <div className="cartel-acciones">
           {vehiculos.slice(0, 4).map((vehiculo) => (
-            <button key={vehiculo.id} className="rapido" onClick={() => elegirVehiculoActivo(vehiculo)}>
-              <Car size={16} />
+            <button key={vehiculo.id} className="btn btn-secundario" onClick={() => elegirVehiculoActivo(vehiculo)}>
+              <Car size={18} />
               {vehiculo.marca} {vehiculo.modelo} {vehiculo.anio}
             </button>
           ))}
-          <button className="btn btn-primario btn-chico" onClick={() => ir('abrirAgregarVehiculo')}>
-            <Plus size={16} /> Agregar vehículo
+          <button className="btn btn-primario" onClick={() => ir('abrirAgregarVehiculo')}>
+            <Plus size={18} />
+            Agregar vehículo
           </button>
         </div>
       </div>
-      <img className="banda-foto" src="/img/catalogo.jpg" alt="Refacciones del catálogo" />
-    </Aparece>
+    </section>
   );
 }
