@@ -4,10 +4,11 @@ import { ArrowRight, ChevronsUpDown, X } from './ui/Iconos';
 import { useTienda } from '../store/useTienda';
 import { ENVIO_GRATIS, pesos } from '../lib/formato';
 import { Importe } from './ui/Movimiento';
+import { comoIsla } from './ui/Isla';
 
 // La nota: franja fija al pie con piezas, total y avance al envio gratis.
 // Se despliega hacia arriba para ver y quitar renglones sin salir del catalogo.
-export default function Nota() {
+function Nota() {
   const carrito = useTienda((estado) => estado.carrito);
   const quitarDelCarrito = useTienda((estado) => estado.quitarDelCarrito);
   const ir = useTienda((estado) => estado.ir);
@@ -115,3 +116,5 @@ export default function Nota() {
     </aside>
   );
 }
+
+export default comoIsla(Nota);

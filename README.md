@@ -15,6 +15,7 @@ de datos.
 2. `cd back && npm install`, configurar `.env` con ese connection string y
    un `JWT_SECRET` (ver `.env.example`), correr `npm run db:init` una vez y
    despues `npm start`. Autenticacion (JWT + Google): ver `AUTENTICACION.md`.
+   Cobros (Mercado Pago + PayPal): ver `PAGOS.md`.
 3. `cd front && npm install`, configurar `.env` (desde `.env.example`) con la URL del backend,
    `npm run dev`.
 

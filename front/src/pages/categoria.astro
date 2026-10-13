@@ -1,8 +1,13 @@
 ---
 import Base from '../layouts/Base.astro';
-import Pagina from '../components/Pagina.jsx';
+import CategoriaView from '../components/CategoriaView.jsx';
+import Nota from '../components/Nota.jsx';
+import StockEnVivo from '../components/StockEnVivo.jsx';
 ---
 
 <Base titulo="Catalogo | EnCaja Autopartes">
-  <Pagina vista="categoria" client:only="react" />
+  <!-- client:only: el titulo y el filtro salen de la URL (?id, ?q), que el build no conoce. -->
+  <CategoriaView client:only="react" />
+  <Nota client:idle />
+  <StockEnVivo client:idle />
 </Base>

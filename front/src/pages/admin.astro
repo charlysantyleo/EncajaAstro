@@ -1,0 +1,51 @@
+---
+import Base from '../layouts/Base.astro';
+import PuertaAdmin from '../components/admin/PuertaAdmin.jsx';
+import Grafica from '../components/admin/Grafica.jsx';
+
+// Indicadores y graficas del panel. Todavia sin datos: cada uno muestra su estado vacio.
+const indicadores = [
+  { nombre: 'Ventas del mes', nota: 'Suma de pedidos pagados' },
+  { nombre: 'Pedidos', nota: 'Registrados este mes' },
+  { nombre: 'Ticket promedio', nota: 'Venta entre pedidos pagados' },
+  { nombre: 'Piezas por agotarse', nota: 'Con pocas existencias' },
+];
+---
+
+<Base titulo="Panel | EnCaja Autopartes">
+  <!--
+    Unica isla de la pagina: la puerta que revisa la sesion. Todo lo de adentro (indicadores y
+    graficas) es HTML del build; <Grafica> es un componente de React usado sin client:*,
+    asi que no se hidrata ni pesa en el navegador.
+  -->
+  <PuertaAdmin client:only="react">
+    <div class="contenedor panel" style="max-width: 1240px">
+      <div class="encabezado-pagina">
+        <div>
+          <h1>Panel</h1>
+          <p style="margin-top: 12px; margin-bottom: 0">Ventas, pedidos e inventario de la tienda.</p>
+        </div>
+        <span class="etiqueta">Sin datos conectados</span>
+      </div>
+
+      <dl class="indicadores">
+        {
+          indicadores.map((indicador) => (
+            <div class="indicador">
+              <dt>{indicador.nombre}</dt>
+              <dd aria-label="Sin datos">—</dd>
+              <span class="indicador-nota">{indicador.nota}</span>
+            </div>
+          ))
+        }
+      </dl>
+
+      <div class="graficas">
+        <Grafica titulo="Ventas por día" descripcion="Importe de pedidos pagados, últimos 30 días" tipo="linea" ancho="ancha" />
+        <Grafica titulo="Pedidos por estado" descripcion="Pendientes, pagados, enviados, entregados y cancelados" tipo="barras" ancho="angosta" />
+        <Grafica titulo="Formas de pago" descripcion="Pedidos por método: tarjeta, efectivo, link y al recoger" tipo="barras-h" ancho="angosta" />
+        <Grafica titulo="Piezas más vendidas" descripcion="Unidades vendidas por número de parte" tipo="barras-h" ancho="ancha" />
+      </div>
+    </div>
+  </PuertaAdmin>
+</Base>

@@ -8,6 +8,7 @@ import {
   QUERY_VEHICULOS,
   QUERY_VEHICULO,
   QUERY_PEDIDOS,
+  QUERY_OPCIONES_DE_PAGO,
 } from '../graphql/queries';
 
 export function useCategorias() {
@@ -80,4 +81,9 @@ export function usePedidos(usuarioId) {
     { skip: !usuarioId, version }
   );
   return { pedidos: datos?.pedidos ?? [], cargando, error, recargar };
+}
+
+export function useOpcionesDePago() {
+  const { datos, cargando, error, recargar } = useGraphQLQuery(QUERY_OPCIONES_DE_PAGO);
+  return { opciones: datos?.opcionesDePago ?? [], cargando, error, recargar };
 }

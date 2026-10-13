@@ -1,8 +1,9 @@
 ---
 import Base from '../layouts/Base.astro';
-import Pagina from '../components/Pagina.jsx';
+import EntrarView from '../components/EntrarView.jsx';
 ---
 
 <Base titulo="Entrar | EnCaja Autopartes">
-  <Pagina vista="entrar" client:only="react" />
+  <!-- client:only: lee el token que Google deja despues del # de la URL. -->
+  <EntrarView client:only="react" />
 </Base>

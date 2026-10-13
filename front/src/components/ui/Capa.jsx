@@ -3,6 +3,11 @@ import { useEffect, useRef } from 'react';
 import { motion } from 'motion/react';
 import { X } from './Iconos';
 
+// Al pasar de una capa a otra, la nueva se monta antes de que la anterior termine de salir.
+// El bloqueo del scroll se cuenta entre todas: se pone con la primera y se quita con la ultima.
+let capasAbiertas = 0;
+let overflowPrevio = '';
+
 // Dialogo centrado o cajon lateral (patrones Modal / Drawer de beUI):
 // entra y sale con resorte (AnimatePresence en Shell), Esc cierra, el foco queda dentro.
 export default function Capa({ lado = 'centro', titulo, onCerrar, children }) {
@@ -12,7 +17,8 @@ export default function Capa({ lado = 'centro', titulo, onCerrar, children }) {
 
   useEffect(() => {
     const previo = document.activeElement;
-    const overflow = document.body.style.overflow;
+    if (capasAbiertas === 0) overflowPrevio = document.body.style.overflow;
+    capasAbiertas += 1;
     document.body.style.overflow = 'hidden';
     panel.current?.focus();
 
@@ -36,7 +42,8 @@ export default function Capa({ lado = 'centro', titulo, onCerrar, children }) {
     window.addEventListener('keydown', tecla);
     return () => {
       window.removeEventListener('keydown', tecla);
-      document.body.style.overflow = overflow;
+      capasAbiertas -= 1;
+      if (capasAbiertas === 0) document.body.style.overflow = overflowPrevio;
       if (previo instanceof HTMLElement) previo.focus();
     };
   }, []);

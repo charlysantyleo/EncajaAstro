@@ -63,6 +63,21 @@ CREATE TABLE detalle_pedido (
   importe NUMERIC(10, 2) NOT NULL
 );
 
+CREATE TABLE pago (
+  id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  pedido_id INTEGER NOT NULL UNIQUE REFERENCES pedido(id),
+  referencia TEXT NOT NULL UNIQUE,
+  metodo TEXT NOT NULL,
+  proveedor TEXT,
+  status TEXT NOT NULL DEFAULT 'PENDIENTE',
+  monto NUMERIC(10, 2) NOT NULL,
+  id_externo TEXT,
+  url TEXT,
+  codigo TEXT,
+  vence TEXT,
+  detalle TEXT
+);
+
 CREATE TABLE mantenimiento (
   id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   vehiculo_id INTEGER NOT NULL REFERENCES vehiculo(id),

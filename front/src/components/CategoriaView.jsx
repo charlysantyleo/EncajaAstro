@@ -3,8 +3,9 @@ import { leerParametros } from '../lib/rutas';
 import { useProductos } from '../hooks/useCatalogo';
 import CatalogoLayout from './CatalogoLayout';
 import ListaProductos from './ListaProductos';
+import { comoIsla } from './ui/Isla';
 
-export default function CategoriaView() {
+function CategoriaView() {
   const { id: categoriaId, nombre: categoriaNombre, q: texto } = leerParametros();
   const vehiculoActivo = useTienda((estado) => estado.vehiculoActivo);
   const soloDirectos = useTienda((estado) => estado.soloDirectos);
@@ -49,3 +50,5 @@ export default function CategoriaView() {
     </CatalogoLayout>
   );
 }
+
+export default comoIsla(CategoriaView);

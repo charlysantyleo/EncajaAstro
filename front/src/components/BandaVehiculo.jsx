@@ -1,8 +1,10 @@
 import { ArrowUpRight, Car, Plus } from './ui/Iconos';
 import { useTienda } from '../store/useTienda';
 import { useVehiculos } from '../hooks/useCatalogo';
+import { useEnNavegador } from '../hooks/useEnNavegador';
 import { kilometros } from '../lib/formato';
 import { Pintado } from './ui/Movimiento';
+import Skeleton from './Skeleton';
 
 // Lo primero que ve el visitante: contra que vehiculo se esta comprando, a escala de cartel.
 // Con vehiculo activo, su modelo y año ocupan el ancho; sin vehiculo, la pregunta y atajos a su garage.
@@ -12,6 +14,17 @@ export default function BandaVehiculo() {
   const ir = useTienda((estado) => estado.ir);
   const elegirVehiculoActivo = useTienda((estado) => estado.elegirVehiculoActivo);
   const { vehiculos } = useVehiculos(usuarioId);
+  const enNavegador = useEnNavegador();
+
+  // En el HTML del build no se sabe si el visitante ya tiene vehiculo activo: se reserva el lugar
+  // en vez de preguntar "¿Qué auto tienes?" a quien ya lo dijo.
+  if (!enNavegador) {
+    return (
+      <section className="cartel" aria-busy="true" aria-label="Vehículo activo">
+        <Skeleton height={168} />
+      </section>
+    );
+  }
 
   if (vehiculoActivo) {
     return (

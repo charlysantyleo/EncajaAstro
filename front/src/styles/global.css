@@ -30,6 +30,10 @@
   --invertido-texto: #f7f7f5;
   --invertido-tenue: #a3a39e;
 
+  /* marca: el logo trae negro y rojo; en tema oscuro se usa la version con el negro en claro */
+  --logo: url('/marca/logo.png');
+  --isotipo: url('/marca/isotipo.png');
+
   --f: 'Geist Variable', ui-sans-serif, system-ui, sans-serif;
   --f-mono: 'Geist Mono Variable', ui-monospace, 'SFMono-Regular', Consolas, monospace;
 
@@ -79,6 +83,8 @@
     --invertido-texto: #0d0d0d;
     --invertido-tenue: #5c5c58;
     --sombra-capa: 0 24px 64px -24px rgb(0 0 0 / 0.8);
+    --logo: url('/marca/logo-oscuro.png');
+    --isotipo: url('/marca/isotipo-oscuro.png');
   }
 }
 
@@ -102,6 +108,8 @@
   --invertido-texto: #0d0d0d;
   --invertido-tenue: #5c5c58;
   --sombra-capa: 0 24px 64px -24px rgb(0 0 0 / 0.8);
+  --logo: url('/marca/logo-oscuro.png');
+  --isotipo: url('/marca/isotipo-oscuro.png');
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -197,6 +205,7 @@ dl, dd { margin: 0; }
 .btn-isla { gap: var(--e2); }
 .btn-isla-icono { display: inline-grid; place-items: center; }
 .btn-google { text-decoration: none; }
+a.btn:not(.btn-texto), a.cab-enlace, a.marca, a.enlace-volver { text-decoration: none; }
 
 @media (hover: hover) and (pointer: fine) {
   .btn-primario:hover:not(:disabled) { background: var(--rojo-hondo); }
@@ -246,6 +255,10 @@ select.input {
   background-repeat: no-repeat;
 }
 textarea.input { padding: var(--e3); min-height: 88px; resize: vertical; }
+.input[aria-invalid='true'] { border-color: var(--rojo); }
+.campo-password { position: relative; }
+.campo-password .input { padding-right: 48px; }
+.campo-password .btn-icono { position: absolute; top: 2px; right: 2px; color: var(--tinta-2); }
 .campos-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--e4); }
 .formulario { display: flex; flex-direction: column; gap: var(--e6); }
 
@@ -279,19 +292,14 @@ textarea.input { padding: var(--e3); min-height: 88px; resize: vertical; }
 }
 .cabecera-fila { display: flex; align-items: center; gap: var(--e6); height: var(--alto-cabecera); }
 
-.marca {
-  display: inline-flex;
-  align-items: baseline;
-  gap: var(--e2);
-  padding: 0;
-  background: none;
-  border: none;
-  color: inherit;
-  white-space: nowrap;
+.marca { display: inline-flex; align-items: center; flex: none; }
+/* Logo como fondo: lo elige el tema (--logo) y solo se descarga la version que se usa. */
+.marca-logo {
+  display: block;
+  height: 40px;
+  aspect-ratio: 494 / 96;
+  background: var(--logo) left center / contain no-repeat;
 }
-.marca-cuadro { display: inline-block; width: 14px; height: 14px; background: var(--rojo); align-self: center; }
-.marca-texto { font-size: 22px; font-weight: 800; letter-spacing: -0.04em; }
-.marca-sub { font-size: var(--t-meta); color: var(--tinta-2); }
 
 .buscador { position: relative; flex: 1; max-width: 520px; min-width: 0; }
 .buscador svg { position: absolute; left: 12px; top: 50%; translate: 0 -50%; color: var(--tinta-2); pointer-events: none; }
@@ -325,7 +333,8 @@ textarea.input { padding: var(--e3); min-height: 88px; resize: vertical; }
 .pie { margin-top: var(--e16); border-top: 3px solid var(--regla); }
 .app:has(.nota-franja) .pie { padding-bottom: var(--alto-nota); }
 .pie-fila { padding-block: var(--e8); row-gap: var(--e2); }
-.pie-marca { grid-column: 1 / 5; display: flex; align-items: center; gap: var(--e2); margin: 0; font-weight: 700; letter-spacing: -0.02em; }
+.pie-marca { grid-column: 1 / 5; display: flex; align-items: center; margin: 0; }
+.pie-marca .marca-logo { height: 30px; }
 .pie-texto { grid-column: span 4; margin: 0; color: var(--tinta-2); font-size: var(--t-meta); }
 
 /* ---------- catalogo ---------- */
@@ -606,6 +615,55 @@ button.indice-col.activo svg { opacity: 1; color: var(--rojo-texto); }
 .bitacora-fecha { font-family: var(--f-mono); font-size: var(--t-meta); color: var(--tinta-2); }
 .bitacora-desc { font-weight: 600; }
 
+/* ---------- formas de pago (checkout) ---------- */
+
+.metodos { margin: 0; padding: 0; border: none; border-top: 1px solid var(--regla-suave); min-width: 0; }
+.metodo { border-bottom: 1px solid var(--regla-suave); }
+.metodo-fila { position: relative; display: grid; grid-template-columns: auto auto minmax(0, 1fr); align-items: center; gap: var(--e3); padding: var(--e3) 0; cursor: pointer; }
+.metodo-fila input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.metodo-fila:has(input:focus-visible) { outline: 2px solid var(--rojo); outline-offset: 2px; }
+/* el mismo cuadro que marca "embona": hueco = sin elegir, lleno = elegido */
+.metodo-marca { width: 14px; height: 14px; box-shadow: inset 0 0 0 2px var(--tinta); }
+.metodo.elegido .metodo-marca { background: var(--rojo); box-shadow: none; }
+.metodo-texto { display: flex; flex-direction: column; min-width: 0; }
+.metodo-titulo { font-weight: 600; }
+.metodo-descripcion { font-size: var(--t-meta); color: var(--tinta-2); }
+.metodo.apagada .metodo-fila { cursor: not-allowed; }
+.metodo.apagada .metodo-titulo, .metodo.apagada .metodo-fila > svg { color: var(--n5); }
+.metodo.apagada .metodo-marca { box-shadow: inset 0 0 0 2px var(--n3); }
+@media (hover: hover) and (pointer: fine) { .metodo:not(.apagada):not(.elegido) .metodo-fila:hover { background: var(--n1); } }
+.metodo-extra { display: flex; flex-direction: column; gap: var(--e2); margin: 0; padding: 0 0 var(--e4) 26px; }
+.tarjeta { min-height: 120px; }
+
+/* ---------- pagina de pago ---------- */
+
+.pago { display: flex; flex-direction: column; align-items: flex-start; gap: var(--e4); }
+.pago p { margin: 0; }
+.pago .input { cursor: text; }
+.pago-dato dt { font-size: var(--t-meta); font-weight: 600; color: var(--tinta-2); }
+.pago-codigo { font-family: var(--f-mono); font-size: clamp(28px, 4.4vw, 48px); font-weight: 500; letter-spacing: 0.02em; line-height: 1.1; overflow-wrap: anywhere; user-select: all; }
+.pago-acciones { display: flex; align-items: center; gap: var(--e3); flex-wrap: wrap; }
+
+/* ---------- panel de administracion ---------- */
+
+.indicadores { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); column-gap: var(--medianil); margin-bottom: var(--e12); }
+.indicador { display: flex; flex-direction: column; gap: 2px; padding: var(--e3) 0 var(--e4); border-top: 3px solid var(--regla); }
+.indicador dt { font-size: var(--t-meta); font-weight: 600; color: var(--tinta-2); }
+.indicador dd { font-family: var(--f-mono); font-size: 40px; font-weight: 500; letter-spacing: -0.03em; line-height: 1.15; color: var(--n5); }
+.indicador-nota { font-size: var(--t-meta); color: var(--tinta-2); }
+
+.graficas { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: var(--e12) var(--medianil); }
+.grafica { grid-column: span 6; margin: 0; padding-top: var(--e3); border-top: 3px solid var(--regla); min-width: 0; }
+.grafica.ancha { grid-column: span 8; }
+.grafica.angosta { grid-column: span 4; }
+.grafica figcaption p { margin: 6px 0 0; }
+.grafica-lienzo { position: relative; height: 240px; margin-top: var(--e4); }
+.grafica-lienzo svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.grafica-guia { stroke: var(--regla-suave); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.grafica-eje { stroke: var(--tinta); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.grafica-vacia { position: absolute; inset: 0; display: grid; place-items: center; margin: 0; max-width: none; font-size: var(--t-meta); font-weight: 600; color: var(--tinta-2); }
+.grafica-vacia span { padding: 4px 10px; background: var(--papel); border: 1px solid var(--regla-suave); }
+
 /* ---------- capas (dialogo y cajon) ---------- */
 
 .capa-fondo { position: fixed; inset: 0; z-index: 60; background: rgb(14 14 14 / 0.55); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); display: grid; }
@@ -686,7 +744,8 @@ button.indice-col.activo svg { opacity: 1; color: var(--rojo-texto); }
   :root { --margen: 16px; --medianil: 16px; }
   .cabecera-fila { flex-wrap: wrap; height: auto; padding-block: var(--e2); gap: var(--e2) var(--e3); }
   .buscador { order: 3; flex-basis: 100%; max-width: none; }
-  .cab-enlace > span:not(.insignia), .marca-sub, .cuenta-nombre { display: none; }
+  .cab-enlace > span:not(.insignia), .cuenta-nombre { display: none; }
+  .cabecera .marca-logo { height: 30px; }
   .cab-enlace.placa > span { display: inline; }
   .catalogo { padding-top: var(--e4); }
   .catalogo-lateral { grid-column: 1 / -1; position: static; margin-bottom: var(--e4); }
@@ -705,11 +764,19 @@ button.indice-col.activo svg { opacity: 1; color: var(--rojo-texto); }
   .ticket-sello { padding: 0; }
   .pie-marca, .pie-texto { grid-column: 1 / -1; }
   .nota-estado { display: none; }
+  .indicadores { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .grafica, .grafica.ancha, .grafica.angosta { grid-column: 1 / -1; }
+  .graficas { row-gap: var(--e8); }
 }
 
 @media (max-width: 480px) {
-  .marca-texto, .placa-anio { display: none; }
-  .cab-acciones { gap: 0; }
+  /* en telefono la barra solo tiene lugar para el simbolo */
+  .cabecera .marca-logo { height: 28px; aspect-ratio: 4 / 3; background-image: var(--isotipo); }
+  .placa-anio { display: none; }
+  /* simbolo y acciones en un solo renglon: si no caben, se recorta el nombre del vehiculo, no se parte la barra */
+  .cab-acciones { gap: 0; flex: 1 1 0; min-width: 0; justify-content: flex-end; }
+  .cab-enlace.placa { flex: 0 1 auto; min-width: 0; }
+  .cab-enlace.placa > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
   .cab-enlace { padding: 0 var(--e2); }
 }
 

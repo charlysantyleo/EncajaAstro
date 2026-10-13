@@ -116,16 +116,38 @@ export const MUTATION_AGREGAR_VEHICULO = `
   }
 `;
 
+// Un pedido con su cobro: lo que pintan la confirmacion y la pagina de pago.
+const CAMPOS_PEDIDO_CON_PAGO = `
+  id
+  fecha
+  total
+  status
+  vehiculo { marca modelo anio }
+  detalles { cantidad importe producto { id nombre } }
+  pago { referencia metodo proveedor status monto url codigo vence detalle }
+`;
+
 export const MUTATION_REGISTRAR_PEDIDO = `
   mutation RegistrarPedido($datos: PedidoInput!) {
-    registrarPedido(datos: $datos) {
-      id
-      fecha
-      total
-      status
-      vehiculo { marca modelo anio }
-      detalles { cantidad importe producto { id nombre } }
-    }
+    registrarPedido(datos: $datos) {${CAMPOS_PEDIDO_CON_PAGO}}
+  }
+`;
+
+export const QUERY_OPCIONES_DE_PAGO = `
+  query OpcionesDePago {
+    opcionesDePago { metodo proveedor disponible motivo llavePublica }
+  }
+`;
+
+export const QUERY_PEDIDO_POR_REFERENCIA = `
+  query PedidoPorReferencia($referencia: ID!) {
+    pedidoPorReferencia(referencia: $referencia) {${CAMPOS_PEDIDO_CON_PAGO}}
+  }
+`;
+
+export const MUTATION_VERIFICAR_PAGO = `
+  mutation VerificarPago($referencia: ID!) {
+    verificarPago(referencia: $referencia) {${CAMPOS_PEDIDO_CON_PAGO}}
   }
 `;
 

@@ -54,6 +54,24 @@ const aMantenimiento = (f) =>
     kilometraje: f.kilometraje,
     descripcion: f.descripcion,
   };
+const aPago = (f) =>
+  f && {
+    id: f.id,
+    pedidoId: f.pedido_id,
+    referencia: f.referencia,
+    metodo: f.metodo,
+    proveedor: f.proveedor,
+    status: f.status,
+    monto: numero(f.monto),
+    idExterno: f.id_externo,
+    url: f.url,
+    codigo: f.codigo,
+    vence: f.vence,
+    detalle: f.detalle,
+  };
+
+// Campos de un pago que cambian despues de crearlo, con su columna.
+const COLUMNAS_DE_PAGO = { status: 'status', idExterno: 'id_externo', url: 'url', codigo: 'codigo', vence: 'vence', detalle: 'detalle' };
 
 // Arma "WHERE a = $1 AND b ILIKE $2" solo con los filtros que vienen.
 function armarWhere(filtros) {
@@ -137,6 +155,9 @@ export function crearRepositorios(db) {
       descontarStock: async (id, cantidad) => {
         await db.query('UPDATE producto SET stock = stock - $1 WHERE id = $2', [cantidad, id]);
       },
+      reponerStock: async (id, cantidad) => {
+        await db.query('UPDATE producto SET stock = stock + $1 WHERE id = $2', [cantidad, id]);
+      },
     },
 
     vehiculos: {
@@ -204,6 +225,11 @@ export function crearRepositorios(db) {
 
     pedidos: {
       porId: (id) => una('SELECT * FROM pedido WHERE id = $1', [id], aPedido),
+      // Dentro de una transaccion: nadie mas puede cambiar este pedido hasta que termine.
+      bloquear: (id) => una('SELECT * FROM pedido WHERE id = $1 FOR UPDATE', [id], aPedido),
+      cambiarStatus: async (id, status) => {
+        await db.query('UPDATE pedido SET status = $1 WHERE id = $2', [status, id]);
+      },
       listar({ usuarioId, status } = {}) {
         const { where, parametros } = armarWhere([
           ['usuario_id = ?', usuarioId],
@@ -230,6 +256,30 @@ export function crearRepositorios(db) {
       incluyeProducto: async (pedidoId, productoId) =>
         (await db.query('SELECT 1 FROM detalle_pedido WHERE pedido_id = $1 AND producto_id = $2', [pedidoId, productoId]))
           .rowCount > 0,
+    },
+
+    pagos: {
+      porId: (id) => una('SELECT * FROM pago WHERE id = $1', [id], aPago),
+      dePedido: (pedidoId) => una('SELECT * FROM pago WHERE pedido_id = $1', [pedidoId], aPago),
+      porReferencia: (referencia) => una('SELECT * FROM pago WHERE referencia = $1', [referencia], aPago),
+      crear: ({ pedidoId, referencia, metodo, proveedor, status, monto }) =>
+        una(
+          `INSERT INTO pago (pedido_id, referencia, metodo, proveedor, status, monto)
+           VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+          [pedidoId, referencia, metodo, proveedor, status, monto],
+          aPago
+        ),
+      // Actualiza solo los campos que vienen (status, idExterno, url, codigo, vence, detalle).
+      actualizar(id, cambios) {
+        const campos = Object.keys(cambios).filter((campo) => COLUMNAS_DE_PAGO[campo] && cambios[campo] !== undefined);
+        if (!campos.length) return una('SELECT * FROM pago WHERE id = $1', [id], aPago);
+        const asignaciones = campos.map((campo, indice) => `${COLUMNAS_DE_PAGO[campo]} = $${indice + 1}`).join(', ');
+        return una(
+          `UPDATE pago SET ${asignaciones} WHERE id = $${campos.length + 1} RETURNING *`,
+          [...campos.map((campo) => cambios[campo]), id],
+          aPago
+        );
+      },
     },
 
     mantenimientos: {

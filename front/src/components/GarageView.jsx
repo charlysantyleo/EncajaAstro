@@ -5,8 +5,9 @@ import { useVehiculos } from '../hooks/useCatalogo';
 import { kilometros } from '../lib/formato';
 import { Cargando, ErrorConReintento } from './EstadoCarga';
 import { Sello } from './ui/Movimiento';
+import { comoIsla } from './ui/Isla';
 
-export default function GarageView() {
+function GarageView() {
   const usuarioId = useTienda((estado) => estado.usuarioId);
   const vehiculoActivo = useTienda((estado) => estado.vehiculoActivo);
   const ir = useTienda((estado) => estado.ir);
@@ -121,3 +122,5 @@ export default function GarageView() {
     </div>
   );
 }
+
+export default comoIsla(GarageView);

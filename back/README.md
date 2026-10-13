@@ -36,8 +36,12 @@ npm run db:init
 
 Esto ejecuta `db.sql` contra `DATABASE_URL`: crea las tablas
 (`usuario`, `categoria`, `producto`, `vehiculo`, `compatibilidad`, `pedido`,
-`detalle_pedido`, `mantenimiento`) y carga los datos semilla (usuarios demo,
+`detalle_pedido`, `pago`, `mantenimiento`) y carga los datos semilla (usuarios demo,
 categorias, 16 productos, 5 vehiculos y sus compatibilidades).
+
+Si tu base se creo antes de los cobros, agrega la tabla `pago` con
+`npm run db:pagos` (no toca lo demas). Como configurar Mercado Pago y PayPal:
+[`../PAGOS.md`](../PAGOS.md).
 
 ## Correr el servidor
 
@@ -70,24 +74,26 @@ back/
 ├── index.js                  Arranque: arma la app y levanta el servidor
 ├── src/
 │   ├── dominio/              Reglas puras: permisos, validaciones, errores
-│   ├── aplicacion/           Casos de uso: catalogo, garage, pedidos, cuentas
+│   ├── aplicacion/           Casos de uso: catalogo, garage, pedidos, pagos, cuentas
 │   ├── puertos/salida.js     Contratos que la aplicacion necesita (repos, tokens...)
 │   ├── adaptadores/
-│   │   ├── entrada/          GraphQL (schema + resolvers) y HTTP (servidor, rutas de Google)
-│   │   └── salida/           Postgres, JWT, bcrypt, Google, eventos en memoria
+│   │   ├── entrada/          GraphQL (schema + resolvers) y HTTP (servidor, rutas de Google, webhook de pagos)
+│   │   └── salida/           Postgres, JWT, bcrypt, Google, pasarelas de pago, eventos en memoria
 │   ├── contenedor.js         Conecta cada puerto con su adaptador
 │   └── config.js             Variables de entorno
 ├── db.sql                    Esquema + datos semilla, dialecto Postgres
-├── scripts/                  init-db.js (crea tablas) y demo-passwords.js
+├── scripts/                  init-db.js (crea tablas), migrar-pagos.js y demo-passwords.js
 └── .env.example
 ```
 
 ## Las dos mutations de negocio
 
 - `registrarPedido`: valida stock y compatibilidad con el vehiculo, calcula
-  el total, descuenta existencias y crea el pedido con su detalle. Todo
-  dentro de una transaccion (`BEGIN`/`COMMIT`/`ROLLBACK` sobre un cliente del
-  pool); si algo falla, no queda nada a medio guardar.
+  el total, descuenta existencias y crea el pedido con su detalle y su pago.
+  Todo dentro de una transaccion (`BEGIN`/`COMMIT`/`ROLLBACK` sobre un cliente
+  del pool); si algo falla, no queda nada a medio guardar. Despues inicia el
+  cobro con el metodo elegido; si la pasarela lo rechaza, el pedido se cancela
+  y las piezas regresan al inventario.
 - `registrarMantenimiento`: valida que la pieza (si se referencia) sea
   compatible con el vehiculo, que el pedido (si se referencia) realmente
   incluya esa pieza, y que el kilometraje no retroceda. Guarda el registro en

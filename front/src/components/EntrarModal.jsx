@@ -4,6 +4,7 @@ import { useTienda } from '../store/useTienda';
 import { API_URL, graphqlRequest } from '../graphql/client';
 import { MUTATION_CREAR_CUENTA, MUTATION_INICIAR_SESION } from '../graphql/queries';
 import Capa from './ui/Capa';
+import CampoPassword from './ui/CampoPassword';
 
 // La ruta de OAuth vive en el mismo servidor que GraphQL: http://localhost:4000/auth/google
 const URL_GOOGLE = API_URL.replace(/\/graphql$/, '/auth/google');
@@ -18,13 +19,25 @@ export default function EntrarModal() {
   const [nombre, setNombre] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmacion, setConfirmacion] = useState('');
+  const [verPassword, setVerPassword] = useState(false);
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState(null);
 
   const creando = modo === 'crear';
+  // Se avisa en cuanto la confirmacion deja de coincidir, sin esperar al envio.
+  const noCoinciden = creando && confirmacion !== '' && confirmacion !== password;
+  const alternarVer = () => setVerPassword((valor) => !valor);
+
+  function cambiarModo() {
+    setModo(creando ? 'entrar' : 'crear');
+    setConfirmacion('');
+    setError(null);
+  }
 
   async function manejarEnviar(evento) {
     evento.preventDefault();
+    if (creando && confirmacion !== password) return;
     setEnviando(true);
     setError(null);
     try {
@@ -71,30 +84,41 @@ export default function EntrarModal() {
           <label htmlFor="entrar-email">Correo</label>
           <input id="entrar-email" className="input" type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
         </div>
-        <div className="campo">
-          <label htmlFor="entrar-password">Contraseña</label>
-          <input
-            id="entrar-password"
-            className="input"
-            type="password"
+        <CampoPassword
+          id="entrar-password"
+          etiqueta="Contraseña"
+          ayuda={creando ? 'Mínimo 8 caracteres.' : null}
+          required
+          minLength={creando ? 8 : undefined}
+          autoComplete={creando ? 'new-password' : 'current-password'}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          visible={verPassword}
+          onAlternar={alternarVer}
+        />
+        {creando && (
+          <CampoPassword
+            id="entrar-confirmacion"
+            etiqueta="Confirmar contraseña"
+            error={noCoinciden ? 'Las contraseñas no coinciden.' : null}
             required
-            minLength={creando ? 8 : undefined}
-            autoComplete={creando ? 'new-password' : 'current-password'}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            autoComplete="new-password"
+            value={confirmacion}
+            onChange={(e) => setConfirmacion(e.target.value)}
+            visible={verPassword}
+            onAlternar={alternarVer}
           />
-          {creando && <span className="apagado" style={{ fontSize: 12.5 }}>Mínimo 8 caracteres.</span>}
-        </div>
+        )}
 
         {error && <p className="error" role="alert">{error}</p>}
 
-        <button className="btn btn-primario btn-bloque" type="submit" disabled={enviando}>
+        <button className="btn btn-primario btn-bloque" type="submit" disabled={enviando || noCoinciden}>
           {enviando && <Loader2 size={18} className="girar" />}
           {creando ? 'Crear cuenta' : 'Entrar'}
         </button>
       </form>
 
-      <button className="btn btn-texto" type="button" onClick={() => { setModo(creando ? 'entrar' : 'crear'); setError(null); }}>
+      <button className="btn btn-texto" type="button" onClick={cambiarModo}>
         {creando ? '¿Ya tienes cuenta? Entra' : '¿No tienes cuenta? Créala'}
       </button>
     </Capa>

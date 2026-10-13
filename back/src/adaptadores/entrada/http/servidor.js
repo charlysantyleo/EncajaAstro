@@ -1,5 +1,5 @@
 // Adaptador de entrada: el servidor HTTP + WebSocket que expone la aplicacion.
-// Express sirve /graphql (queries y mutations) y /auth/google; el WebSocket sirve las suscripciones.
+// Express sirve /graphql (queries y mutations), /auth/google y /webhooks; el WebSocket sirve las suscripciones.
 import http from 'http';
 import express from 'express';
 import cors from 'cors';
@@ -13,6 +13,7 @@ import { typeDefs } from '../graphql/schema.js';
 import { crearResolvers } from '../graphql/resolvers.js';
 import { formatearError } from '../graphql/errores.js';
 import { crearRutasGoogle } from './rutasGoogle.js';
+import { crearRutasPagos } from './rutasPagos.js';
 
 export async function iniciarServidor({ casos, eventos, config }) {
   const schema = makeExecutableSchema({ typeDefs, resolvers: crearResolvers(casos, eventos) });
@@ -46,6 +47,7 @@ export async function iniciarServidor({ casos, eventos, config }) {
   await apollo.start();
 
   app.use(crearRutasGoogle(casos, config));
+  app.use(crearRutasPagos(casos));
 
   // Cada peticion GraphQL lee el JWT del encabezado Authorization; actor queda en null si es invitado.
   app.use(

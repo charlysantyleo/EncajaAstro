@@ -1,8 +1,11 @@
 ---
 import Base from '../layouts/Base.astro';
-import Pagina from '../components/Pagina.jsx';
+import VehiculoView from '../components/VehiculoView.jsx';
+import StockEnVivo from '../components/StockEnVivo.jsx';
 ---
 
 <Base titulo="Vehiculo | EnCaja Autopartes">
-  <Pagina vista="vehiculo" client:only="react" />
+  <!-- client:only: la ficha depende de la sesion y del ?id de la URL. -->
+  <VehiculoView client:only="react" />
+  <StockEnVivo client:idle />
 </Base>

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { CircleCheck, CircleAlert, Plus } from './ui/Iconos';
-import { useTienda } from '../store/useTienda';
+import { enNota, useTienda } from '../store/useTienda';
 import { useProducto } from '../hooks/useCatalogo';
 import { imagenDe } from '../imagenes';
 import { pesos } from '../lib/formato';
@@ -16,7 +16,11 @@ export default function ProductoModal() {
 
   const { producto, cargando, error, recargar } = useProducto(productoId);
   const imagen = imagenDe(producto);
-  const [cantidad, setCantidad] = useState(1);
+  const [elegida, setCantidad] = useState(1);
+  // Lo que todavia se puede agregar: existencias menos lo que ya esta en la nota.
+  const yaEnNota = useTienda(enNota(productoId));
+  const caben = Math.max(0, (producto?.stock ?? 0) - yaEnNota);
+  const cantidad = Math.min(elegida, Math.max(1, caben));
 
   const ajusteActivo = producto?.compatibilidades.find(
     (compatibilidad) => compatibilidad.vehiculo.id === vehiculoActivo?.id
@@ -102,9 +106,14 @@ export default function ProductoModal() {
             </ul>
           </div>
 
-          <form className="agregar-fila" onSubmit={manejarAgregar} style={{ marginTop: 'auto', paddingTop: 12 }}>
-            <Cantidad valor={cantidad} min={1} max={Math.max(1, producto.stock)} onCambio={setCantidad} />
-            <button className="btn btn-primario btn-isla" type="submit" disabled={producto.stock === 0}>
+          {yaEnNota > 0 && (
+            <p className="apagado" style={{ margin: 'auto 0 0' }}>
+              {caben === 0 ? 'Tu nota ya lleva todas las existencias de esta pieza.' : `Ya llevas ${yaEnNota} en tu nota.`}
+            </p>
+          )}
+          <form className="agregar-fila" onSubmit={manejarAgregar} style={{ marginTop: yaEnNota > 0 ? 0 : 'auto', paddingTop: 12 }}>
+            <Cantidad valor={cantidad} min={1} max={Math.max(1, caben)} onCambio={setCantidad} />
+            <button className="btn btn-primario btn-isla" type="submit" disabled={caben === 0}>
               Agregar a la nota
               <span className="btn-isla-icono" aria-hidden="true">
                 <Plus size={16} />

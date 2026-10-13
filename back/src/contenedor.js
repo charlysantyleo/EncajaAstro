@@ -7,27 +7,43 @@ import { crearTokensJwt } from './adaptadores/salida/seguridad/tokensJwt.js';
 import { crearPasswordsBcrypt } from './adaptadores/salida/seguridad/passwordsBcrypt.js';
 import { crearIdentidadGoogle } from './adaptadores/salida/google/identidadGoogle.js';
 import { crearEventosEnMemoria } from './adaptadores/salida/eventos/eventosEnMemoria.js';
+import { crearPasarelaMercadoPago } from './adaptadores/salida/pagos/pasarelaMercadoPago.js';
+import { crearPasarelaPaypal } from './adaptadores/salida/pagos/pasarelaPaypal.js';
 import { crearCatalogo } from './aplicacion/catalogo.js';
 import { crearGarage } from './aplicacion/garage.js';
 import { crearPedidos } from './aplicacion/pedidos.js';
 import { crearCuentas } from './aplicacion/cuentas.js';
+import { crearPagos } from './aplicacion/pagos.js';
+import { PROVEEDORES } from './dominio/pagos.js';
 
-export function armarAplicacion(config) {
+// El pool se puede inyectar para correr la aplicacion contra otra base (por ejemplo, una en memoria en pruebas).
+export function armarAplicacion(config, { pool = crearPool(config.baseDeDatos) } = {}) {
   // Adaptadores de salida (implementan los puertos de src/puertos/salida.js)
-  const pool = crearPool(config.baseDeDatos);
   const repos = crearRepositorios(pool);
   const transaccion = crearTransaccion(pool, crearRepositorios);
   const tokens = crearTokensJwt(config.jwt);
   const passwords = crearPasswordsBcrypt();
   const identidad = crearIdentidadGoogle(config.google);
   const eventos = crearEventosEnMemoria();
+  const pasarelas = {
+    [PROVEEDORES.MERCADO_PAGO]: crearPasarelaMercadoPago(config.mercadoPago),
+    [PROVEEDORES.PAYPAL]: crearPasarelaPaypal(config.paypal),
+  };
 
   // Casos de uso, cada uno recibe solo los puertos que necesita
+  const pagos = crearPagos({
+    repos,
+    transaccion,
+    eventos,
+    pasarelas,
+    urls: { front: config.frontUrl, publica: config.urlPublica },
+  });
   const casos = {
     catalogo: crearCatalogo({ repos, eventos }),
     garage: crearGarage({ repos, transaccion }),
-    pedidos: crearPedidos({ repos, transaccion, eventos }),
+    pedidos: crearPedidos({ repos, transaccion, eventos, pagos }),
     cuentas: crearCuentas({ repos, tokens, passwords, identidad }),
+    pagos,
   };
 
   return { casos, eventos, pool };

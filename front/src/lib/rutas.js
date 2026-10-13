@@ -10,6 +10,8 @@ export const rutas = {
   vehiculo: (id) => `/vehiculo?id=${encodeURIComponent(id)}`,
   carrito: '/carrito',
   checkout: '/checkout',
+  pago: (referencia) => `/pago?ref=${encodeURIComponent(referencia)}`,
+  admin: '/admin',
 };
 
 export function navegar(url) {
@@ -28,9 +30,9 @@ export function volver(respaldo = rutas.home) {
 }
 
 export function leerParametros() {
-  if (typeof window === 'undefined') return { id: null, nombre: null, q: '' };
+  if (typeof window === 'undefined') return { id: null, nombre: null, q: '', ref: null };
   const params = new URLSearchParams(window.location.search);
-  return { id: params.get('id'), nombre: params.get('nombre'), q: params.get('q') ?? '' };
+  return { id: params.get('id'), nombre: params.get('nombre'), q: params.get('q') ?? '', ref: params.get('ref') };
 }
 
 export function rutaActual() {

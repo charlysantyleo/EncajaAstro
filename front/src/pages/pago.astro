@@ -1,0 +1,9 @@
+---
+import Base from '../layouts/Base.astro';
+import PagoView from '../components/PagoView.jsx';
+---
+
+<Base titulo="Pago | EnCaja Autopartes">
+  <!-- client:only: el pedido se busca con el ?ref de la URL. -->
+  <PagoView client:only="react" />
+</Base>

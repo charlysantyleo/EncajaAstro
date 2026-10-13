@@ -18,6 +18,9 @@
  * @typedef {{ id: number, pedidoId: number, productoId: number, cantidad: number, precioUnitario: number, importe: number }} DetallePedido
  * @typedef {{ id: number, vehiculoId: number, productoId: number|null, pedidoId: number|null, fecha: string,
  *             kilometraje: number|null, descripcion: string }} Mantenimiento
+ * @typedef {{ id: number, pedidoId: number, referencia: string, metodo: string, proveedor: string|null, status: string,
+ *             monto: number, idExterno: string|null, url: string|null, codigo: string|null, vence: string|null,
+ *             detalle: string|null }} Pago
  * @typedef {{ id: string, nombre: string, email: string, rol: string }} Actor  quien hace la peticion (sale del JWT)
  */
 
@@ -29,7 +32,8 @@
  * @property {{ listar(): Promise<Categoria[]>, porId(id): Promise<Categoria|null>, crear(d): Promise<Categoria> }} categorias
  * @property {{ porId(id): Promise<Producto|null>, buscar(f: { categoriaId?, vehiculoId?, texto?, precioMin?, precioMax?, soloDirectos? }): Promise<Producto[]>,
  *              deCategoria(categoriaId): Promise<Producto[]>, crear(d): Promise<Producto>, actualizar(id, d): Promise<Producto>,
- *              eliminar(id): Promise<boolean>, descontarStock(id, cantidad): Promise<void> }} productos
+ *              eliminar(id): Promise<boolean>, descontarStock(id, cantidad): Promise<void>,
+ *              reponerStock(id, cantidad): Promise<void> }} productos
  * @property {{ porId(id): Promise<Vehiculo|null>, listar(f: { usuarioId?, marca? }): Promise<Vehiculo[]>, deUsuario(usuarioId): Promise<Vehiculo[]>,
  *              compatiblesCon(productoId): Promise<Vehiculo[]>, crear(d): Promise<Vehiculo>, actualizar(id, d): Promise<Vehiculo>,
  *              eliminar(id): Promise<boolean>, actualizarKilometraje(id, km): Promise<void> }} vehiculos
@@ -37,7 +41,11 @@
  *              crear(d): Promise<Compatibilidad> }} compatibilidades
  * @property {{ porId(id): Promise<Pedido|null>, listar(f: { usuarioId?, status? }): Promise<Pedido[]>, deUsuario(usuarioId): Promise<Pedido[]>,
  *              crear(d): Promise<Pedido>, detallesDe(pedidoId): Promise<DetallePedido[]>, agregarDetalle(d): Promise<void>,
- *              incluyeProducto(pedidoId, productoId): Promise<boolean> }} pedidos
+ *              incluyeProducto(pedidoId, productoId): Promise<boolean>, bloquear(id): Promise<Pedido|null>,
+ *              cambiarStatus(id, status): Promise<void> }} pedidos
+ * @property {{ porId(id): Promise<Pago|null>, dePedido(pedidoId): Promise<Pago|null>, porReferencia(referencia): Promise<Pago|null>,
+ *              crear(d: { pedidoId, referencia, metodo, proveedor, status, monto }): Promise<Pago>,
+ *              actualizar(id, cambios: Partial<Pago>): Promise<Pago> }} pagos
  * @property {{ porId(id): Promise<Mantenimiento|null>, deVehiculo(vehiculoId): Promise<Mantenimiento[]>, crear(d): Promise<Mantenimiento> }} mantenimientos
  */
 
@@ -66,6 +74,25 @@
  * @property {boolean} configurado
  * @property {(state: string) => string} urlDeAutorizacion
  * @property {(codigo: string) => Promise<{ email: string, nombre: string|null, emailVerificado: boolean }>} perfilDesdeCodigo
+ */
+
+/**
+ * Pasarela de cobro (Mercado Pago y PayPal en los adaptadores actuales). Cada una implementa solo lo que sabe cobrar.
+ * @typedef {{ referencia: string, monto: number, descripcion: string, comprador: { nombre: string, email: string },
+ *             lineas: { nombre: string, cantidad: number, precio: number }[], tarjeta: object|null, tienda: string|null,
+ *             vence: string, urls: { retorno: string, notificacion: string|null } }} Cobro
+ * @typedef {{ status: string, idExterno: string, url: string|null, codigo: string|null, vence: string|null,
+ *             detalle: string|null }} ResultadoDeCobro
+ * @typedef {object} Pasarela
+ * @property {boolean} configurada                                      tiene credenciales
+ * @property {boolean} cobraTarjetas
+ * @property {string|null} llavePublica                                 la unica credencial que puede ver el navegador
+ * @property {(cobro: Cobro) => Promise<ResultadoDeCobro>} [cobrarTarjeta]
+ * @property {(cobro: Cobro) => Promise<ResultadoDeCobro>} [crearFichaTienda]
+ * @property {(cobro: Cobro) => Promise<ResultadoDeCobro>} crearLink
+ * @property {(pago: Pago) => Promise<{ status: string, detalle: string|null }>} consultar   estado actual del cobro
+ * @property {(idPagoExterno: string) => Promise<string|null>} [referenciaDeNotificacion]
+ * @property {(datos: { firma, idPeticion, idDato }) => boolean} [firmaValida]
  */
 
 /**

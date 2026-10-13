@@ -2,6 +2,8 @@ import { AnimatePresence, motion } from 'motion/react';
 import { NotebookPen, X } from './ui/Iconos';
 import { useTienda } from '../store/useTienda';
 import { pesos } from '../lib/formato';
+import { rutas } from '../lib/rutas';
+import { STATUS_PEDIDO } from '../lib/pagos';
 import { Sello } from './ui/Movimiento';
 
 export default function PedidoConfirmado() {
@@ -27,14 +29,21 @@ export default function PedidoConfirmado() {
             <p className="ticket-detalle apagado">
               {pedido.detalles.map((detalle) => `${detalle.cantidad} × ${detalle.producto.nombre}`).join(', ')}
             </p>
-            {pedido.vehiculo && (
-              <button className="btn btn-secundario btn-chico" onClick={() => ir('abrirMantenimiento')}>
-                <NotebookPen size={16} /> Anotar en la bitácora
-              </button>
-            )}
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              {pedido.pago && (
+                <a className="btn btn-secundario btn-chico" href={rutas.pago(pedido.pago.referencia)}>
+                  {pedido.status === 'PENDIENTE' ? 'Ver cómo pagar' : 'Ver pedido'}
+                </a>
+              )}
+              {pedido.vehiculo && pedido.status !== 'CANCELADO' && (
+                <button className="btn btn-secundario btn-chico" onClick={() => ir('abrirMantenimiento')}>
+                  <NotebookPen size={16} /> Anotar en la bitácora
+                </button>
+              )}
+            </div>
           </div>
           <div className="ticket-sello">
-            <Sello texto={pedido.status} enLinea tono="verde" retraso={0.35} />
+            <Sello texto={STATUS_PEDIDO[pedido.status] ?? pedido.status} enLinea tono="verde" retraso={0.35} />
           </div>
           <button
             className="btn-icono"

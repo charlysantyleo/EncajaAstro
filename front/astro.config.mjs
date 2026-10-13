@@ -5,4 +5,6 @@ import react from '@astrojs/react';
 export default defineConfig({
   output: 'static',
   integrations: [react()],
+  // Al pasar el cursor (o enfocar) un enlace interno, Astro baja esa pagina por adelantado.
+  prefetch: { prefetchAll: true, defaultStrategy: 'hover' },
 });

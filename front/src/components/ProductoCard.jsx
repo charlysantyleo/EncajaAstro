@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { Plus } from './ui/Iconos';
-import { useTienda } from '../store/useTienda';
+import { enNota, useTienda } from '../store/useTienda';
 import { useProducto } from '../hooks/useCatalogo';
 import { imagenDe } from '../imagenes';
 import { ajusteDe } from '../lib/compat';
@@ -18,6 +18,9 @@ export default function ProductoCard({ producto, indice = 0, abierta = false, on
   const imagen = imagenDe(producto);
   const ajuste = ajusteDe(producto, vehiculoActivo?.id);
   const agotada = producto.stock <= 0;
+  // Lo que todavia se puede agregar: existencias menos lo que ya esta en la nota.
+  const yaEnNota = useTienda(enNota(producto.id));
+  const sinMas = !agotada && yaEnNota >= producto.stock;
   const [cambio, visto] = useCambio(producto.stock);
   const idFicha = `ficha-${producto.id}`;
 
@@ -68,9 +71,9 @@ export default function ProductoCard({ producto, indice = 0, abierta = false, on
         <button
           type="button"
           className="col-accion renglon-agregar"
-          disabled={agotada}
-          aria-label={`Agregar ${producto.nombre} a la nota`}
-          title="Agregar a la nota"
+          disabled={agotada || sinMas}
+          aria-label={sinMas ? `Tu nota ya lleva todas las existencias de ${producto.nombre}` : `Agregar ${producto.nombre} a la nota`}
+          title={sinMas ? 'Tu nota ya lleva todas las existencias' : 'Agregar a la nota'}
           onClick={() => ir('agregarAlCarrito', { producto, cantidad: 1 })}
         >
           <Plus size={20} />
@@ -100,7 +103,10 @@ function Ficha({ productoId, imagen }) {
   const ir = useTienda((estado) => estado.ir);
   const vehiculoActivo = useTienda((estado) => estado.vehiculoActivo);
   const { producto, cargando, error } = useProducto(productoId);
-  const [cantidad, setCantidad] = useState(1);
+  const [elegida, setCantidad] = useState(1);
+  const yaEnNota = useTienda(enNota(productoId));
+  const caben = Math.max(0, (producto?.stock ?? 0) - yaEnNota);
+  const cantidad = Math.min(elegida, Math.max(1, caben));
 
   return (
     <div className="ficha">
@@ -158,10 +164,15 @@ function Ficha({ productoId, imagen }) {
                 ir('agregarAlCarrito', { producto, cantidad });
               }}
             >
-              <Cantidad valor={cantidad} min={1} max={Math.max(1, producto.stock)} onCambio={setCantidad} />
-              <button className="btn btn-primario" type="submit" disabled={producto.stock === 0}>
+              <Cantidad valor={cantidad} min={1} max={Math.max(1, caben)} onCambio={setCantidad} />
+              <button className="btn btn-primario" type="submit" disabled={caben === 0}>
                 Agregar a la nota · {pesos(producto.precio * cantidad)}
               </button>
+              {yaEnNota > 0 && (
+                <span className="apagado" style={{ alignSelf: 'center' }}>
+                  {caben === 0 ? 'Tu nota ya lleva todas las existencias.' : `Ya llevas ${yaEnNota} en tu nota.`}
+                </span>
+              )}
             </form>
           </>
         )}

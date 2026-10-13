@@ -6,9 +6,9 @@ import { vehiculoPropio } from './comun.js';
 
 /**
  * @param {{ repos: import('../puertos/salida.js').Repositorios, transaccion: import('../puertos/salida.js').Transaccion,
- *           eventos: import('../puertos/salida.js').Eventos }} puertos
+ *           eventos: import('../puertos/salida.js').Eventos, pagos: ReturnType<typeof import('./pagos.js').crearPagos> }} puertos
  */
-export function crearPedidos({ repos, transaccion, eventos }) {
+export function crearPedidos({ repos, transaccion, eventos, pagos }) {
   return {
     pedidos(actor, { usuarioId, status }) {
       return repos.pedidos.listar({ usuarioId: usuarioParaFiltrar(actor, usuarioId), status });
@@ -24,14 +24,16 @@ export function crearPedidos({ repos, transaccion, eventos }) {
     detallesDe: (pedido) => repos.pedidos.detallesDe(pedido.id),
 
     // Valida stock y compatibilidad, calcula el total, descuenta existencias y crea el pedido, todo o nada.
+    // Despues inicia el cobro con el metodo elegido (sin metodo, el pedido se paga al recoger).
     // Se puede comprar como invitado; ligar el pedido a un vehiculo exige que el vehiculo sea tuyo.
-    async registrarPedido(actor, { cliente, vehiculoId, items }) {
+    async registrarPedido(actor, { cliente, vehiculoId, items, pago }) {
       validarItemsDelPedido(items);
+      const plan = pagos.planear(pago);
       if (vehiculoId) await vehiculoPropio(repos, actor, vehiculoId);
       // Con sesion, el pedido queda a nombre de la cuenta aunque el formulario traiga otro correo.
       const correo = actor?.email ?? cliente.email;
 
-      const pedido = await transaccion(async (tx) => {
+      const { pedido, lineas } = await transaccion(async (tx) => {
         const usuario =
           (await tx.usuarios.porEmail(correo)) ??
           (await tx.usuarios.crear({ nombre: cliente.nombre, email: correo, passwordHash: null, rol: ROLES.CLIENTE }));
@@ -69,7 +71,8 @@ export function crearPedidos({ repos, transaccion, eventos }) {
           });
           await tx.productos.descontarStock(linea.producto.id, linea.cantidad);
         }
-        return nuevo;
+        await pagos.registrar(tx, { pedidoId: nuevo.id, plan, monto: nuevo.total });
+        return { pedido: nuevo, lineas };
       });
 
       // Ya guardado: avisamos el stock nuevo a quien este viendo el catalogo.
@@ -77,6 +80,13 @@ export function crearPedidos({ repos, transaccion, eventos }) {
         const producto = await repos.productos.porId(item.productoId);
         if (producto) eventos.stockCambio(producto);
       }
+
+      // Con el pedido guardado se cobra. Si el cobro falla, pagos.cobrar cancela el pedido y lanza el motivo.
+      await pagos.cobrar(pedido, {
+        plan,
+        comprador: { nombre: cliente.nombre, email: correo },
+        lineas: lineas.map((linea) => ({ nombre: linea.producto.nombre, cantidad: linea.cantidad, precio: linea.precio })),
+      });
 
       return repos.pedidos.porId(pedido.id);
     },

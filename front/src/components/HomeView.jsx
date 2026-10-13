@@ -4,8 +4,9 @@ import CatalogoLayout from './CatalogoLayout';
 import BandaVehiculo from './BandaVehiculo';
 import PedidoConfirmado from './PedidoConfirmado';
 import ListaProductos from './ListaProductos';
+import { comoIsla } from './ui/Isla';
 
-export default function HomeView() {
+function HomeView() {
   const vehiculoActivo = useTienda((estado) => estado.vehiculoActivo);
   const soloDirectos = useTienda((estado) => estado.soloDirectos);
 
@@ -29,3 +30,5 @@ export default function HomeView() {
     </CatalogoLayout>
   );
 }
+
+export default comoIsla(HomeView);

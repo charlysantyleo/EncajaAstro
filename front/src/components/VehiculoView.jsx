@@ -7,8 +7,9 @@ import PiezasCompatibles from './PiezasCompatibles';
 import Bitacora from './Bitacora';
 import { Cargando, ErrorConReintento } from './EstadoCarga';
 import { Aparece, Sello } from './ui/Movimiento';
+import { comoIsla } from './ui/Isla';
 
-export default function VehiculoView() {
+function VehiculoView() {
   const { id: vehiculoId } = leerParametros();
   const vehiculoActivo = useTienda((estado) => estado.vehiculoActivo);
   const ir = useTienda((estado) => estado.ir);
@@ -82,3 +83,5 @@ export default function VehiculoView() {
     </div>
   );
 }
+
+export default comoIsla(VehiculoView);

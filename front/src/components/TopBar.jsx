@@ -1,21 +1,29 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Car, ChevronsUpDown, LogIn, LogOut, Moon, Receipt, Search, Sun, Warehouse } from './ui/Iconos';
+import { Car, ChartBar, ChevronsUpDown, LogIn, LogOut, Moon, Receipt, Search, Sun, Warehouse } from './ui/Iconos';
 import { useTienda } from '../store/useTienda';
-import { leerParametros, rutaActual } from '../lib/rutas';
+import { leerParametros, rutas } from '../lib/rutas';
 import { cambiarTema, temaActual } from '../lib/tema';
+import { comoIsla } from './ui/Isla';
 
-export default function TopBar() {
+// Isla client:load con HTML generado en el build: la barra se ve antes de que cargue React.
+// `ruta` la pasa Astro (la conoce al construir la pagina). Lo que solo sabe el navegador
+// (busqueda en la URL, tema, sesion y nota guardadas) se completa al hidratar.
+function TopBar({ ruta = '/' }) {
   const vehiculoActivo = useTienda((estado) => estado.vehiculoActivo);
   const carrito = useTienda((estado) => estado.carrito);
   const ir = useTienda((estado) => estado.ir);
   const sesion = useTienda((estado) => estado.sesion);
   const cerrarSesion = useTienda((estado) => estado.cerrarSesion);
 
-  const [busqueda, setBusqueda] = useState(() => leerParametros().q);
-  const [tema, setTema] = useState(() => temaActual());
+  const [busqueda, setBusqueda] = useState('');
+  const [tema, setTema] = useState('claro');
   const campo = useRef(null);
-  const ruta = rutaActual();
+
+  useEffect(() => {
+    setBusqueda(leerParametros().q);
+    setTema(temaActual());
+  }, []);
 
   const totalItems = carrito.reduce((suma, item) => suma + item.cantidad, 0);
 
@@ -44,15 +52,15 @@ export default function TopBar() {
   }
 
   const enGarage = ruta.startsWith('/garage') || ruta.startsWith('/vehiculo');
+  const enPanel = ruta.startsWith('/admin');
+  const esAdmin = sesion?.usuario.rol === 'ADMIN';
 
   return (
     <header className="cabecera">
       <div className="rejilla cabecera-fila">
-        <button className="marca" onClick={() => ir('irAHome')} aria-label="EnCaja Autopartes, inicio">
-          <span className="marca-cuadro" aria-hidden="true" />
-          <span className="marca-texto">EnCaja</span>
-          <span className="marca-sub">Autopartes</span>
-        </button>
+        <a className="marca" href={rutas.home} aria-label="EnCaja Autopartes, inicio">
+          <span className="marca-logo" aria-hidden="true" />
+        </a>
 
         <form className="buscador" role="search" onSubmit={manejarBusqueda}>
           <Search size={18} />
@@ -75,15 +83,27 @@ export default function TopBar() {
         </form>
 
         <nav className="cab-acciones" aria-label="Cuenta y navegación">
-          <button
+          {esAdmin && (
+            <a
+              className={enPanel ? 'cab-enlace activo' : 'cab-enlace'}
+              aria-current={enPanel ? 'page' : undefined}
+              aria-label="Panel de administración"
+              href={rutas.admin}
+            >
+              <ChartBar />
+              <span>Panel</span>
+            </a>
+          )}
+
+          <a
             className={enGarage ? 'cab-enlace activo' : 'cab-enlace'}
             aria-current={enGarage ? 'page' : undefined}
             aria-label="Garage"
-            onClick={() => ir('irAGarage')}
+            href={rutas.garage}
           >
             <Warehouse />
             <span>Garage</span>
-          </button>
+          </a>
 
           <button
             className={vehiculoActivo ? 'cab-enlace placa' : 'cab-enlace placa placa-vacia'}
@@ -104,7 +124,7 @@ export default function TopBar() {
             <ChevronsUpDown size={14} />
           </button>
 
-          <button className="cab-enlace" onClick={() => ir('irACarrito')} aria-label={`Nota, ${totalItems} piezas`}>
+          <a className="cab-enlace" href={rutas.carrito} aria-label={`Nota, ${totalItems} piezas`}>
             <Receipt />
             <span>Nota</span>
             <AnimatePresence initial={false} mode="popLayout">
@@ -121,7 +141,7 @@ export default function TopBar() {
                 </motion.span>
               )}
             </AnimatePresence>
-          </button>
+          </a>
 
           {sesion ? (
             <span className="cuenta">
@@ -152,3 +172,5 @@ export default function TopBar() {
     </header>
   );
 }
+
+export default comoIsla(TopBar);

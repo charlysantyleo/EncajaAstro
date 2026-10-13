@@ -1,8 +1,9 @@
 ---
 import Base from '../layouts/Base.astro';
-import Pagina from '../components/Pagina.jsx';
+import CheckoutView from '../components/CheckoutView.jsx';
 ---
 
 <Base titulo="Finalizar compra | EnCaja Autopartes">
-  <Pagina vista="checkout" client:only="react" />
+  <!-- client:only: el formulario se llena con la nota y la sesion guardadas en el navegador. -->
+  <CheckoutView client:only="react" />
 </Base>

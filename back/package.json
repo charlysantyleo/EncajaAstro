@@ -10,7 +10,8 @@
     "start": "node index.js",
     "dev": "node --watch index.js",
     "db:init": "node scripts/init-db.js",
-    "db:passwords": "node scripts/demo-passwords.js"
+    "db:passwords": "node scripts/demo-passwords.js",
+    "db:pagos": "node scripts/migrar-pagos.js"
   },
   "dependencies": {
     "@apollo/server": "^5.5.1",

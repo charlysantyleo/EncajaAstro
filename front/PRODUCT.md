@@ -16,16 +16,16 @@ Tienda de refacciones con compatibilidad vehicular verificada. El usuario regist
 Catálogo cruzado con garage y bitácora: la compatibilidad es la base del catálogo, no un filtro opcional; cada compra puede ligarse al historial de mantenimiento del vehículo.
 
 ## Operating Context
-Rutas: `/`, `/categoria?id|q`, `/garage`, `/vehiculo?id`, `/carrito`, `/checkout`. Stock en tiempo real por suscripción WebSocket (graphql-ws). Envío gratis desde $999 MXN en zona metropolitana de Guadalajara. Proyecto integrador PWII.
+Rutas: `/`, `/categoria?id|q`, `/garage`, `/vehiculo?id`, `/carrito`, `/checkout`, `/pago?ref`, `/admin`. Stock en tiempo real por suscripción WebSocket (graphql-ws). Envío gratis desde $999 MXN en zona metropolitana de Guadalajara. Proyecto integrador PWII.
 
 ## Capabilities and Constraints
-- Frontend Astro 7 + islas React 19 (`client:only="react"`), salida estática, zustand con persistencia, ids por query params.
+- Frontend Astro 7 + islas React 19 (cada una con su directiva: `client:load`, `client:idle` o `client:only`; ver README), salida estática, zustand con persistencia, ids por query params.
 - Backend Express + Apollo GraphQL. Desde 2026-10-02 tiene autenticación: JWT (correo/contraseña con bcrypt) y OAuth2 con Google; garage y bitácora requieren cuenta, comprar no (ver AUTENTICACION.md).
 - Se conserva la API del store `ir(evento, payload)` y las rutas.
 - Textos en español.
 
 ## Brand Commitments
-Nombre "EnCaja Autopartes", logo "EC". Acento rojo actual (#ec3013) existente; el rediseño reemplaza el mundo visual.
+Nombre "EnCaja Autopartes". Logo e icono oficiales en `public/marca/` (logo horizontal, isotipo y sus versiones para tema oscuro) y `public/favicon.*`; rojo del logo #D7261E. Acento rojo actual (#ec3013) existente; el rediseño reemplaza el mundo visual.
 
 ## Evidence on Hand
 16 fotos reales de piezas en `public/img/` (mapeadas por número de parte en `src/imagenes.js`) y `catalogo.jpg`. No hay testimonios, reseñas ni métricas; no inventarlas.

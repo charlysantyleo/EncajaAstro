@@ -1,8 +1,13 @@
 ---
 import Base from '../layouts/Base.astro';
-import Pagina from '../components/Pagina.jsx';
+import HomeView from '../components/HomeView.jsx';
+import Nota from '../components/Nota.jsx';
+import StockEnVivo from '../components/StockEnVivo.jsx';
 ---
 
 <Base titulo="EnCaja Autopartes">
-  <Pagina vista="home" client:only="react" />
+  <!-- El build ya deja pintada la estructura del catalogo; React la toma en cuanto carga. -->
+  <HomeView client:load />
+  <Nota client:idle />
+  <StockEnVivo client:idle />
 </Base>

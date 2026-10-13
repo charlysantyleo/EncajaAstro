@@ -35,6 +35,11 @@ export const useTienda = create(
         set((estado) => ({ version: estado.version + 1 }));
       },
 
+      // La pagina de pago trae el pedido al dia (pagado, cancelado): se refleja en la confirmacion guardada.
+      refrescarPedidoConfirmado(pedido) {
+        if (get().pedidoConfirmado?.id === pedido.id) set({ pedidoConfirmado: pedido });
+      },
+
       ir(evento, payload = {}) {
         switch (evento) {
           // --- navegacion ---
@@ -76,9 +81,18 @@ export const useTienda = create(
             return set({ modal: 'producto', productoId: payload.productoId });
 
           case 'agregarAlCarrito': {
-            const { producto, cantidad } = payload;
+            const { producto } = payload;
             const { carrito } = get();
             const existente = carrito.find((item) => item.productoId === producto.id);
+            // La nota nunca lleva mas piezas que las que hay: cuenta lo que ya estaba en ella,
+            // sin importar desde donde se agregue (renglon del catalogo, ficha o cajon de la pieza).
+            const caben = Math.max(0, (producto.stock ?? Infinity) - (existente?.cantidad ?? 0));
+            const cantidad = Math.min(payload.cantidad, caben);
+            if (cantidad === 0) {
+              return set({
+                aviso: { id: Date.now(), texto: `Tu nota ya lleva todas las existencias de ${producto.nombre} (${producto.stock})` },
+              });
+            }
             const nuevo = existente
               ? carrito.map((item) =>
                   item.productoId === producto.id ? { ...item, cantidad: item.cantidad + cantidad } : item
@@ -95,16 +109,23 @@ export const useTienda = create(
               carrito: nuevo,
               modal: null,
               productoId: null,
-              aviso: { id: Date.now(), texto: `${producto.nombre} agregado a tu nota` },
+              aviso: {
+                id: Date.now(),
+                texto:
+                  cantidad < payload.cantidad
+                    ? `Solo quedaban ${cantidad} de ${producto.nombre}; se agregaron a tu nota`
+                    : `${producto.nombre} agregado a tu nota`,
+              },
             });
           }
 
           case 'cerrarAviso':
             return set({ aviso: null });
 
+          // La confirmacion es la pagina de pago: ahi estan las instrucciones del metodo elegido.
           case 'pedidoCreado':
             set({ pedidoConfirmado: payload.pedido, carrito: [] });
-            return navegar(rutas.home);
+            return navegar(rutas.pago(payload.pedido.pago.referencia));
 
           case 'cerrarConfirmacion':
             return set({ pedidoConfirmado: null });
@@ -172,3 +193,7 @@ export const useTienda = create(
     }
   )
 );
+
+// Selector: cuantas piezas de un producto lleva ya la nota. Uso: useTienda(enNota(producto.id)).
+export const enNota = (productoId) => (estado) =>
+  estado.carrito.find((item) => item.productoId === productoId)?.cantidad ?? 0;

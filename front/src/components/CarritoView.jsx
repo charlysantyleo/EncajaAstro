@@ -1,52 +1,25 @@
-import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { ArrowLeft, ArrowRight, Trash2, Truck, PartyPopper } from './ui/Iconos';
 import { useTienda } from '../store/useTienda';
-import { graphqlRequest } from '../graphql/client';
-import { QUERY_PRODUCTO_STOCK } from '../graphql/queries';
+import { useStockDeNota } from '../hooks/useStockDeNota';
 import { IMAGENES } from '../imagenes';
 import { ENVIO_GRATIS } from '../lib/formato';
 import { Cantidad, Importe } from './ui/Movimiento';
+import { comoIsla } from './ui/Isla';
 
-export default function CarritoView() {
+function CarritoView() {
   const carrito = useTienda((estado) => estado.carrito);
   const vehiculoActivo = useTienda((estado) => estado.vehiculoActivo);
   const cambiarCantidad = useTienda((estado) => estado.cambiarCantidad);
   const quitarDelCarrito = useTienda((estado) => estado.quitarDelCarrito);
   const ir = useTienda((estado) => estado.ir);
 
-  const [stockReal, setStockReal] = useState({});
-  const [revisando, setRevisando] = useState(true);
-
-  useEffect(() => {
-    let sigueActivo = true;
-    setRevisando(true);
-    Promise.all(
-      carrito.map((item) =>
-        graphqlRequest(QUERY_PRODUCTO_STOCK, { id: item.productoId })
-          .then((datos) => [item.productoId, datos.producto?.stock ?? 0])
-          .catch(() => [item.productoId, null])
-      )
-    )
-      .then((pares) => {
-        if (sigueActivo) setStockReal(Object.fromEntries(pares));
-      })
-      .finally(() => {
-        if (sigueActivo) setRevisando(false);
-      });
-    return () => {
-      sigueActivo = false;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const { stockReal, revisando, excesos } = useStockDeNota(carrito);
 
   const total = carrito.reduce((suma, item) => suma + item.precio * item.cantidad, 0);
   const piezas = carrito.reduce((suma, item) => suma + item.cantidad, 0);
   const falta = Math.max(0, ENVIO_GRATIS - total);
-  const hayExcesos = carrito.some((item) => {
-    const disponible = stockReal[item.productoId];
-    return disponible != null && item.cantidad > disponible;
-  });
+  const hayExcesos = excesos.length > 0;
 
   if (carrito.length === 0) {
     return (
@@ -103,11 +76,15 @@ export default function CarritoView() {
                     <div>
                       <div className="linea-nombre">{item.nombre}</div>
                       {item.numeroParte && <div className="folio apagado">{item.numeroParte}</div>}
-                      {excede && <p className="error" style={{ marginTop: 4 }}>Solo quedan {disponible} en existencia.</p>}
+                      {excede && (
+                        <p className="error" style={{ marginTop: 4 }}>
+                          {disponible === 0 ? 'Se agotó: quítala de tu nota.' : `Solo quedan ${disponible} en existencia.`}
+                        </p>
+                      )}
                     </div>
                     <Cantidad
                       valor={item.cantidad}
-                      max={disponible ?? 999}
+                      max={Math.max(1, disponible ?? 999)}
                       min={1}
                       onCambio={(n) => cambiarCantidad(item.productoId, n)}
                     />
@@ -165,3 +142,5 @@ export default function CarritoView() {
     </div>
   );
 }
+
+export default comoIsla(CarritoView);

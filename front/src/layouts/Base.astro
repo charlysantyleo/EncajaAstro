@@ -2,7 +2,15 @@
 import '@fontsource-variable/geist';
 import '@fontsource-variable/geist-mono';
 import '../styles/global.css';
+import TopBar from '../components/TopBar.jsx';
+import Capas from '../components/Capas.jsx';
+import Pie from '../components/Pie.astro';
 
+// Marco comun de todas las paginas. Cada pieza carga solo lo que necesita y cuando lo necesita:
+//   TopBar  client:load   se usa desde el primer momento (buscar, nota, entrar)
+//   <slot>                la vista de cada pagina, con la directiva que le toque
+//   Pie                   HTML puro, sin JavaScript
+//   Capas   client:idle   avisos y dialogos; se hidratan cuando el navegador queda libre
 const { titulo = 'EnCaja Autopartes' } = Astro.props;
 ---
 
@@ -15,7 +23,9 @@ const { titulo = 'EnCaja Autopartes' } = Astro.props;
     <meta name="theme-color" content="#F7F7F5" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#0D0D0D" media="(prefers-color-scheme: dark)" />
     <meta name="color-scheme" content="light dark" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="icon" type="image/png" href="/favicon.png" sizes="64x64" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <title>{titulo}</title>
     <!-- Aplica el tema guardado antes de pintar, para que no parpadee. -->
     <script is:inline>
@@ -26,6 +36,13 @@ const { titulo = 'EnCaja Autopartes' } = Astro.props;
     </script>
   </head>
   <body>
-    <slot />
+    <div class="app">
+      <TopBar client:load ruta={Astro.url.pathname} />
+      <main class="app-main">
+        <slot />
+      </main>
+      <Pie />
+      <Capas client:idle />
+    </div>
   </body>
 </html>

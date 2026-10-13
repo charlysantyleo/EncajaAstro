@@ -1,8 +1,9 @@
 ---
 import Base from '../layouts/Base.astro';
-import Pagina from '../components/Pagina.jsx';
+import GarageView from '../components/GarageView.jsx';
 ---
 
 <Base titulo="Mi garage | EnCaja Autopartes">
-  <Pagina vista="garage" client:only="react" />
+  <!-- client:only: el garage depende de la sesion guardada en el navegador. -->
+  <GarageView client:only="react" />
 </Base>

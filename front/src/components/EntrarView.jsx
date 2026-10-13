@@ -4,10 +4,11 @@ import { useTienda } from '../store/useTienda';
 import { graphqlRequest } from '../graphql/client';
 import { QUERY_YO } from '../graphql/queries';
 import { navegar, rutas } from '../lib/rutas';
+import { comoIsla } from './ui/Isla';
 
 // Aqui regresa el backend despues de Google: /entrar#token=... o /entrar#error=...
 // Con el token se pregunta "yo" al servidor (que lo verifica) y se guarda la sesion.
-export default function EntrarView() {
+function EntrarView() {
   const iniciarSesion = useTienda((estado) => estado.iniciarSesion);
   const ir = useTienda((estado) => estado.ir);
   const [error, setError] = useState(null);
@@ -53,3 +54,5 @@ export default function EntrarView() {
     </div>
   );
 }
+
+export default comoIsla(EntrarView);
