@@ -35,6 +35,8 @@ const MOTIVOS = {
   cc_rejected_duplicated_payment: 'Ya hiciste un pago por este monto; si necesitas repetirlo usa otra tarjeta.',
   cc_rejected_high_risk: 'El pago fue rechazado por seguridad. Prueba con otro método.',
   cc_rejected_max_attempts: 'Llegaste al límite de intentos con esta tarjeta.',
+  // Rechazo sin motivo especifico. En modo prueba es tambien lo que regresa cualquier titular que no sea "APRO".
+  cc_rejected_other_reason: 'El banco rechazó el pago sin dar un motivo.',
   pending_contingency: 'Estamos procesando el pago; te avisamos en cuanto se confirme.',
   pending_review_manual: 'El pago está en revisión; te avisamos en cuanto se confirme.',
   expired: 'La ficha venció sin pagarse.',

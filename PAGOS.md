@@ -36,7 +36,19 @@ Una base nueva (`npm run db:init`) ya la trae.
    MP_PUBLIC_KEY=TEST-...
    ```
    El *Access Token* nunca sale del servidor. La *Public Key* sí llega al navegador (por `opcionesDePago`): con ella se tokeniza la tarjeta.
-3. Para probar usa las tarjetas y usuarios de prueba del mismo panel.
+3. Para probar usa las tarjetas de prueba del mismo panel. **El resultado lo decide el nombre del titular**, no el número de tarjeta:
+
+   | Nombre del titular | Resultado |
+   |---|---|
+   | `APRO` | Pago aprobado |
+   | `CONT` | Pago pendiente (en revisión) |
+   | `FUND` | Rechazado: fondos insuficientes |
+   | `SECU` | Rechazado: código de seguridad inválido |
+   | `EXPI` | Rechazado: fecha de vencimiento |
+   | `CALL` | Rechazado: llamar al banco para autorizar |
+   | `OTHE` o cualquier otro nombre | Rechazado: error general |
+
+   Como correo del comprador usa uno cualquiera, pero no uno `@testuser.com`: con credenciales `TEST-` Mercado Pago responde "Invalid users involved". Evita también el correo de tu propia cuenta de Mercado Pago (no puedes pagarte a ti mismo).
 
 ### 3. PayPal
 
