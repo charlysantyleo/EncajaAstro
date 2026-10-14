@@ -8,7 +8,7 @@ import { useMisDirecciones, useOpcionesDePago, useReglasDeEnvio } from '../hooks
 import { useStockDeNota } from '../hooks/useStockDeNota';
 import { pesos } from '../lib/formato';
 import { ES_CORREO, METODOS, pagoParaEnviar } from '../lib/pagos';
-import { DIRECCION_VACIA, costoDeEnvio, direccionDeGuardada, entregaParaEnviar, telefonoValido } from '../lib/entrega';
+import { DIRECCION_VACIA, costoDeEnvio, direccionDeGuardada, entregaParaEnviar, soloTelefono, telefonoValido } from '../lib/entrega';
 import { Importe, Interruptor } from './ui/Movimiento';
 import { Cargando, ErrorConReintento } from './EstadoCarga';
 import MetodosPago, { eleccionInicial } from './MetodosPago';
@@ -72,7 +72,7 @@ function CheckoutView() {
     const guardada = guardadas.find((una) => una.id === id);
     setDireccion(guardada ? direccionDeGuardada(guardada) : DIRECCION_VACIA);
     // El telefono de la direccion guardada ahorra teclearlo, sin pisar el que ya se haya escrito.
-    if (guardada) setTelefono((actual) => actual || guardada.telefono);
+    if (guardada) setTelefono((actual) => actual || soloTelefono(guardada.telefono));
   }
 
   // Al llegar las direcciones de la cuenta se deja elegida la mas reciente (una sola vez).
@@ -200,12 +200,14 @@ function CheckoutView() {
                   className="input"
                   required
                   type="tel"
-                  inputMode="tel"
-                  autoComplete="tel"
-                  maxLength={20}
+                  inputMode="numeric"
+                  autoComplete="tel-national"
+                  pattern="[0-9]{10}"
+                  title="10 dígitos, solo números"
                   placeholder="10 dígitos"
                   value={telefono}
-                  onChange={(evento) => setTelefono(evento.target.value)}
+                  // Solo digitos y maximo 10: lo que no sea numero no llega a escribirse.
+                  onChange={(evento) => setTelefono(soloTelefono(evento.target.value))}
                 />
               </div>
             </div>

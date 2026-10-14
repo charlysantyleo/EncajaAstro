@@ -34,6 +34,16 @@ export function costoDeEnvio(reglas, tipo, importeDePiezas) {
   return reglas && tipo === 'DOMICILIO' && importeDePiezas < reglas.gratisDesde ? reglas.costo : 0;
 }
 
+// Lo que puede quedar escrito en el campo de telefono: solo digitos, maximo 10.
+// Si llega pegado o autocompletado con la lada de pais (+52, o +52 1 de los celulares de antes),
+// se quita la lada en vez de recortar los ultimos digitos del numero.
+export function soloTelefono(valor) {
+  let digitos = valor.replace(/\D/g, '');
+  if (digitos.length === 13 && digitos.startsWith('521')) digitos = digitos.slice(3);
+  else if (digitos.length === 12 && digitos.startsWith('52')) digitos = digitos.slice(2);
+  return digitos.slice(0, 10);
+}
+
 // Misma regla que el servidor: 10 digitos, con o sin la lada de pais (+52).
 export function telefonoValido(telefono) {
   let digitos = telefono.replace(/\D/g, '');

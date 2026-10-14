@@ -110,6 +110,7 @@ export const MUTATION_AGREGAR_VEHICULO = `
       marca
       modelo
       anio
+      motor
       tipoCombustible
       kilometraje
     }

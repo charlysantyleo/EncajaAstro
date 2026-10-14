@@ -12,6 +12,16 @@ const COMBUSTIBLES = [
   ['ELECTRICO', 'Eléctrico'],
 ];
 
+// Motores mas comunes, por cilindrada y numero de cilindros. Es una lista y no texto libre para que
+// el mismo motor no quede escrito de diez maneras ("1.6", "1.6 L", "1600cc").
+const MOTORES = [
+  ['4 cilindros o menos', ['1.0L 3 cil.', '1.2L 3 cil.', '1.2L 4 cil.', '1.4L 4 cil.', '1.5L 3 cil.', '1.5L 4 cil.', '1.6L 4 cil.', '1.8L 4 cil.', '2.0L 4 cil.', '2.4L 4 cil.', '2.5L 4 cil.', '2.7L 4 cil.']],
+  ['5 y 6 cilindros', ['2.5L 5 cil.', '3.0L V6', '3.5L V6', '3.6L V6', '4.0L V6']],
+  ['8 cilindros', ['5.0L V8', '5.3L V8', '5.7L V8']],
+];
+// Un auto electrico no tiene cilindrada: su motor se anota solo.
+const MOTOR_ELECTRICO = 'Eléctrico';
+
 export default function AgregarVehiculoModal() {
   const ir = useTienda((estado) => estado.ir);
   const elegirVehiculoActivo = useTienda((estado) => estado.elegirVehiculoActivo);
@@ -29,6 +39,8 @@ export default function AgregarVehiculoModal() {
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState(null);
 
+  const esElectrico = formulario.tipoCombustible === 'ELECTRICO';
+
   function actualizar(campo, valor) {
     setFormulario((anterior) => ({ ...anterior, [campo]: valor }));
   }
@@ -44,7 +56,7 @@ export default function AgregarVehiculoModal() {
           marca: formulario.marca,
           modelo: formulario.modelo,
           anio: Number(formulario.anio),
-          motor: formulario.motor || null,
+          motor: esElectrico ? MOTOR_ELECTRICO : formulario.motor || null,
           tipoCombustible: formulario.tipoCombustible,
           kilometraje: formulario.kilometraje ? Number(formulario.kilometraje) : null,
         },
@@ -129,13 +141,29 @@ export default function AgregarVehiculoModal() {
         <div className="campos-2">
           <div className="campo">
             <label htmlFor="vehiculo-motor">Motor (opcional)</label>
-            <input
-              id="vehiculo-motor"
-              className="input"
-              value={formulario.motor}
-              placeholder="1.6L HR16DE"
-              onChange={(evento) => actualizar('motor', evento.target.value)}
-            />
+            {esElectrico ? (
+              <select id="vehiculo-motor" className="input" value={MOTOR_ELECTRICO} disabled>
+                <option value={MOTOR_ELECTRICO}>{MOTOR_ELECTRICO}</option>
+              </select>
+            ) : (
+              <select
+                id="vehiculo-motor"
+                className="input"
+                value={formulario.motor}
+                onChange={(evento) => actualizar('motor', evento.target.value)}
+              >
+                <option value="">No lo sé</option>
+                {MOTORES.map(([grupo, motores]) => (
+                  <optgroup key={grupo} label={grupo}>
+                    {motores.map((motor) => (
+                      <option key={motor} value={motor}>
+                        {motor}
+                      </option>
+                    ))}
+                  </optgroup>
+                ))}
+              </select>
+            )}
           </div>
           <div className="campo">
             <label htmlFor="vehiculo-km">Kilometraje (opcional)</label>
