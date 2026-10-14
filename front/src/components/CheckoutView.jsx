@@ -7,7 +7,7 @@ import { MUTATION_REGISTRAR_PEDIDO } from '../graphql/queries';
 import { useOpcionesDePago } from '../hooks/useCatalogo';
 import { useStockDeNota } from '../hooks/useStockDeNota';
 import { pesos } from '../lib/formato';
-import { METODOS, pagoParaEnviar } from '../lib/pagos';
+import { ES_CORREO, METODOS, pagoParaEnviar } from '../lib/pagos';
 import { Importe, Interruptor } from './ui/Movimiento';
 import { Cargando, ErrorConReintento } from './EstadoCarga';
 import MetodosPago, { eleccionInicial } from './MetodosPago';
@@ -15,8 +15,6 @@ import { comoIsla } from './ui/Isla';
 
 // El formulario de tarjeta (y el script de Mercado Pago que carga) solo se baja si se elige ese metodo.
 const TarjetaMercadoPago = lazy(() => import('./TarjetaMercadoPago'));
-
-const ES_CORREO = /^\S+@\S+\.\S+$/;
 
 function CheckoutView() {
   const carrito = useTienda((estado) => estado.carrito);
@@ -33,9 +31,14 @@ function CheckoutView() {
   const { opciones, cargando: cargandoOpciones, error: errorOpciones, recargar } = useOpcionesDePago();
   const [eleccion, setEleccion] = useState(null);
   const tarjeta = useRef(null);
-  // Correo con el que se monta el formulario de tarjeta. Se fija una vez para no borrarle al comprador
-  // lo que ya tecleo si corrige su correo; el cobro siempre usa el correo del formulario de arriba.
+  // Correo con el que se monta el formulario de tarjeta. Tiene que ser el correo TERMINADO: si se le pasa
+  // a medio teclear ("ana@gmail.c"), el formulario lo da por bueno, oculta su campo y despues no deja cobrar.
+  // Por eso se toma al salir del campo de correo, no en cada tecla. Si el comprador lo corrige despues,
+  // el formulario se vuelve a montar con el nuevo.
   const [emailTarjeta, setEmailTarjeta] = useState(null);
+  const confirmarCorreo = () => {
+    if (ES_CORREO.test(email)) setEmailTarjeta(email);
+  };
 
   // A pagar se llega tambien directo desde la franja de la nota, sin pasar por el carrito:
   // aqui se vuelve a revisar que haya existencias para todo antes de dejar confirmar.
@@ -50,9 +53,11 @@ function CheckoutView() {
     if (!eleccion && opciones.length) setEleccion(eleccionInicial(opciones));
   }, [opciones, eleccion]);
 
+  // Correo que ya estaba listo sin pasar por el campo: el de la sesion, o el que relleno el navegador.
   useEffect(() => {
-    if (conTarjeta && !emailTarjeta && ES_CORREO.test(email)) setEmailTarjeta(email);
-  }, [conTarjeta, emailTarjeta, email]);
+    const tecleando = document.activeElement?.id === 'checkout-email';
+    if (conTarjeta && !tecleando && ES_CORREO.test(email)) setEmailTarjeta(email);
+  }, [conTarjeta, email]);
 
   async function manejarConfirmar(evento) {
     evento.preventDefault();
@@ -62,8 +67,12 @@ function CheckoutView() {
     try {
       let datosTarjeta = null;
       if (conTarjeta) {
-        datosTarjeta = await tarjeta.current?.pedirToken();
-        if (!datosTarjeta) throw new Error('Revisa los datos de tu tarjeta.');
+        // Enter dentro del campo de correo manda el formulario sin salir del campo: se confirma aqui.
+        confirmarCorreo();
+        if (!tarjeta.current) throw new Error('Llena los datos de tu tarjeta para pagar.');
+        datosTarjeta = await tarjeta.current.pedirToken();
+        // Sin token no hay nada que cobrar: no se manda el pedido.
+        if (!datosTarjeta?.token) throw new Error('Completa los datos de tu tarjeta para continuar.');
       }
       const datos = await graphqlRequest(MUTATION_REGISTRAR_PEDIDO, {
         datos: {
@@ -122,6 +131,7 @@ function CheckoutView() {
                   title={sesion ? 'El pedido queda a nombre de tu cuenta' : undefined}
                   value={email}
                   onChange={(evento) => setEmail(evento.target.value)}
+                  onBlur={confirmarCorreo}
                 />
               </div>
             </div>
@@ -148,7 +158,7 @@ function CheckoutView() {
                     </Suspense>
                   ) : (
                     <p className="apagado" style={{ margin: 0 }}>
-                      Escribe tu correo arriba para mostrar el formulario de la tarjeta.
+                      Termina de escribir tu correo arriba y aquí aparece el formulario de la tarjeta.
                     </p>
                   ))}
               </MetodosPago>

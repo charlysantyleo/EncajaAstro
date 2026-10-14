@@ -38,6 +38,11 @@ export const STATUS_PEDIDO = {
   CANCELADO: 'Cancelado',
 };
 
+// Correo completo. Es la misma regla con la que el formulario de tarjeta de Mercado Pago valida al cobrar
+// (dominio con punto y terminacion de 2 letras o mas): lo que pase aqui, pasa alla.
+export const ES_CORREO =
+  /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+
 // Lo que se manda en PedidoInput.pago a partir de lo elegido en el checkout.
 export function pagoParaEnviar({ metodo, proveedor, tienda }, tarjeta = null) {
   return {

@@ -24,7 +24,11 @@ function cargarSdk() {
 
 // Formulario de tarjeta de Mercado Pago (Card Payment Brick). Los campos son de Mercado Pago:
 // el numero de tarjeta nunca toca esta pagina ni nuestro servidor, solo recibimos un token de un solo uso.
-// `control.current.pedirToken()` valida el formulario y regresa lo que hay que mandar al backend.
+// `control.current.pedirToken()` valida el formulario y regresa lo que hay que mandar al backend,
+// o lanza un error con el motivo.
+//
+// `email` debe ser un correo completo y valido (ver ES_CORREO en lib/pagos.js): con el correo el formulario
+// oculta su propio campo de correo, pero lo sigue validando al cobrar; uno a medias falla sin mostrar nada.
 export default function TarjetaMercadoPago({ llavePublica, monto, email, control }) {
   const id = `tarjeta-${useId().replaceAll(':', '')}`;
   const [estado, setEstado] = useState('cargando');
@@ -32,6 +36,8 @@ export default function TarjetaMercadoPago({ llavePublica, monto, email, control
   useEffect(() => {
     let vigente = true;
     let brick = null;
+    // Ultimo aviso del formulario (campos incompletos, token rechazado): es el motivo cuando no entrega token.
+    let aviso = null;
     setEstado('cargando');
 
     cargarSdk()
@@ -54,6 +60,7 @@ export default function TarjetaMercadoPago({ llavePublica, monto, email, control
             onSubmit: () => Promise.resolve(),
             onError: (error) => {
               console.error('[Mercado Pago]', error);
+              aviso = error;
               // Los errores "non_critical" son avisos de validacion que el propio formulario ya muestra.
               if (vigente && error?.type !== 'non_critical') setEstado('error');
             },
@@ -65,8 +72,15 @@ export default function TarjetaMercadoPago({ llavePublica, monto, email, control
 
         control.current = {
           async pedirToken() {
+            aviso = null;
             const datos = await brick.getFormData().catch(() => null);
-            if (!datos?.token) return null;
+            if (!datos?.token) {
+              throw new Error(
+                aviso?.cause === 'incomplete_fields'
+                  ? 'Completa los datos de tu tarjeta para continuar.'
+                  : 'Mercado Pago no pudo validar la tarjeta. Revisa los datos e intenta de nuevo.'
+              );
+            }
             return {
               token: datos.token,
               metodoId: datos.payment_method_id,
