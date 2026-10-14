@@ -14,6 +14,7 @@ import { crearGarage } from './aplicacion/garage.js';
 import { crearPedidos } from './aplicacion/pedidos.js';
 import { crearCuentas } from './aplicacion/cuentas.js';
 import { crearPagos } from './aplicacion/pagos.js';
+import { crearDirecciones } from './aplicacion/direcciones.js';
 import { PROVEEDORES } from './dominio/pagos.js';
 
 // El pool se puede inyectar para correr la aplicacion contra otra base (por ejemplo, una en memoria en pruebas).
@@ -38,12 +39,14 @@ export function armarAplicacion(config, { pool = crearPool(config.baseDeDatos) }
     pasarelas,
     urls: { front: config.frontUrl, publica: config.urlPublica },
   });
+  const direcciones = crearDirecciones({ repos });
   const casos = {
     catalogo: crearCatalogo({ repos, eventos }),
     garage: crearGarage({ repos, transaccion }),
-    pedidos: crearPedidos({ repos, transaccion, eventos, pagos }),
+    pedidos: crearPedidos({ repos, transaccion, eventos, pagos, direcciones }),
     cuentas: crearCuentas({ repos, tokens, passwords, identidad }),
     pagos,
+    direcciones,
   };
 
   return { casos, eventos, pool };

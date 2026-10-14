@@ -6,6 +6,7 @@ import { MUTATION_VERIFICAR_PAGO, QUERY_PEDIDO_POR_REFERENCIA } from '../graphql
 import { leerParametros, rutas } from '../lib/rutas';
 import { fechaHora, pesos } from '../lib/formato';
 import { METODOS, PROVEEDORES, STATUS_PEDIDO } from '../lib/pagos';
+import { ENTREGAS, direccionEnUnaLinea } from '../lib/entrega';
 import { Cargando } from './EstadoCarga';
 import { Sello } from './ui/Movimiento';
 import { comoIsla } from './ui/Isla';
@@ -249,6 +250,12 @@ function PagoView() {
               </li>
             ))}
           </ul>
+          {pedido.entrega?.tipo === 'DOMICILIO' && (
+            <div className="nota-cargo">
+              <span>Envío</span>
+              <span>{pedido.entrega.costo > 0 ? pesos(pedido.entrega.costo) : 'Gratis'}</span>
+            </div>
+          )}
           <div className="nota-total">
             <span>Total</span>
             <strong>{pesos(pedido.total)}</strong>
@@ -257,6 +264,19 @@ function PagoView() {
             {METODOS[pago.metodo].titulo}
             {pago.proveedor ? ` · ${PROVEEDORES[pago.proveedor]}` : ''}
           </p>
+
+          {pedido.entrega && (
+            <div className="nota-entrega">
+              <h5>Entrega</h5>
+              <p>{ENTREGAS[pedido.entrega.tipo].titulo}</p>
+              {pedido.entrega.direccion && (
+                <>
+                  <p className="apagado">{direccionEnUnaLinea(pedido.entrega.direccion)}</p>
+                  {pedido.entrega.direccion.referencias && <p className="apagado">{pedido.entrega.direccion.referencias}</p>}
+                </>
+              )}
+            </div>
+          )}
         </aside>
       </div>
     </div>

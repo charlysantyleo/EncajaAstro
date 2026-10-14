@@ -21,6 +21,10 @@
  * @typedef {{ id: number, pedidoId: number, referencia: string, metodo: string, proveedor: string|null, status: string,
  *             monto: number, idExterno: string|null, url: string|null, codigo: string|null, vence: string|null,
  *             detalle: string|null }} Pago
+ * @typedef {{ calle: string, numeroExterior: string, numeroInterior: string|null, colonia: string, codigoPostal: string,
+ *             ciudad: string, estado: string, referencias: string|null }} Direccion
+ * @typedef {{ id: number, pedidoId: number, tipo: string, telefono: string|null, costo: number, direccion: Direccion|null }} Entrega
+ * @typedef {Direccion & { id: number, usuarioId: number, telefono: string }} DireccionGuardada
  * @typedef {{ id: string, nombre: string, email: string, rol: string }} Actor  quien hace la peticion (sale del JWT)
  */
 
@@ -46,6 +50,11 @@
  * @property {{ porId(id): Promise<Pago|null>, dePedido(pedidoId): Promise<Pago|null>, porReferencia(referencia): Promise<Pago|null>,
  *              crear(d: { pedidoId, referencia, metodo, proveedor, status, monto }): Promise<Pago>,
  *              actualizar(id, cambios: Partial<Pago>): Promise<Pago> }} pagos
+ * @property {{ dePedido(pedidoId): Promise<Entrega|null>,
+ *              crear(d: { pedidoId, tipo, telefono, direccion, costo }): Promise<Entrega> }} entregas
+ * @property {{ porId(id): Promise<DireccionGuardada|null>, deUsuario(usuarioId): Promise<DireccionGuardada[]>,
+ *              crear(d): Promise<DireccionGuardada>, actualizarContacto(id, d: { telefono, referencias }): Promise<DireccionGuardada>,
+ *              eliminar(id): Promise<boolean> }} direcciones
  * @property {{ porId(id): Promise<Mantenimiento|null>, deVehiculo(vehiculoId): Promise<Mantenimiento[]>, crear(d): Promise<Mantenimiento> }} mantenimientos
  */
 

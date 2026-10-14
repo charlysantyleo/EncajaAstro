@@ -9,6 +9,8 @@ import {
   QUERY_VEHICULO,
   QUERY_PEDIDOS,
   QUERY_OPCIONES_DE_PAGO,
+  QUERY_REGLAS_DE_ENVIO,
+  QUERY_MIS_DIRECCIONES,
 } from '../graphql/queries';
 
 export function useCategorias() {
@@ -86,4 +88,16 @@ export function usePedidos(usuarioId) {
 export function useOpcionesDePago() {
   const { datos, cargando, error, recargar } = useGraphQLQuery(QUERY_OPCIONES_DE_PAGO);
   return { opciones: datos?.opcionesDePago ?? [], cargando, error, recargar };
+}
+
+export function useReglasDeEnvio() {
+  const { datos, cargando, error, recargar } = useGraphQLQuery(QUERY_REGLAS_DE_ENVIO);
+  return { reglas: datos?.reglasDeEnvio ?? null, cargando, error, recargar };
+}
+
+// Direcciones guardadas en la cuenta. Sin sesion no se pregunta: un invitado no tiene.
+export function useMisDirecciones(conSesion) {
+  const version = useTienda((estado) => estado.version);
+  const { datos, cargando, error, recargar } = useGraphQLQuery(QUERY_MIS_DIRECCIONES, {}, { skip: !conSesion, version });
+  return { direcciones: conSesion ? (datos?.misDirecciones ?? []) : [], cargando, error, recargar };
 }

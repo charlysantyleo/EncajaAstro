@@ -53,6 +53,14 @@ export const typeDefs = `#graphql
     PAYCASH
   }
 
+  """Como llega el pedido al comprador."""
+  enum TipoEntrega {
+    "Se envia a la direccion del comprador."
+    DOMICILIO
+    "El comprador pasa por el a la tienda."
+    TIENDA
+  }
+
   """Estado del cobro de un pedido."""
   enum StatusPago {
     PENDIENTE
@@ -143,6 +151,32 @@ export const typeDefs = `#graphql
     detalles: [DetallePedido!]!
     "Cobro del pedido (null en pedidos anteriores a los pagos en linea)."
     pago: Pago
+    "Como se entrega (null en pedidos anteriores a este dato)."
+    entrega: Entrega
+  }
+
+  """Direccion de envio dentro de Mexico."""
+  type Direccion {
+    calle: String!
+    numeroExterior: String!
+    numeroInterior: String
+    colonia: String!
+    codigoPostal: String!
+    ciudad: String!
+    estado: String!
+    "Señas para encontrar el domicilio (entre calles, color de la fachada...)."
+    referencias: String
+  }
+
+  """Entrega de un pedido: a domicilio (con direccion) o para recoger en tienda."""
+  type Entrega {
+    tipo: TipoEntrega!
+    "Costo del envio incluido en el total del pedido (0 si se recoge en tienda o el envio salio gratis)."
+    costo: Float!
+    "Telefono de contacto, 10 digitos. Solo lo ve el dueño del pedido o un administrador."
+    telefono: String
+    "Solo en entregas a domicilio."
+    direccion: Direccion
   }
 
   """Cobro de un pedido: con que metodo se paga y como va."""
@@ -263,6 +297,56 @@ export const typeDefs = `#graphql
     tarjeta: TarjetaInput
   }
 
+  """Direccion de envio que un usuario guardo en su cuenta, con el telefono de contacto."""
+  type DireccionGuardada {
+    id: ID!
+    telefono: String!
+    calle: String!
+    numeroExterior: String!
+    numeroInterior: String
+    colonia: String!
+    codigoPostal: String!
+    ciudad: String!
+    estado: String!
+    referencias: String
+  }
+
+  """Lo que cuesta el envio a domicilio y a donde llega."""
+  type ReglasDeEnvio {
+    "Cuota fija del envio a domicilio."
+    costo: Float!
+    "Importe en piezas a partir del cual el envio es gratis."
+    gratisDesde: Float!
+    estado: String!
+    "Municipios con cobertura (zona metropolitana de Guadalajara)."
+    municipios: [String!]!
+  }
+
+  """Direccion a la que se envia el pedido."""
+  input DireccionInput {
+    calle: String!
+    numeroExterior: String!
+    numeroInterior: String
+    colonia: String!
+    "5 digitos."
+    codigoPostal: String!
+    "Ciudad o municipio."
+    ciudad: String!
+    estado: String!
+    referencias: String
+  }
+
+  """Como se entrega el pedido y a quien llamar para coordinarlo."""
+  input EntregaInput {
+    tipo: TipoEntrega!
+    "10 digitos; se aceptan espacios, guiones y la lada +52."
+    telefono: String!
+    "Obligatoria si el tipo es DOMICILIO. Debe estar en un municipio de reglasDeEnvio."
+    direccion: DireccionInput
+    "Con sesion: guarda la direccion en la cuenta para la proxima compra (sin duplicarla)."
+    guardar: Boolean
+  }
+
   """Entrada de la mutation de negocio que registra un pedido completo."""
   input PedidoInput {
     cliente: ClienteInput!
@@ -270,6 +354,8 @@ export const typeDefs = `#graphql
     items: [ItemPedidoInput!]!
     "Sin este campo el pedido se paga al recoger (PICKUP)."
     pago: PagoInput
+    "Sin este campo el pedido se recoge en tienda. Pagar al recoger (PICKUP) no admite DOMICILIO."
+    entrega: EntregaInput
   }
 
   """Entrada de la mutation de negocio que registra un servicio en la bitacora."""
@@ -328,6 +414,12 @@ export const typeDefs = `#graphql
     "Pedido a partir de la referencia de su pago. Sirve a la pagina de pago, tambien para invitados."
     pedidoPorReferencia(referencia: ID!): Pedido
 
+    "Costo y cobertura del envio a domicilio."
+    reglasDeEnvio: ReglasDeEnvio!
+
+    "Direcciones guardadas del usuario del token, la mas reciente primero."
+    misDirecciones: [DireccionGuardada!]!
+
     "Bitacora de servicios de un vehiculo."
     mantenimientos(vehiculoId: ID!): [Mantenimiento!]!
   }
@@ -360,6 +452,9 @@ export const typeDefs = `#graphql
 
     "Pregunta a la pasarela como va el cobro y pone el pedido al dia (PAGADO si se aprobo, CANCELADO si se rechazo o vencio)."
     verificarPago(referencia: ID!): Pedido!
+
+    "Borra una direccion guardada del usuario del token."
+    eliminarDireccion(id: ID!): Boolean!
 
     "Mutation de negocio del modulo de garage: valida compatibilidad y kilometraje, guarda el servicio en la bitacora y actualiza el odometro del vehiculo."
     registrarMantenimiento(datos: MantenimientoInput!): Mantenimiento!

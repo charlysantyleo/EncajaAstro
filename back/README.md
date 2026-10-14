@@ -36,11 +36,13 @@ npm run db:init
 
 Esto ejecuta `db.sql` contra `DATABASE_URL`: crea las tablas
 (`usuario`, `categoria`, `producto`, `vehiculo`, `compatibilidad`, `pedido`,
-`detalle_pedido`, `pago`, `mantenimiento`) y carga los datos semilla (usuarios demo,
+`detalle_pedido`, `pago`, `entrega`, `direccion`, `mantenimiento`) y carga los datos semilla (usuarios demo,
 categorias, 16 productos, 5 vehiculos y sus compatibilidades).
 
 Si tu base se creo antes de los cobros, agrega la tabla `pago` con
-`npm run db:pagos` (no toca lo demas). Como configurar Mercado Pago y PayPal:
+`npm run db:pagos`; si se creo antes de pedir los datos de entrega, agrega
+las tablas `entrega` y `direccion` con `npm run db:entregas` (ninguno toca lo
+demas, y se pueden correr mas de una vez). Como configurar Mercado Pago y PayPal:
 [`../PAGOS.md`](../PAGOS.md).
 
 ## Correr el servidor
@@ -74,7 +76,7 @@ back/
 ├── index.js                  Arranque: arma la app y levanta el servidor
 ├── src/
 │   ├── dominio/              Reglas puras: permisos, validaciones, errores
-│   ├── aplicacion/           Casos de uso: catalogo, garage, pedidos, pagos, cuentas
+│   ├── aplicacion/           Casos de uso: catalogo, garage, pedidos, pagos, direcciones, cuentas
 │   ├── puertos/salida.js     Contratos que la aplicacion necesita (repos, tokens...)
 │   ├── adaptadores/
 │   │   ├── entrada/          GraphQL (schema + resolvers) y HTTP (servidor, rutas de Google, webhook de pagos)
@@ -82,14 +84,18 @@ back/
 │   ├── contenedor.js         Conecta cada puerto con su adaptador
 │   └── config.js             Variables de entorno
 ├── db.sql                    Esquema + datos semilla, dialecto Postgres
-├── scripts/                  init-db.js (crea tablas), migrar-pagos.js y demo-passwords.js
+├── scripts/                  init-db.js (crea tablas), migrar-pagos.js, migrar-entregas.js y demo-passwords.js
 └── .env.example
 ```
 
 ## Las dos mutations de negocio
 
-- `registrarPedido`: valida stock y compatibilidad con el vehiculo, calcula
-  el total, descuenta existencias y crea el pedido con su detalle y su pago.
+- `registrarPedido`: valida stock y compatibilidad con el vehiculo, revisa los
+  datos de entrega (telefono y, si es a domicilio, la direccion y que este en
+  cobertura), calcula el total con el costo de envio, descuenta existencias y
+  crea el pedido con su detalle, su entrega y su pago. El costo del envio, el
+  importe para que salga gratis y los municipios con cobertura estan en
+  `src/dominio/entregas.js`; el checkout los lee con `reglasDeEnvio`.
   Todo dentro de una transaccion (`BEGIN`/`COMMIT`/`ROLLBACK` sobre un cliente
   del pool); si algo falla, no queda nada a medio guardar. Despues inicia el
   cobro con el metodo elegido; si la pasarela lo rechaza, el pedido se cancela

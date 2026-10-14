@@ -6,8 +6,11 @@ const ICONOS = { TARJETA: CreditCard, TIENDA: Store, LINK: Link, PICKUP: Package
 const ORDEN = ['TARJETA', 'TIENDA', 'LINK', 'PICKUP'];
 
 // Primera forma de pago que se puede usar, para dejarla elegida al abrir el checkout.
-export function eleccionInicial(opciones) {
-  const primera = ORDEN.map((metodo) => opciones.find((opcion) => opcion.metodo === metodo && opcion.disponible)).find(Boolean);
+// `bloqueados` son metodos que la entrega elegida no admite: { PICKUP: 'motivo' }.
+export function eleccionInicial(opciones, bloqueados = {}) {
+  const primera = ORDEN.filter((metodo) => !bloqueados[metodo])
+    .map((metodo) => opciones.find((opcion) => opcion.metodo === metodo && opcion.disponible))
+    .find(Boolean);
   return primera ? { metodo: primera.metodo, proveedor: primera.proveedor, tienda: 'OXXO' } : null;
 }
 
@@ -35,8 +38,9 @@ function Subopciones({ etiqueta, opciones, valor, onCambio }) {
 
 // Formas de pago del checkout. `opciones` viene del servidor (opcionesDePago): un metodo sin pasarela
 // configurada se muestra apagado con su motivo en vez de fallar al confirmar.
+// `bloqueados` apaga igual, con su propio motivo, los metodos que no van con la entrega elegida.
 // `children` es lo que se despliega bajo el metodo elegido (el formulario de la tarjeta).
-export default function MetodosPago({ opciones, cargando, valor, onCambio, children }) {
+export default function MetodosPago({ opciones, cargando, valor, onCambio, bloqueados = {}, children }) {
   if (cargando) return <Cargando filas={4} alto={64} />;
 
   return (
@@ -47,7 +51,8 @@ export default function MetodosPago({ opciones, cargando, valor, onCambio, child
         const disponibles = delMetodo.filter((opcion) => opcion.disponible);
         if (delMetodo.length === 0) return null;
 
-        const usable = disponibles.length > 0;
+        const usable = disponibles.length > 0 && !bloqueados[metodo];
+        const motivo = bloqueados[metodo] ?? delMetodo[0].motivo;
         const elegido = valor?.metodo === metodo;
         const Icono = ICONOS[metodo];
         const id = `metodo-${metodo}`;
@@ -67,7 +72,7 @@ export default function MetodosPago({ opciones, cargando, valor, onCambio, child
               <Icono size={22} />
               <span className="metodo-texto">
                 <span className="metodo-titulo">{METODOS[metodo].titulo}</span>
-                <span className="metodo-descripcion">{usable ? METODOS[metodo].descripcion : `No disponible. ${delMetodo[0].motivo}.`}</span>
+                <span className="metodo-descripcion">{usable ? METODOS[metodo].descripcion : `No disponible. ${motivo}.`}</span>
               </span>
             </label>
 

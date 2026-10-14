@@ -78,6 +78,36 @@ CREATE TABLE pago (
   detalle TEXT
 );
 
+CREATE TABLE entrega (
+  id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  pedido_id INTEGER NOT NULL UNIQUE REFERENCES pedido(id),
+  tipo TEXT NOT NULL,
+  telefono TEXT,
+  costo NUMERIC(10, 2) NOT NULL DEFAULT 0,
+  calle TEXT,
+  numero_exterior TEXT,
+  numero_interior TEXT,
+  colonia TEXT,
+  codigo_postal TEXT,
+  ciudad TEXT,
+  estado TEXT,
+  referencias TEXT
+);
+
+CREATE TABLE direccion (
+  id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  usuario_id INTEGER NOT NULL REFERENCES usuario(id),
+  telefono TEXT NOT NULL,
+  calle TEXT NOT NULL,
+  numero_exterior TEXT NOT NULL,
+  numero_interior TEXT,
+  colonia TEXT NOT NULL,
+  codigo_postal TEXT NOT NULL,
+  ciudad TEXT NOT NULL,
+  estado TEXT NOT NULL,
+  referencias TEXT
+);
+
 CREATE TABLE mantenimiento (
   id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   vehiculo_id INTEGER NOT NULL REFERENCES vehiculo(id),

@@ -70,6 +70,41 @@ const aPago = (f) =>
     detalle: f.detalle,
   };
 
+// La direccion solo existe en entregas a domicilio.
+const aEntrega = (f) =>
+  f && {
+    id: f.id,
+    pedidoId: f.pedido_id,
+    tipo: f.tipo,
+    telefono: f.telefono,
+    costo: numero(f.costo),
+    direccion: f.calle && {
+      calle: f.calle,
+      numeroExterior: f.numero_exterior,
+      numeroInterior: f.numero_interior,
+      colonia: f.colonia,
+      codigoPostal: f.codigo_postal,
+      ciudad: f.ciudad,
+      estado: f.estado,
+      referencias: f.referencias,
+    },
+  };
+
+const aDireccionGuardada = (f) =>
+  f && {
+    id: f.id,
+    usuarioId: f.usuario_id,
+    telefono: f.telefono,
+    calle: f.calle,
+    numeroExterior: f.numero_exterior,
+    numeroInterior: f.numero_interior,
+    colonia: f.colonia,
+    codigoPostal: f.codigo_postal,
+    ciudad: f.ciudad,
+    estado: f.estado,
+    referencias: f.referencias,
+  };
+
 // Campos de un pago que cambian despues de crearlo, con su columna.
 const COLUMNAS_DE_PAGO = { status: 'status', idExterno: 'id_externo', url: 'url', codigo: 'codigo', vence: 'vence', detalle: 'detalle' };
 
@@ -280,6 +315,48 @@ export function crearRepositorios(db) {
           aPago
         );
       },
+    },
+
+    entregas: {
+      dePedido: (pedidoId) => una('SELECT * FROM entrega WHERE pedido_id = $1', [pedidoId], aEntrega),
+      crear: ({ pedidoId, tipo, telefono, direccion, costo = 0 }) =>
+        una(
+          `INSERT INTO entrega (pedido_id, tipo, telefono, costo, calle, numero_exterior, numero_interior, colonia,
+             codigo_postal, ciudad, estado, referencias)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *`,
+          [
+            pedidoId,
+            tipo,
+            telefono,
+            costo,
+            direccion?.calle ?? null,
+            direccion?.numeroExterior ?? null,
+            direccion?.numeroInterior ?? null,
+            direccion?.colonia ?? null,
+            direccion?.codigoPostal ?? null,
+            direccion?.ciudad ?? null,
+            direccion?.estado ?? null,
+            direccion?.referencias ?? null,
+          ],
+          aEntrega
+        ),
+    },
+
+    direcciones: {
+      porId: (id) => una('SELECT * FROM direccion WHERE id = $1', [id], aDireccionGuardada),
+      // La mas reciente primero: es la que el checkout deja elegida.
+      deUsuario: (usuarioId) => todas('SELECT * FROM direccion WHERE usuario_id = $1 ORDER BY id DESC', [usuarioId], aDireccionGuardada),
+      crear: (d) =>
+        una(
+          `INSERT INTO direccion (usuario_id, telefono, calle, numero_exterior, numero_interior, colonia,
+             codigo_postal, ciudad, estado, referencias)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`,
+          [d.usuarioId, d.telefono, d.calle, d.numeroExterior, d.numeroInterior, d.colonia, d.codigoPostal, d.ciudad, d.estado, d.referencias],
+          aDireccionGuardada
+        ),
+      actualizarContacto: (id, { telefono, referencias }) =>
+        una('UPDATE direccion SET telefono = $1, referencias = $2 WHERE id = $3 RETURNING *', [telefono, referencias, id], aDireccionGuardada),
+      eliminar: async (id) => (await db.query('DELETE FROM direccion WHERE id = $1', [id])).rowCount > 0,
     },
 
     mantenimientos: {

@@ -4,10 +4,10 @@
 import { withFilter } from 'graphql-subscriptions';
 
 /**
- * @param {{ catalogo, garage, pedidos, cuentas, pagos }} casos  casos de uso ya armados (ver src/contenedor.js)
+ * @param {{ catalogo, garage, pedidos, cuentas, pagos, direcciones }} casos  casos de uso ya armados (ver src/contenedor.js)
  * @param {import('../../../puertos/salida.js').Eventos} eventos
  */
-export function crearResolvers({ catalogo, garage, pedidos, cuentas, pagos }, eventos) {
+export function crearResolvers({ catalogo, garage, pedidos, cuentas, pagos, direcciones }, eventos) {
   return {
     Query: {
       yo: (_, __, { actor }) => cuentas.yo(actor),
@@ -32,6 +32,9 @@ export function crearResolvers({ catalogo, garage, pedidos, cuentas, pagos }, ev
 
       opcionesDePago: () => pagos.opciones(),
       pedidoPorReferencia: (_, { referencia }) => pagos.pedidoPorReferencia(referencia),
+
+      reglasDeEnvio: () => direcciones.reglas(),
+      misDirecciones: (_, __, { actor }) => direcciones.mias(actor),
     },
 
     Mutation: {
@@ -52,6 +55,7 @@ export function crearResolvers({ catalogo, garage, pedidos, cuentas, pagos }, ev
 
       registrarPedido: (_, { datos }, { actor }) => pedidos.registrarPedido(actor, datos),
       verificarPago: (_, { referencia }) => pagos.verificar(referencia),
+      eliminarDireccion: (_, { id }, { actor }) => direcciones.eliminar(actor, id),
     },
 
     Subscription: {
@@ -93,6 +97,7 @@ export function crearResolvers({ catalogo, garage, pedidos, cuentas, pagos }, ev
       vehiculo: (pedido) => (pedido.vehiculoId ? garage.vehiculoPorId(pedido.vehiculoId) : null),
       detalles: (pedido) => pedidos.detallesDe(pedido),
       pago: (pedido) => pagos.pagoDe(pedido),
+      entrega: (pedido, _, { actor }) => pedidos.entregaDe(actor, pedido),
     },
     Mantenimiento: {
       vehiculo: (mantenimiento) => garage.vehiculoPorId(mantenimiento.vehiculoId),

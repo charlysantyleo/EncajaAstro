@@ -11,7 +11,8 @@
     "dev": "node --watch index.js",
     "db:init": "node scripts/init-db.js",
     "db:passwords": "node scripts/demo-passwords.js",
-    "db:pagos": "node scripts/migrar-pagos.js"
+    "db:pagos": "node scripts/migrar-pagos.js",
+    "db:entregas": "node scripts/migrar-entregas.js"
   },
   "dependencies": {
     "@apollo/server": "^5.5.1",

@@ -27,6 +27,19 @@ cd back && npm run db:pagos
 
 Una base nueva (`npm run db:init`) ya la trae.
 
+El checkout también guarda cómo se entrega el pedido (tabla `entrega`) y las direcciones que cada cuenta decide conservar (tabla `direccion`). Si tu base es anterior a ese cambio, o corriste una versión anterior de este script:
+
+```bash
+cd back && npm run db:entregas
+```
+
+Reglas de entrega (todas en `back/src/dominio/entregas.js`):
+
+- **Envío a domicilio**: $199, gratis si las piezas suman $999 o más. El envío se suma al total del pedido, que es lo que se cobra.
+- **Cobertura**: solo los municipios de la zona metropolitana de Guadalajara. Fuera de ahí el pedido se rechaza y se sugiere recoger en mostrador.
+- **Recoger en mostrador**: sin costo. Es la única entrega que admite "Pagar al recoger".
+- **Direcciones guardadas**: solo con sesión, y solo si el comprador deja marcada la casilla. No se duplican.
+
 ### 2. Mercado Pago
 
 1. Entra a https://www.mercadopago.com.mx/developers/panel/app y crea una aplicación.

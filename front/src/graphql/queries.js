@@ -125,6 +125,11 @@ const CAMPOS_PEDIDO_CON_PAGO = `
   vehiculo { marca modelo anio }
   detalles { cantidad importe producto { id nombre } }
   pago { referencia metodo proveedor status monto url codigo vence detalle }
+  entrega {
+    tipo
+    costo
+    direccion { calle numeroExterior numeroInterior colonia codigoPostal ciudad estado referencias }
+  }
 `;
 
 export const MUTATION_REGISTRAR_PEDIDO = `
@@ -194,5 +199,23 @@ export const QUERY_YO = `
       email
       rol
     }
+  }
+`;
+
+export const QUERY_REGLAS_DE_ENVIO = `
+  query ReglasDeEnvio {
+    reglasDeEnvio { costo gratisDesde estado municipios }
+  }
+`;
+
+export const QUERY_MIS_DIRECCIONES = `
+  query MisDirecciones {
+    misDirecciones { id telefono calle numeroExterior numeroInterior colonia codigoPostal ciudad estado referencias }
+  }
+`;
+
+export const MUTATION_ELIMINAR_DIRECCION = `
+  mutation EliminarDireccion($id: ID!) {
+    eliminarDireccion(id: $id)
   }
 `;

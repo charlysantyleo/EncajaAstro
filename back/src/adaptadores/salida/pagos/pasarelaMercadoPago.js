@@ -115,7 +115,9 @@ export function crearPasarelaMercadoPago({ accessToken, publicKey, webhookSecret
           date_of_expiration: fechaMP(cobro.vence),
         },
       });
-      return { ...aResultado(pago), vence: cobro.vence };
+      // Mercado Pago ajusta el vencimiento al final de ese dia: se guarda el que el confirma, no el que pedimos.
+      const resultado = aResultado(pago);
+      return { ...resultado, vence: resultado.vence ?? cobro.vence };
     },
 
     // Link de pago = preferencia de Checkout Pro. Se excluyen efectivo y cajero para que
