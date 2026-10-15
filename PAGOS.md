@@ -85,6 +85,10 @@ MP_WEBHOOK_SECRET=<clave secreta del webhook, en Tus integraciones → Webhooks>
 
 En local se puede abrir un túnel (por ejemplo `ngrok http 4000`) y poner esa URL. Sin `BACK_URL_PUBLICA` no hay avisos: el pago se confirma cuando alguien abre la página del pedido o pulsa **"Ya pagué, verificar"**.
 
+## Pagar al recoger: código de mostrador
+
+Al confirmar un pedido con "Pagar al recoger", el pago recibe un código de 8 caracteres (por ejemplo `K7M3-Q9TP`, sin letras que se confundan al dictarlas). El comprador lo ve en la página de su pedido. En mostrador, un administrador entra al **Panel** → **Cobrar en mostrador**, escribe el código (con o sin guion, en minúsculas o mayúsculas), revisa el pedido y, ya recibido el dinero, confirma el pago: el pedido queda **PAGADO** y el comprador lo ve así en su página.
+
 ## Cómo viaja un cobro
 
 ```

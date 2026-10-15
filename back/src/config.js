@@ -25,6 +25,15 @@ export const config = {
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     redirectUri: process.env.GOOGLE_REDIRECT_URI || 'http://localhost:4000/auth/google/callback',
   },
+  // Correo (opcional): con Mailjet o Brevo se mandan los enlaces para cambiar la contraseña.
+  // Sin claves, se escriben en la consola del servidor.
+  correo: {
+    mailjetApiKey: process.env.MAILJET_API_KEY,
+    mailjetSecretKey: process.env.MAILJET_SECRET_KEY,
+    brevoApiKey: process.env.BREVO_API_KEY,
+    remitente: process.env.CORREO_REMITENTE,
+    nombreRemitente: process.env.CORREO_NOMBRE || 'EnCaja Autopartes',
+  },
   // Pasarelas de cobro (opcionales): sin credenciales, sus metodos salen como "no disponible" en el checkout.
   mercadoPago: {
     accessToken: process.env.MP_ACCESS_TOKEN,

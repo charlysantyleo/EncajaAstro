@@ -189,7 +189,7 @@ export const typeDefs = `#graphql
     monto: Float!
     "Link para pagar (LINK) o ficha imprimible (TIENDA)."
     url: String
-    "Numero de referencia para pagar en la caja de la tienda."
+    "Referencia para pagar: en la caja de la tienda (TIENDA) o el codigo que se dicta en mostrador (PICKUP)."
     codigo: String
     "Fecha limite para pagar, en ISO 8601."
     vence: String
@@ -408,6 +408,9 @@ export const typeDefs = `#graphql
     pedidos(usuarioId: ID, status: StatusPedido): [Pedido!]!
     pedido(id: ID!): Pedido
 
+    "Solo ADMIN: el pedido de un codigo de mostrador, para revisarlo antes de cobrar."
+    pedidoPorCodigoDeMostrador(codigo: String!): Pedido
+
     "Metodos de pago que ofrece el checkout y cuales estan configurados."
     opcionesDePago: [OpcionPago!]!
 
@@ -431,6 +434,12 @@ export const typeDefs = `#graphql
     "Inicia sesion con correo y contraseña."
     iniciarSesion(email: String!, password: String!): Sesion!
 
+    "Manda al correo un enlace para elegir contraseña nueva. Siempre responde true, exista o no la cuenta."
+    solicitarRecuperacion(email: String!): Boolean!
+
+    "Con el token del enlace, cambia la contraseña y regresa la sesion. El enlace dura una hora y sirve una sola vez."
+    restablecerPassword(token: String!, password: String!): Sesion!
+
     crearCategoria(datos: CategoriaInput!): Categoria!
 
     crearProducto(datos: ProductoInput!): Producto!
@@ -452,6 +461,9 @@ export const typeDefs = `#graphql
 
     "Pregunta a la pasarela como va el cobro y pone el pedido al dia (PAGADO si se aprobo, CANCELADO si se rechazo o vencio)."
     verificarPago(referencia: ID!): Pedido!
+
+    "Solo ADMIN: el comprador pago en mostrador; el pedido de ese codigo queda PAGADO."
+    confirmarPagoEnMostrador(codigo: String!): Pedido!
 
     "Borra una direccion guardada del usuario del token."
     eliminarDireccion(id: ID!): Boolean!

@@ -32,6 +32,7 @@ export function crearResolvers({ catalogo, garage, pedidos, cuentas, pagos, dire
 
       opcionesDePago: () => pagos.opciones(),
       pedidoPorReferencia: (_, { referencia }) => pagos.pedidoPorReferencia(referencia),
+      pedidoPorCodigoDeMostrador: (_, { codigo }, { actor }) => pagos.pedidoPorCodigoDeMostrador(actor, codigo),
 
       reglasDeEnvio: () => direcciones.reglas(),
       misDirecciones: (_, __, { actor }) => direcciones.mias(actor),
@@ -40,6 +41,8 @@ export function crearResolvers({ catalogo, garage, pedidos, cuentas, pagos, dire
     Mutation: {
       crearCuenta: (_, datos) => cuentas.crearCuenta(datos),
       iniciarSesion: (_, datos) => cuentas.iniciarSesion(datos),
+      solicitarRecuperacion: (_, datos) => cuentas.solicitarRecuperacion(datos),
+      restablecerPassword: (_, datos) => cuentas.restablecerPassword(datos),
       registrarUsuario: (_, { datos }, { actor }) => cuentas.registrarUsuario(actor, datos),
 
       crearCategoria: (_, { datos }, { actor }) => catalogo.crearCategoria(actor, datos),
@@ -56,6 +59,7 @@ export function crearResolvers({ catalogo, garage, pedidos, cuentas, pagos, dire
       registrarPedido: (_, { datos }, { actor }) => pedidos.registrarPedido(actor, datos),
       verificarPago: (_, { referencia }) => pagos.verificar(referencia),
       eliminarDireccion: (_, { id }, { actor }) => direcciones.eliminar(actor, id),
+      confirmarPagoEnMostrador: (_, { codigo }, { actor }) => pagos.confirmarPagoEnMostrador(actor, codigo),
     },
 
     Subscription: {

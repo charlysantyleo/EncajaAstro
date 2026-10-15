@@ -9,6 +9,9 @@ import { crearIdentidadGoogle } from './adaptadores/salida/google/identidadGoogl
 import { crearEventosEnMemoria } from './adaptadores/salida/eventos/eventosEnMemoria.js';
 import { crearPasarelaMercadoPago } from './adaptadores/salida/pagos/pasarelaMercadoPago.js';
 import { crearPasarelaPaypal } from './adaptadores/salida/pagos/pasarelaPaypal.js';
+import { crearCorreoBrevo } from './adaptadores/salida/correo/correoBrevo.js';
+import { crearCorreoMailjet } from './adaptadores/salida/correo/correoMailjet.js';
+import { crearCorreoEnConsola } from './adaptadores/salida/correo/correoEnConsola.js';
 import { crearCatalogo } from './aplicacion/catalogo.js';
 import { crearGarage } from './aplicacion/garage.js';
 import { crearPedidos } from './aplicacion/pedidos.js';
@@ -26,6 +29,14 @@ export function armarAplicacion(config, { pool = crearPool(config.baseDeDatos) }
   const passwords = crearPasswordsBcrypt();
   const identidad = crearIdentidadGoogle(config.google);
   const eventos = crearEventosEnMemoria();
+  // Se usa el primer proveedor de correo que tenga sus claves y un remitente; si ninguno, la consola.
+  const { mailjetApiKey, mailjetSecretKey, brevoApiKey, remitente } = config.correo;
+  const correo =
+    remitente && mailjetApiKey && mailjetSecretKey
+      ? crearCorreoMailjet(config.correo)
+      : remitente && brevoApiKey
+        ? crearCorreoBrevo(config.correo)
+        : crearCorreoEnConsola();
   const pasarelas = {
     [PROVEEDORES.MERCADO_PAGO]: crearPasarelaMercadoPago(config.mercadoPago),
     [PROVEEDORES.PAYPAL]: crearPasarelaPaypal(config.paypal),
@@ -44,7 +55,7 @@ export function armarAplicacion(config, { pool = crearPool(config.baseDeDatos) }
     catalogo: crearCatalogo({ repos, eventos }),
     garage: crearGarage({ repos, transaccion }),
     pedidos: crearPedidos({ repos, transaccion, eventos, pagos, direcciones }),
-    cuentas: crearCuentas({ repos, tokens, passwords, identidad }),
+    cuentas: crearCuentas({ repos, tokens, passwords, identidad, correo, frontUrl: config.frontUrl }),
     pagos,
     direcciones,
   };

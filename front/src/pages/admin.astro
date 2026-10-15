@@ -2,6 +2,7 @@
 import Base from '../layouts/Base.astro';
 import PuertaAdmin from '../components/admin/PuertaAdmin.jsx';
 import Grafica from '../components/admin/Grafica.jsx';
+import CobroMostrador from '../components/admin/CobroMostrador.jsx';
 
 // Indicadores y graficas del panel. Todavia sin datos: cada uno muestra su estado vacio.
 const indicadores = [
@@ -27,6 +28,9 @@ const indicadores = [
         </div>
         <span class="etiqueta">Sin datos conectados</span>
       </div>
+
+      <!-- Isla dentro del panel: la unica parte que hoy habla con el servidor. -->
+      <CobroMostrador client:only="react" />
 
       <dl class="indicadores">
         {

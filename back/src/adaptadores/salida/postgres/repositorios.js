@@ -146,6 +146,8 @@ export function crearRepositorios(db) {
           [nombre, email, passwordHash, rol],
           aUsuario
         ),
+      cambiarPassword: (id, passwordHash) =>
+        una('UPDATE usuario SET password = $1 WHERE id = $2 RETURNING *', [passwordHash, id], aUsuario),
     },
 
     categorias: {
@@ -297,11 +299,13 @@ export function crearRepositorios(db) {
       porId: (id) => una('SELECT * FROM pago WHERE id = $1', [id], aPago),
       dePedido: (pedidoId) => una('SELECT * FROM pago WHERE pedido_id = $1', [pedidoId], aPago),
       porReferencia: (referencia) => una('SELECT * FROM pago WHERE referencia = $1', [referencia], aPago),
-      crear: ({ pedidoId, referencia, metodo, proveedor, status, monto }) =>
+      // El codigo de mostrador; tambien guarda la referencia de las fichas de tienda, por eso se busca el mas reciente.
+      porCodigo: (codigo) => una('SELECT * FROM pago WHERE codigo = $1 ORDER BY id DESC LIMIT 1', [codigo], aPago),
+      crear: ({ pedidoId, referencia, metodo, proveedor, status, monto, codigo = null }) =>
         una(
-          `INSERT INTO pago (pedido_id, referencia, metodo, proveedor, status, monto)
-           VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-          [pedidoId, referencia, metodo, proveedor, status, monto],
+          `INSERT INTO pago (pedido_id, referencia, metodo, proveedor, status, monto, codigo)
+           VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+          [pedidoId, referencia, metodo, proveedor, status, monto, codigo],
           aPago
         ),
       // Actualiza solo los campos que vienen (status, idExterno, url, codigo, vence, detalle).

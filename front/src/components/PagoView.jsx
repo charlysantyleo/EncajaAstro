@@ -40,11 +40,25 @@ function Instrucciones({ pedido }) {
   if (pago.metodo === 'PICKUP') {
     return (
       <>
-        <h3>Pagas al recoger</h3>
-        <p>
-          Tus piezas quedaron apartadas. Paga {pesos(pago.monto)} en mostrador cuando pases por ellas y da tu número de
-          pedido: <strong className="mono">{pedido.id}</strong>.
-        </p>
+        <h3>Paga {pesos(pago.monto)} al recoger</h3>
+        <p>Tus piezas quedaron apartadas. Cuando pases por ellas, dicta o muestra este código en mostrador para pagar.</p>
+        {pago.codigo ? (
+          <>
+            <dl className="pago-dato">
+              <dt>Código para pagar en mostrador</dt>
+              <dd className="pago-codigo">{pago.codigo}</dd>
+            </dl>
+            <div className="pago-acciones">
+              <BotonCopiar texto={pago.codigo}>Copiar código</BotonCopiar>
+            </div>
+          </>
+        ) : (
+          // Pedidos anteriores a los codigos: se identifican con su numero.
+          <p>
+            Da tu número de pedido: <strong className="mono">{pedido.id}</strong>.
+          </p>
+        )}
+        <p className="apagado">En cuanto paguemos en mostrador, esta página muestra tu pedido como pagado.</p>
       </>
     );
   }
@@ -194,7 +208,9 @@ function PagoView() {
             <>
               <h3>Pago recibido</h3>
               <p>
-                Recibimos {pesos(pago.monto)} con {METODOS[pago.metodo].titulo.toLowerCase()}. Tu pedido quedó confirmado.
+                Recibimos {pesos(pago.monto)}{' '}
+                {pago.metodo === 'PICKUP' ? 'en mostrador' : `con ${METODOS[pago.metodo].titulo.toLowerCase()}`}. Tu pedido quedó
+                confirmado.
               </p>
             </>
           )}

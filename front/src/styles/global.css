@@ -669,6 +669,16 @@ button.indice-col.activo svg { opacity: 1; color: var(--rojo-texto); }
 
 /* ---------- panel de administracion ---------- */
 
+.cobro { display: flex; flex-direction: column; gap: var(--e4); margin-bottom: var(--e12); }
+.cobro-buscar { display: flex; align-items: flex-end; gap: var(--e3); flex-wrap: wrap; }
+.cobro-buscar .campo { width: min(280px, 100%); }
+.cobro-buscar .input { text-transform: uppercase; letter-spacing: 0.08em; }
+.cobro-pedido { display: flex; flex-direction: column; align-items: flex-start; gap: var(--e4); }
+.cobro-lineas { list-style: none; margin: 0; padding: 0; width: min(560px, 100%); }
+.cobro-lineas .nota-linea { display: grid; grid-template-columns: auto 1fr auto; gap: var(--e2); padding: var(--e2) 0; border-bottom: 1px solid var(--regla-suave); font-size: var(--t-meta); }
+.cobro-listo { display: flex; align-items: center; gap: var(--e2); margin: 0; font-weight: 600; }
+.cobro-listo svg { color: var(--rojo-texto); }
+
 .indicadores { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); column-gap: var(--medianil); margin-bottom: var(--e12); }
 .indicador { display: flex; flex-direction: column; gap: 2px; padding: var(--e3) 0 var(--e4); border-top: 3px solid var(--regla); }
 .indicador dt { font-size: var(--t-meta); font-weight: 600; color: var(--tinta-2); }

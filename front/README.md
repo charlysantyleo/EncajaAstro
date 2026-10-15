@@ -34,6 +34,7 @@ al navegador). Otros comandos: `npm run build` (genera `dist/`) y
 | `/checkout` | `CheckoutView` | |
 | `/pago` | `PagoView` | `?ref=<referencia del pago>` |
 | `/entrar` | `EntrarView` | `#token=...` (regreso de Google) |
+| `/restablecer` | `RestablecerView` | `#token=...` (enlace del correo para cambiar la contraseña) |
 | `/admin` | panel (HTML estatico tras `PuertaAdmin`) | |
 
 Los ids viajan como query params (no `/categoria/[id]`) para que el build

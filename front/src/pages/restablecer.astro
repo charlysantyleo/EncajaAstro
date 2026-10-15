@@ -1,0 +1,9 @@
+---
+import Base from '../layouts/Base.astro';
+import RestablecerView from '../components/RestablecerView.jsx';
+---
+
+<Base titulo="Cambiar contraseña | EnCaja Autopartes">
+  <!-- client:only: lee el token que el enlace del correo trae despues del # de la URL. -->
+  <RestablecerView client:only="react" />
+</Base>

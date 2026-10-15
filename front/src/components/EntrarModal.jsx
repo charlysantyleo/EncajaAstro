@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Loader2 } from './ui/Iconos';
 import { useTienda } from '../store/useTienda';
 import { API_URL, graphqlRequest } from '../graphql/client';
-import { MUTATION_CREAR_CUENTA, MUTATION_INICIAR_SESION } from '../graphql/queries';
+import { MUTATION_CREAR_CUENTA, MUTATION_INICIAR_SESION, MUTATION_SOLICITAR_RECUPERACION } from '../graphql/queries';
 import Capa from './ui/Capa';
 import CampoPassword from './ui/CampoPassword';
 
@@ -10,6 +10,7 @@ import CampoPassword from './ui/CampoPassword';
 const URL_GOOGLE = API_URL.replace(/\/graphql$/, '/auth/google');
 
 // Entrar o crear cuenta. Ambos caminos terminan igual: el backend regresa un JWT y se guarda en el store.
+// Un tercer modo, "recuperar", pide un enlace por correo para elegir contraseña nueva (pagina /restablecer).
 export default function EntrarModal() {
   const ir = useTienda((estado) => estado.ir);
   const iniciarSesion = useTienda((estado) => estado.iniciarSesion);
@@ -23,6 +24,7 @@ export default function EntrarModal() {
   const [verPassword, setVerPassword] = useState(false);
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState(null);
+  const [enlaceEnviado, setEnlaceEnviado] = useState(false);
 
   const creando = modo === 'crear';
   // Se avisa en cuanto la confirmacion deja de coincidir, sin esperar al envio.
@@ -33,6 +35,70 @@ export default function EntrarModal() {
     setModo(creando ? 'entrar' : 'crear');
     setConfirmacion('');
     setError(null);
+  }
+
+  function irA(nuevo) {
+    setModo(nuevo);
+    setConfirmacion('');
+    setError(null);
+    setEnlaceEnviado(false);
+    setEnviando(false);
+  }
+
+  async function pedirEnlace(evento) {
+    evento.preventDefault();
+    setEnviando(true);
+    setError(null);
+    try {
+      await graphqlRequest(MUTATION_SOLICITAR_RECUPERACION, { email });
+      setEnlaceEnviado(true);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setEnviando(false);
+    }
+  }
+
+  if (modo === 'recuperar') {
+    return (
+      <Capa titulo="Recuperar contraseña" onCerrar={() => ir('cerrarModal')}>
+        <h3>Recuperar contraseña</h3>
+        {enlaceEnviado ? (
+          <>
+            <p style={{ margin: 0 }} role="status">
+              Si hay una cuenta con <strong>{email}</strong>, te mandamos un enlace para elegir una contraseña nueva.
+            </p>
+            <p className="apagado" style={{ margin: 0 }}>
+              Revisa tu bandeja de entrada y la de spam. El enlace dura una hora y sirve una sola vez.
+            </p>
+            <button className="btn btn-primario btn-bloque" type="button" onClick={() => irA('entrar')}>
+              Volver a entrar
+            </button>
+          </>
+        ) : (
+          <>
+            <p className="apagado" style={{ margin: 0 }}>
+              Escribe el correo de tu cuenta y te mandamos un enlace para elegir una contraseña nueva. También sirve si
+              compraste como invitado y quieres ponerle contraseña a tu cuenta.
+            </p>
+            <form className="formulario" onSubmit={pedirEnlace}>
+              <div className="campo">
+                <label htmlFor="recuperar-email">Correo</label>
+                <input id="recuperar-email" className="input" type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+              </div>
+              {error && <p className="error" role="alert">{error}</p>}
+              <button className="btn btn-primario btn-bloque" type="submit" disabled={enviando}>
+                {enviando && <Loader2 size={18} className="girar" />}
+                Mandarme el enlace
+              </button>
+            </form>
+            <button className="btn btn-texto" type="button" onClick={() => irA('entrar')}>
+              Ya me acordé, quiero entrar
+            </button>
+          </>
+        )}
+      </Capa>
+    );
   }
 
   async function manejarEnviar(evento) {
@@ -108,6 +174,12 @@ export default function EntrarModal() {
             visible={verPassword}
             onAlternar={alternarVer}
           />
+        )}
+
+        {!creando && (
+          <button className="btn btn-texto" type="button" style={{ alignSelf: 'flex-start', marginTop: -12 }} onClick={() => irA('recuperar')}>
+            ¿Olvidaste tu contraseña?
+          </button>
         )}
 
         {error && <p className="error" role="alert">{error}</p>}

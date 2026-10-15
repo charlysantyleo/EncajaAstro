@@ -220,3 +220,38 @@ export const MUTATION_ELIMINAR_DIRECCION = `
     eliminarDireccion(id: $id)
   }
 `;
+
+export const MUTATION_SOLICITAR_RECUPERACION = `
+  mutation SolicitarRecuperacion($email: String!) {
+    solicitarRecuperacion(email: $email)
+  }
+`;
+
+export const MUTATION_RESTABLECER_PASSWORD = `
+  mutation RestablecerPassword($token: String!, $password: String!) {
+    restablecerPassword(token: $token, password: $password) {${CAMPOS_SESION}}
+  }
+`;
+
+// Cobro en mostrador (solo admin): el pedido con quien lo compro, para revisarlo antes de cobrar.
+const CAMPOS_PEDIDO_MOSTRADOR = `
+  id
+  fecha
+  total
+  status
+  usuario { nombre email }
+  detalles { cantidad importe producto { id nombre } }
+  pago { metodo status codigo monto }
+`;
+
+export const QUERY_PEDIDO_POR_CODIGO = `
+  query PedidoPorCodigoDeMostrador($codigo: String!) {
+    pedidoPorCodigoDeMostrador(codigo: $codigo) {${CAMPOS_PEDIDO_MOSTRADOR}}
+  }
+`;
+
+export const MUTATION_CONFIRMAR_PAGO_MOSTRADOR = `
+  mutation ConfirmarPagoEnMostrador($codigo: String!) {
+    confirmarPagoEnMostrador(codigo: $codigo) {${CAMPOS_PEDIDO_MOSTRADOR}}
+  }
+`;

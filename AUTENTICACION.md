@@ -58,7 +58,17 @@ Puntos que conviene explicar:
 - **Token después del `#`:** lo que va después del `#` no se envía al servidor, así que no queda en logs. La página `/entrar` lo lee y lo borra de la barra de direcciones.
 - **Google solo identifica al usuario:** después de eso, la tienda usa **su propio JWT**, igual que con correo y contraseña.
 
-## 4. Quién puede hacer qué (`back/src/dominio/permisos.js`)
+## 4. Recuperar la contraseña
+
+En "Entrar" → "¿Olvidaste tu contraseña?" se escribe el correo. El servidor manda un enlace a `/restablecer#token=...` para elegir una contraseña nueva; al guardarla, el comprador queda con la sesión iniciada.
+
+- **El token es un JWT de una hora** con el propósito `recuperar` y una huella de la contraseña actual. Al cambiar la contraseña la huella deja de coincidir, así que el enlace sirve una sola vez, sin guardar nada en la base.
+- **No es una sesión**: el servidor rechaza como sesión cualquier JWT con propósito (el de recuperar y el `state` de Google).
+- **Siempre responde lo mismo**, exista o no la cuenta, para no revelar qué correos están registrados. Entre un correo y otro a la misma cuenta espera un minuto.
+- **También sirve a quien compró como invitado**: su cuenta existe sin contraseña y así le pone una.
+- **Correo**: se manda de verdad con Mailjet (`MAILJET_API_KEY` y `MAILJET_SECRET_KEY`) o con Brevo (`BREVO_API_KEY`), más `CORREO_REMITENTE`, un remitente verificado en ese proveedor. Los dos usan HTTP: el plan gratuito de Render bloquea SMTP, así que Gmail por SMTP no funcionaría ahí. Sin claves, el mensaje con el enlace se escribe en la consola del servidor; sirve para probar en local.
+
+## 5. Quién puede hacer qué (`back/src/dominio/permisos.js`)
 
 Tres funciones del dominio hacen cumplir las reglas, y los casos de uso (`back/src/aplicacion/`) las llaman:
 
@@ -78,7 +88,7 @@ Tres funciones del dominio hacen cumplir las reglas, y los casos de uso (`back/s
 
 Detalle importante: antes, el front mandaba `usuarioId` y el servidor le creía. Ahora el id sale del **token firmado**, así que no se puede falsificar.
 
-## 5. Front (Astro + React)
+## 6. Front (Astro + React)
 
 - **`store/useTienda.js`:** guarda `sesion = { token, usuario }` en `localStorage`. Incluye `iniciarSesion()` y `cerrarSesion()`. Al salir, también se olvida el vehículo activo.
 - **`graphql/client.js`:** agrega `Authorization: Bearer <token>` a cada petición. Si el servidor responde `UNAUTHENTICATED` (token vencido), cierra la sesión local.
@@ -90,7 +100,7 @@ Detalle importante: antes, el front mandaba `usuarioId` y el servidor le creía.
 
 **Decisión de simplicidad:** el JWT vive en `localStorage`. Es fácil de entender y de depurar. La versión más segura sería guardarlo en una cookie `httpOnly`, porque un script inyectado (XSS) podría leer `localStorage`.
 
-## 6. Cómo probarlo
+## 7. Cómo probarlo
 
 1. Configura `back/.env` (ya existe `JWT_SECRET`):
    ```

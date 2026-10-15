@@ -32,7 +32,8 @@
  * Repositorios: guardar y leer datos.
  * @typedef {object} Repositorios
  * @property {{ porId(id): Promise<Usuario|null>, porEmail(email): Promise<Usuario|null>, listar(f: { rol? }): Promise<Usuario[]>,
- *              crear(d: { nombre, email, passwordHash, rol }): Promise<Usuario> }} usuarios
+ *              crear(d: { nombre, email, passwordHash, rol }): Promise<Usuario>,
+ *              cambiarPassword(id, passwordHash): Promise<Usuario> }} usuarios
  * @property {{ listar(): Promise<Categoria[]>, porId(id): Promise<Categoria|null>, crear(d): Promise<Categoria> }} categorias
  * @property {{ porId(id): Promise<Producto|null>, buscar(f: { categoriaId?, vehiculoId?, texto?, precioMin?, precioMax?, soloDirectos? }): Promise<Producto[]>,
  *              deCategoria(categoriaId): Promise<Producto[]>, crear(d): Promise<Producto>, actualizar(id, d): Promise<Producto>,
@@ -48,7 +49,8 @@
  *              incluyeProducto(pedidoId, productoId): Promise<boolean>, bloquear(id): Promise<Pedido|null>,
  *              cambiarStatus(id, status): Promise<void> }} pedidos
  * @property {{ porId(id): Promise<Pago|null>, dePedido(pedidoId): Promise<Pago|null>, porReferencia(referencia): Promise<Pago|null>,
- *              crear(d: { pedidoId, referencia, metodo, proveedor, status, monto }): Promise<Pago>,
+ *              porCodigo(codigo): Promise<Pago|null>,
+ *              crear(d: { pedidoId, referencia, metodo, proveedor, status, monto, codigo? }): Promise<Pago>,
  *              actualizar(id, cambios: Partial<Pago>): Promise<Pago> }} pagos
  * @property {{ dePedido(pedidoId): Promise<Entrega|null>,
  *              crear(d: { pedidoId, tipo, telefono, direccion, costo }): Promise<Entrega> }} entregas
@@ -70,6 +72,14 @@
  * @property {(encabezado: string|undefined) => Actor|null} leer        "Bearer <token>" -> actor, o null si no sirve
  * @property {() => string} crearState                                  valor de un solo uso para OAuth (anti-CSRF)
  * @property {(state: string) => void} verificarState                   lanza error si no es valido
+ * @property {(usuario: Usuario) => string} crearRecuperacion           enlace de un solo uso para cambiar la contraseña
+ * @property {(token: string) => { usuarioId: string, huella: string }|null} leerRecuperacion
+ * @property {(usuario: Usuario) => string} huellaDe                     cambia cuando cambia la contraseña
+ */
+
+/**
+ * Correo saliente (Brevo en el adaptador actual; en consola si no hay proveedor configurado).
+ * @typedef {{ configurado: boolean, enviar(m: { para: string, nombre?: string, asunto: string, texto: string, html: string }): Promise<void> }} Correo
  */
 
 /**

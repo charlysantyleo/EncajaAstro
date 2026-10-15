@@ -59,3 +59,19 @@ export function venceEn(dias, desde = new Date()) {
 export function yaVencio(vence, ahora = new Date()) {
   return Boolean(vence) && new Date(vence).getTime() < ahora.getTime();
 }
+
+// Codigo para pagar en mostrador: 8 caracteres en dos grupos ("K7M3-Q9TP"). Sin 0/O ni 1/I/L,
+// que en mostrador se confunden al dictarlos.
+const ALFABETO_DE_CODIGO = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';
+
+export function nuevoCodigoDeMostrador() {
+  const azar = crypto.getRandomValues(new Uint32Array(8));
+  const letras = Array.from(azar, (n) => ALFABETO_DE_CODIGO[n % ALFABETO_DE_CODIGO.length]).join('');
+  return `${letras.slice(0, 4)}-${letras.slice(4)}`;
+}
+
+// Como lo teclee quien cobra (minusculas, sin guion, con espacios), a la forma guardada.
+export function normalizarCodigoDeMostrador(codigo) {
+  const limpio = String(codigo ?? '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+  return limpio.length === 8 ? `${limpio.slice(0, 4)}-${limpio.slice(4)}` : limpio;
+}

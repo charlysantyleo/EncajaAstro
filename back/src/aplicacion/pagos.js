@@ -9,9 +9,12 @@ import {
   STATUS_PAGO,
   STATUS_PEDIDO,
   estaCerrado,
+  normalizarCodigoDeMostrador,
+  nuevoCodigoDeMostrador,
   planDePago,
   venceEn,
 } from '../dominio/pagos.js';
+import { exigirAdmin } from '../dominio/permisos.js';
 
 const NOMBRE = { [PROVEEDORES.MERCADO_PAGO]: 'Mercado Pago', [PROVEEDORES.PAYPAL]: 'PayPal' };
 
@@ -116,15 +119,23 @@ export function crearPagos({ repos, transaccion, eventos, pasarelas, urls }) {
     },
 
     // Paso 2, dentro de la transaccion del pedido: el pago nace pendiente junto con su pedido.
-    registrar: (tx, { pedidoId, plan, monto }) =>
-      tx.pagos.crear({
+    // Pagar al recoger lleva un codigo corto que el comprador dicta en mostrador.
+    async registrar(tx, { pedidoId, plan, monto }) {
+      let codigo = null;
+      if (plan.metodo === METODOS.PICKUP) {
+        do codigo = nuevoCodigoDeMostrador();
+        while (await tx.pagos.porCodigo(codigo));
+      }
+      return tx.pagos.crear({
         pedidoId,
         referencia: crypto.randomUUID(),
         metodo: plan.metodo,
         proveedor: plan.proveedor,
         status: STATUS_PAGO.PENDIENTE,
         monto,
-      }),
+        codigo,
+      });
+    },
 
     // Paso 3, con el pedido ya guardado: se cobra (tarjeta) o se genera la ficha o el link.
     // Si la pasarela falla o rechaza, el pedido se cancela, las piezas regresan y el comprador ve el motivo.
@@ -171,6 +182,27 @@ export function crearPagos({ repos, transaccion, eventos, pasarelas, urls }) {
           `${resultado.detalle ?? 'El pago fue rechazado.'} Tu pedido no se registró; intenta con otra tarjeta u otro método.`
         );
       }
+    },
+
+    // ---------- cobro en mostrador (solo ADMIN) ----------
+
+    // El pedido que corresponde a un codigo de mostrador, para revisarlo antes de cobrar.
+    async pedidoPorCodigoDeMostrador(actor, codigo) {
+      exigirAdmin(actor);
+      const pago = await repos.pagos.porCodigo(normalizarCodigoDeMostrador(codigo));
+      return pago?.metodo === METODOS.PICKUP ? repos.pedidos.porId(pago.pedidoId) : null;
+    },
+
+    // Quien cobra en mostrador recibio el dinero: el pedido queda pagado.
+    async confirmarPagoEnMostrador(actor, codigo) {
+      exigirAdmin(actor);
+      const pago = await repos.pagos.porCodigo(normalizarCodigoDeMostrador(codigo));
+      if (pago?.metodo !== METODOS.PICKUP) throw new ErrorDeNegocio('No hay ningún pedido para pagar en mostrador con ese código');
+      const pedido = await repos.pedidos.porId(pago.pedidoId);
+      if (pago.status === STATUS_PAGO.APROBADO) throw new ErrorDeNegocio(`El pedido N.º ${pedido.id} ya estaba pagado`);
+      if (pedido.status === STATUS_PEDIDO.CANCELADO) throw new ErrorDeNegocio(`El pedido N.º ${pedido.id} está cancelado`);
+      await aplicar(pago, { status: STATUS_PAGO.APROBADO, detalle: 'Pagado en mostrador' });
+      return repos.pedidos.porId(pedido.id);
     },
 
     // ---------- seguimiento ----------
