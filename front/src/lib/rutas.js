@@ -12,6 +12,11 @@ export const rutas = {
   checkout: '/checkout',
   pago: (referencia) => `/pago?ref=${encodeURIComponent(referencia)}`,
   admin: '/admin',
+  adminPedidos: '/admin/pedidos',
+  adminProductos: '/admin/productos',
+  adminVehiculos: '/admin/vehiculos',
+  adminUsuarios: '/admin/usuarios',
+  adminAjustes: '/admin/ajustes',
 };
 
 export function navegar(url) {

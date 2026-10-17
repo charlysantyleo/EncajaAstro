@@ -4,6 +4,8 @@ import { Car, ChartBar, ChevronsUpDown, LogIn, LogOut, Moon, Receipt, Search, Su
 import { useTienda } from '../store/useTienda';
 import { leerParametros, rutas } from '../lib/rutas';
 import { cambiarTema, temaActual } from '../lib/tema';
+import { graphqlRequest } from '../graphql/client';
+import { QUERY_YO } from '../graphql/queries';
 import { comoIsla } from './ui/Isla';
 
 // Isla client:load con HTML generado en el build: la barra se ve antes de que cargue React.
@@ -15,6 +17,7 @@ function TopBar({ ruta = '/' }) {
   const ir = useTienda((estado) => estado.ir);
   const sesion = useTienda((estado) => estado.sesion);
   const cerrarSesion = useTienda((estado) => estado.cerrarSesion);
+  const actualizarUsuario = useTienda((estado) => estado.actualizarUsuario);
 
   const [busqueda, setBusqueda] = useState('');
   const [tema, setTema] = useState('claro');
@@ -24,6 +27,15 @@ function TopBar({ ruta = '/' }) {
     setBusqueda(leerParametros().q);
     setTema(temaActual());
   }, []);
+
+  // El rol vive en el servidor: si el admin lo cambio (o la cuenta ya no existe), la sesion local se pone al dia.
+  const hayToken = Boolean(sesion?.token);
+  useEffect(() => {
+    if (!hayToken) return;
+    graphqlRequest(QUERY_YO)
+      .then(({ yo }) => (yo ? actualizarUsuario(yo) : cerrarSesion()))
+      .catch(() => {});
+  }, [hayToken, actualizarUsuario, cerrarSesion]);
 
   const totalItems = carrito.reduce((suma, item) => suma + item.cantidad, 0);
 
@@ -53,7 +65,8 @@ function TopBar({ ruta = '/' }) {
 
   const enGarage = ruta.startsWith('/garage') || ruta.startsWith('/vehiculo');
   const enPanel = ruta.startsWith('/admin');
-  const esAdmin = sesion?.usuario.rol === 'ADMIN';
+  // El panel es para el personal: EMPLEADO ve mostrador y pedidos; ADMIN, todo.
+  const esPersonal = sesion?.usuario.rol === 'ADMIN' || sesion?.usuario.rol === 'EMPLEADO';
 
   return (
     <header className="cabecera">
@@ -83,7 +96,7 @@ function TopBar({ ruta = '/' }) {
         </form>
 
         <nav className="cab-acciones" aria-label="Cuenta y navegación">
-          {esAdmin && (
+          {esPersonal && (
             <a
               className={enPanel ? 'cab-enlace activo' : 'cab-enlace'}
               aria-current={enPanel ? 'page' : undefined}

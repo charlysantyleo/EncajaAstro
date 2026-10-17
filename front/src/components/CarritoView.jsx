@@ -4,6 +4,7 @@ import { useTienda } from '../store/useTienda';
 import { useStockDeNota } from '../hooks/useStockDeNota';
 import { IMAGENES } from '../imagenes';
 import { ENVIO_GRATIS } from '../lib/formato';
+import { useReglasDeEnvio } from '../hooks/useCatalogo';
 import { Cantidad, Importe } from './ui/Movimiento';
 import { comoIsla } from './ui/Isla';
 
@@ -18,7 +19,9 @@ function CarritoView() {
 
   const total = carrito.reduce((suma, item) => suma + item.precio * item.cantidad, 0);
   const piezas = carrito.reduce((suma, item) => suma + item.cantidad, 0);
-  const falta = Math.max(0, ENVIO_GRATIS - total);
+  // El importe para el envio gratis lo decide el admin; mientras llega, el de siempre.
+  const gratisDesde = useReglasDeEnvio().reglas?.gratisDesde ?? ENVIO_GRATIS;
+  const falta = Math.max(0, gratisDesde - total);
   const hayExcesos = excesos.length > 0;
 
   if (carrito.length === 0) {
@@ -59,7 +62,7 @@ function CarritoView() {
               {carrito.map((item) => {
                 const disponible = stockReal[item.productoId];
                 const excede = disponible != null && item.cantidad > disponible;
-                const imagen = item.numeroParte ? IMAGENES[item.numeroParte] : null;
+                const imagen = item.imagen ?? (item.numeroParte ? IMAGENES[item.numeroParte] : null);
                 return (
                   <motion.li
                     key={item.productoId}
@@ -113,7 +116,7 @@ function CarritoView() {
               <motion.div
                 className="envio-barra"
                 initial={false}
-                animate={{ scaleX: Math.min(1, total / ENVIO_GRATIS) }}
+                animate={{ scaleX: gratisDesde > 0 ? Math.min(1, total / gratisDesde) : 1 }}
                 transition={{ type: 'spring', stiffness: 160, damping: 24 }}
               />
             </div>

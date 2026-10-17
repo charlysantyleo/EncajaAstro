@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { rutas, navegar, volver, rutaActual } from '../lib/rutas';
+import { imagenDe } from '../imagenes';
 
 // Que pasa con cada evento:
 //  - navegacion: cambia de pagina (cada pantalla ahora es una URL real).
@@ -24,6 +25,21 @@ export const useTienda = create(
 
       iniciarSesion({ token, usuario }) {
         set({ sesion: { token, usuario }, usuarioId: usuario.id, modal: null });
+      },
+
+      // El servidor es quien sabe el rol vigente: si el admin lo cambio, se refleja aqui.
+      actualizarUsuario(usuario) {
+        const { sesion } = get();
+        if (sesion) set({ sesion: { ...sesion, usuario: { ...sesion.usuario, ...usuario } } });
+      },
+
+      // Precios frescos del servidor (cambian si cambia el precio de lista o el rol de la cuenta).
+      actualizarPrecios(precios) {
+        set((estado) => ({
+          carrito: estado.carrito.map((item) =>
+            precios[item.productoId] != null && precios[item.productoId] !== item.precio ? { ...item, precio: precios[item.productoId] } : item
+          ),
+        }));
       },
 
       cerrarSesion() {
@@ -101,7 +117,9 @@ export const useTienda = create(
                   productoId: producto.id,
                   nombre: producto.nombre,
                   numeroParte: producto.numeroParte,
-                  precio: producto.precio,
+                  imagen: imagenDe(producto),
+                  // Lo que paga esta cuenta (de mayoreo si es taller); el servidor lo vuelve a calcular al cobrar.
+                  precio: producto.precioParaTi ?? producto.precio,
                   cantidad,
                 }];
             // Se queda en la pagina: la nota lateral y el aviso confirman el cambio.

@@ -3,6 +3,7 @@ import { ErrorDeNegocio } from '../dominio/errores.js';
 import { esAdmin, esDuenoOAdmin, exigirSesion, usuarioParaFiltrar } from '../dominio/permisos.js';
 import { COMBUSTIBLE_POR_DEFECTO, hoy, validarKilometraje } from '../dominio/reglas.js';
 import { vehiculoPropio } from './comun.js';
+import { segunCatalogo } from './vehiculos.js';
 
 /**
  * @param {{ repos: import('../puertos/salida.js').Repositorios, transaccion: import('../puertos/salida.js').Transaccion }} puertos
@@ -24,17 +25,19 @@ export function crearGarage({ repos, transaccion }) {
     compatibilidadesDe: (vehiculo) => repos.compatibilidades.listar({ vehiculoId: vehiculo.id }),
     vehiculoPorId: (id) => repos.vehiculos.porId(id),
 
-    agregarVehiculo(actor, datos) {
+    async agregarVehiculo(actor, datos) {
       exigirSesion(actor);
       // Queda a nombre de quien inicio sesion (el admin puede asignarlo a otro usuario).
       const usuarioId = esAdmin(actor) && datos.usuarioId ? datos.usuarioId : actor.id;
+      // El coche se elige del catalogo y se guarda con sus nombres, para que las compatibilidades lo encuentren.
+      const vehiculo = await segunCatalogo(repos, datos);
       return repos.vehiculos.crear({
         usuarioId,
         apodo: datos.apodo ?? null,
-        marca: datos.marca,
-        modelo: datos.modelo,
-        anio: datos.anio,
-        motor: datos.motor ?? null,
+        marca: vehiculo.marca,
+        modelo: vehiculo.modelo,
+        anio: vehiculo.anio,
+        motor: vehiculo.motor ?? null,
         tipoCombustible: datos.tipoCombustible ?? COMBUSTIBLE_POR_DEFECTO,
         kilometraje: datos.kilometraje ?? null,
       });
@@ -42,12 +45,13 @@ export function crearGarage({ repos, transaccion }) {
 
     async actualizarVehiculo(actor, id, datos) {
       const existente = await vehiculoPropio(repos, actor, id);
+      const vehiculo = await segunCatalogo(repos, { ...datos, motor: datos.motor ?? existente.motor });
       return repos.vehiculos.actualizar(id, {
         apodo: datos.apodo ?? existente.apodo,
-        marca: datos.marca,
-        modelo: datos.modelo,
-        anio: datos.anio,
-        motor: datos.motor ?? existente.motor,
+        marca: vehiculo.marca,
+        modelo: vehiculo.modelo,
+        anio: vehiculo.anio,
+        motor: vehiculo.motor ?? null,
         tipoCombustible: datos.tipoCombustible ?? existente.tipoCombustible,
         kilometraje: datos.kilometraje ?? existente.kilometraje,
       });

@@ -1,35 +1,57 @@
 // Casos de uso de compra: registrar pedidos y consultarlos.
 import { ErrorDeNegocio } from '../dominio/errores.js';
-import { ROLES, esDuenoOAdmin, exigirDueno, usuarioParaFiltrar } from '../dominio/permisos.js';
+import { ROLES, esDuenoOAdmin, esPersonal, exigirDueno, exigirPersonal, exigirSesion } from '../dominio/permisos.js';
 import { costoDeEnvio, planDeEntrega } from '../dominio/entregas.js';
-import { STATUS_INICIAL_PEDIDO, armarLinea, hoy, totalDe, validarItemsDelPedido } from '../dominio/reglas.js';
+import { precioPara } from '../dominio/ajustes.js';
+import {
+  STATUS_INICIAL_PEDIDO,
+  armarLinea,
+  hoy,
+  totalDe,
+  validarCambioDeStatus,
+  validarItemsDelPedido,
+} from '../dominio/reglas.js';
 import { vehiculoPropio } from './comun.js';
 
 /**
  * @param {{ repos: import('../puertos/salida.js').Repositorios, transaccion: import('../puertos/salida.js').Transaccion,
  *           eventos: import('../puertos/salida.js').Eventos, pagos: ReturnType<typeof import('./pagos.js').crearPagos>,
- *           direcciones: ReturnType<typeof import('./direcciones.js').crearDirecciones> }} puertos
+ *           direcciones: ReturnType<typeof import('./direcciones.js').crearDirecciones>,
+ *           ajustes: ReturnType<typeof import('./ajustes.js').crearAjustes> }} puertos
  */
-export function crearPedidos({ repos, transaccion, eventos, pagos, direcciones }) {
+export function crearPedidos({ repos, transaccion, eventos, pagos, direcciones, ajustes }) {
   return {
+    // Cada quien ve sus pedidos; el personal de la tienda ve todos (y puede filtrar por usuario).
     pedidos(actor, { usuarioId, status }) {
-      return repos.pedidos.listar({ usuarioId: usuarioParaFiltrar(actor, usuarioId), status });
+      exigirSesion(actor);
+      return repos.pedidos.listar({ usuarioId: esPersonal(actor) ? usuarioId : actor.id, status });
     },
 
     async pedido(actor, id) {
       const pedido = await repos.pedidos.porId(id);
-      if (pedido) exigirDueno(actor, pedido.usuarioId);
+      if (pedido && !esPersonal(actor)) exigirDueno(actor, pedido.usuarioId);
       return pedido;
+    },
+
+    // El personal marca un pedido pagado como enviado o entregado.
+    async cambiarStatus(actor, id, status) {
+      exigirPersonal(actor);
+      const pedido = await repos.pedidos.porId(id);
+      if (!pedido) throw new ErrorDeNegocio(`No existe el pedido ${id}`);
+      const entrega = await repos.entregas.dePedido(pedido.id);
+      validarCambioDeStatus(pedido, entrega?.tipo ?? 'TIENDA', status);
+      await repos.pedidos.cambiarStatus(pedido.id, status);
+      return repos.pedidos.porId(pedido.id);
     },
 
     pedidoPorId: (id) => repos.pedidos.porId(id),
     detallesDe: (pedido) => repos.pedidos.detallesDe(pedido.id),
 
     // A un pedido tambien se llega con la referencia de su pago, y ese link lo puede abrir quien paga por
-    // otra persona. La direccion hace falta para confirmar el envio; el telefono solo lo ve el dueño o el admin.
+    // otra persona. La direccion hace falta para confirmar el envio; el telefono solo lo ven el dueño y el personal.
     async entregaDe(actor, pedido) {
       const entrega = await repos.entregas.dePedido(pedido.id);
-      if (!entrega || esDuenoOAdmin(actor, pedido.usuarioId)) return entrega;
+      if (!entrega || esDuenoOAdmin(actor, pedido.usuarioId) || esPersonal(actor)) return entrega;
       return { ...entrega, telefono: null };
     },
 
@@ -44,6 +66,7 @@ export function crearPedidos({ repos, transaccion, eventos, pagos, direcciones }
       if (vehiculoId) await vehiculoPropio(repos, actor, vehiculoId);
       // Con sesion, el pedido queda a nombre de la cuenta aunque el formulario traiga otro correo.
       const correo = actor?.email ?? cliente.email;
+      const tienda = await ajustes.actuales();
 
       const { pedido, lineas, envio } = await transaccion(async (tx) => {
         const usuario =
@@ -58,7 +81,8 @@ export function crearPedidos({ repos, transaccion, eventos, pagos, direcciones }
         for (const item of items) {
           const producto = await tx.productos.porId(item.productoId);
           if (!producto) throw new ErrorDeNegocio(`No existe un producto con id ${item.productoId}`);
-          const linea = armarLinea(producto, item.cantidad);
+          // El precio de cada pieza es el de quien compra: de mayoreo para los talleres.
+          const linea = armarLinea(producto, item.cantidad, precioPara(producto, actor, tienda));
           if (vehiculoId && !(await tx.compatibilidades.buscar(item.productoId, vehiculoId))) {
             throw new ErrorDeNegocio(`"${producto.nombre}" no es compatible con el vehiculo seleccionado`);
           }
@@ -66,8 +90,8 @@ export function crearPedidos({ repos, transaccion, eventos, pagos, direcciones }
         }
 
         // El total del pedido son las piezas mas el envio (gratis en mostrador o desde cierto importe).
-        const piezas = totalDe(lineas);
-        const envio = costoDeEnvio(comoSeEntrega.tipo, piezas);
+        const piezas = Math.round(totalDe(lineas) * 100) / 100;
+        const envio = costoDeEnvio(comoSeEntrega.tipo, piezas, tienda);
         const nuevo = await tx.pedidos.crear({
           usuarioId: usuario.id,
           vehiculoId: vehiculoId ?? null,

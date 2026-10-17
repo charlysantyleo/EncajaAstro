@@ -8,7 +8,7 @@ import { STATUS_PEDIDO } from '../../lib/pagos';
 import { comoIsla } from '../ui/Isla';
 
 // Cobro en mostrador: el comprador dicta su codigo, se revisa el pedido y, ya recibido el dinero,
-// se confirma el pago. Isla client:only del panel; el servidor vuelve a exigir el rol ADMIN en cada consulta.
+// se confirma el pago. Isla client:only del panel; el servidor vuelve a exigir el rol (EMPLEADO o ADMIN) en cada consulta.
 function CobroMostrador() {
   const sesion = useTienda((estado) => estado.sesion);
   const [codigo, setCodigo] = useState('');
@@ -18,7 +18,7 @@ function CobroMostrador() {
   const [aviso, setAviso] = useState(null);
   const [error, setError] = useState(null);
 
-  if (sesion?.usuario.rol !== 'ADMIN') return null;
+  if (sesion?.usuario.rol !== 'ADMIN' && sesion?.usuario.rol !== 'EMPLEADO') return null;
 
   async function buscar(evento) {
     evento.preventDefault();

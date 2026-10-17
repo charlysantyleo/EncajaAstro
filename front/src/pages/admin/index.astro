@@ -1,8 +1,8 @@
 ---
-import Base from '../layouts/Base.astro';
-import PuertaAdmin from '../components/admin/PuertaAdmin.jsx';
-import Grafica from '../components/admin/Grafica.jsx';
-import CobroMostrador from '../components/admin/CobroMostrador.jsx';
+import Panel from '../../layouts/Panel.astro';
+import PuertaAdmin from '../../components/admin/PuertaAdmin.jsx';
+import Grafica from '../../components/admin/Grafica.jsx';
+import CobroMostrador from '../../components/admin/CobroMostrador.jsx';
 
 // Indicadores y graficas del panel. Todavia sin datos: cada uno muestra su estado vacio.
 const indicadores = [
@@ -13,24 +13,20 @@ const indicadores = [
 ];
 ---
 
-<Base titulo="Panel | EnCaja Autopartes">
-  <!--
-    Unica isla de la pagina: la puerta que revisa la sesion. Todo lo de adentro (indicadores y
-    graficas) es HTML del build; <Grafica> es un componente de React usado sin client:*,
-    asi que no se hidrata ni pesa en el navegador.
-  -->
-  <PuertaAdmin client:only="react">
-    <div class="contenedor panel" style="max-width: 1240px">
+<!--
+  Mostrador: lo usan EMPLEADO y ADMIN. Las graficas (abajo) solo las ve el ADMIN: van en otra puerta,
+  silenciosa, para que el empleado no vea un aviso de "sin permiso". <Grafica> es un componente de React
+  usado sin client:*, asi que Astro lo convierte en HTML y no pesa en el navegador.
+-->
+<Panel titulo="Panel" ruta="/admin" descripcion="Mostrador, pedidos, catálogo y ajustes de la tienda.">
+  <CobroMostrador client:only="react" />
+
+  <PuertaAdmin client:only="react" roles={['ADMIN']} silencioso slot="despues">
+    <div class="contenedor panel" style="max-width: 1240px; padding-top: 0">
       <div class="encabezado-pagina">
-        <div>
-          <h1>Panel</h1>
-          <p style="margin-top: 12px; margin-bottom: 0">Ventas, pedidos e inventario de la tienda.</p>
-        </div>
+        <h4>Ventas</h4>
         <span class="etiqueta">Sin datos conectados</span>
       </div>
-
-      <!-- Isla dentro del panel: la unica parte que hoy habla con el servidor. -->
-      <CobroMostrador client:only="react" />
 
       <dl class="indicadores">
         {
@@ -52,4 +48,4 @@ const indicadores = [
       </div>
     </div>
   </PuertaAdmin>
-</Base>
+</Panel>

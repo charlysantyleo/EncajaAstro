@@ -3,6 +3,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { ArrowRight, ChevronsUpDown, X } from './ui/Iconos';
 import { useTienda } from '../store/useTienda';
 import { ENVIO_GRATIS, pesos } from '../lib/formato';
+import { useReglasDeEnvio } from '../hooks/useCatalogo';
 import { Importe } from './ui/Movimiento';
 import { comoIsla } from './ui/Isla';
 
@@ -17,8 +18,10 @@ function Nota() {
 
   const piezas = carrito.reduce((suma, item) => suma + item.cantidad, 0);
   const total = carrito.reduce((suma, item) => suma + item.precio * item.cantidad, 0);
-  const avance = Math.min(1, total / ENVIO_GRATIS);
-  const falta = Math.max(0, ENVIO_GRATIS - total);
+  // El importe para el envio gratis lo decide el admin; mientras llega, el de siempre.
+  const gratisDesde = useReglasDeEnvio().reglas?.gratisDesde ?? ENVIO_GRATIS;
+  const avance = gratisDesde > 0 ? Math.min(1, total / gratisDesde) : 1;
+  const falta = Math.max(0, gratisDesde - total);
 
   useEffect(() => {
     if (carrito.length === 0) setAbierta(false);
@@ -96,7 +99,7 @@ function Nota() {
           <span className="nota-piezas mono">{piezas}</span>
           <span className="nota-estado">
             {carrito.length === 0
-              ? 'Vacía. Envío gratis desde $999 en la zona metropolitana de Guadalajara.'
+              ? `Vacía. Envío gratis desde ${pesos(gratisDesde)} en la zona metropolitana de Guadalajara.`
               : falta > 0
                 ? `Te faltan ${pesos(falta)} para el envío gratis.`
                 : 'Tu pedido ya lleva envío gratis.'}

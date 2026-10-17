@@ -18,9 +18,11 @@ export const QUERY_PRODUCTOS = `
       numeroParte
       marca
       precio
+      precioParaTi
+      imagen
       stock
       categoria { id nombre }
-      compatibilidades { tipo vehiculo { id } }
+      compatibilidades { tipo marca modelo anioDesde anioHasta motor }
     }
   }
 `;
@@ -34,12 +36,18 @@ export const QUERY_PRODUCTO = `
       numeroParte
       marca
       precio
+      precioParaTi
+      imagen
       stock
       categoria { nombre }
       compatibilidades {
         tipo
         nota
-        vehiculo { id apodo marca modelo anio motor }
+        marca
+        modelo
+        anioDesde
+        anioHasta
+        motor
       }
     }
   }
@@ -47,7 +55,7 @@ export const QUERY_PRODUCTO = `
 
 export const QUERY_PRODUCTO_STOCK = `
   query ProductoStock($id: ID!) {
-    producto(id: $id) { id stock }
+    producto(id: $id) { id stock precioParaTi }
   }
 `;
 
@@ -253,5 +261,168 @@ export const QUERY_PEDIDO_POR_CODIGO = `
 export const MUTATION_CONFIRMAR_PAGO_MOSTRADOR = `
   mutation ConfirmarPagoEnMostrador($codigo: String!) {
     confirmarPagoEnMostrador(codigo: $codigo) {${CAMPOS_PEDIDO_MOSTRADOR}}
+  }
+`;
+
+// ---------- panel de administracion ----------
+
+const CAMPOS_PEDIDO_PANEL = `
+  id
+  fecha
+  total
+  status
+  usuario { nombre email }
+  entrega {
+    tipo
+    telefono
+    costo
+    direccion { calle numeroExterior numeroInterior colonia codigoPostal ciudad estado referencias }
+  }
+  pago { metodo proveedor status codigo }
+  detalles { cantidad importe producto { id nombre numeroParte } }
+`;
+
+export const QUERY_PEDIDOS_PANEL = `
+  query PedidosPanel {
+    pedidos {${CAMPOS_PEDIDO_PANEL}}
+  }
+`;
+
+export const MUTATION_CAMBIAR_STATUS_PEDIDO = `
+  mutation CambiarStatusDePedido($id: ID!, $status: StatusPedido!) {
+    cambiarStatusDePedido(id: $id, status: $status) {${CAMPOS_PEDIDO_PANEL}}
+  }
+`;
+
+export const QUERY_PRODUCTOS_PANEL = `
+  query ProductosPanel {
+    productos { id nombre descripcion numeroParte marca precio stock imagen categoria { id nombre } }
+  }
+`;
+
+export const QUERY_PRODUCTO_PANEL = `
+  query ProductoPanel($id: ID!) {
+    producto(id: $id) {
+      id nombre descripcion numeroParte marca precio stock imagen
+      categoria { id }
+      compatibilidades { id tipo nota marca modelo anioDesde anioHasta motor }
+    }
+  }
+`;
+
+
+export const MUTATION_CREAR_PRODUCTO = `
+  mutation CrearProducto($datos: ProductoInput!) {
+    crearProducto(datos: $datos) { id }
+  }
+`;
+
+export const MUTATION_ACTUALIZAR_PRODUCTO = `
+  mutation ActualizarProducto($id: ID!, $datos: ProductoInput!) {
+    actualizarProducto(id: $id, datos: $datos) { id }
+  }
+`;
+
+export const MUTATION_AJUSTAR_STOCK = `
+  mutation AjustarStock($productoId: ID!, $cantidad: Int!) {
+    ajustarStock(productoId: $productoId, cantidad: $cantidad) { id stock }
+  }
+`;
+
+export const MUTATION_SUBIR_IMAGEN = `
+  mutation SubirImagen($tipo: String!, $base64: String!) {
+    subirImagen(tipo: $tipo, base64: $base64)
+  }
+`;
+
+export const MUTATION_REGISTRAR_COMPATIBILIDAD = `
+  mutation RegistrarCompatibilidad($datos: CompatibilidadInput!) {
+    registrarCompatibilidad(datos: $datos) { id }
+  }
+`;
+
+export const MUTATION_ELIMINAR_COMPATIBILIDAD = `
+  mutation EliminarCompatibilidad($id: ID!) {
+    eliminarCompatibilidad(id: $id)
+  }
+`;
+
+export const QUERY_USUARIOS_PANEL = `
+  query UsuariosPanel {
+    usuarios { id nombre email rol }
+  }
+`;
+
+export const MUTATION_CAMBIAR_ROL = `
+  mutation CambiarRol($usuarioId: ID!, $rol: Rol!) {
+    cambiarRol(usuarioId: $usuarioId, rol: $rol) { id rol }
+  }
+`;
+
+export const QUERY_AJUSTES = `
+  query Ajustes {
+    ajustesDeTienda { costoEnvio envioGratisDesde descuentoTaller }
+  }
+`;
+
+export const MUTATION_ACTUALIZAR_AJUSTES = `
+  mutation ActualizarAjustes($datos: AjustesInput!) {
+    actualizarAjustes(datos: $datos) { costoEnvio envioGratisDesde descuentoTaller }
+  }
+`;
+
+export const MUTATION_CREAR_CATEGORIA = `
+  mutation CrearCategoria($datos: CategoriaInput!) {
+    crearCategoria(datos: $datos) { id nombre descripcion }
+  }
+`;
+
+// ---------- catalogo de vehiculos ----------
+
+export const QUERY_BUSCAR_VEHICULOS = `
+  query BuscarVehiculos($texto: String!, $limite: Int) {
+    buscarVehiculos(texto: $texto, limite: $limite) { marca modelo anio desde hasta }
+  }
+`;
+
+export const QUERY_MARCAS_DE_VEHICULOS = `
+  query MarcasDeVehiculos($anio: Int) {
+    marcasDeVehiculos(anio: $anio)
+  }
+`;
+
+export const QUERY_MODELOS_DE_VEHICULOS = `
+  query ModelosDeVehiculos($marca: String!, $anio: Int) {
+    modelosDeVehiculos(marca: $marca, anio: $anio)
+  }
+`;
+
+export const QUERY_ANIOS_DE_VEHICULO = `
+  query AniosDeVehiculo($marca: String!, $modelo: String!) {
+    aniosDeVehiculo(marca: $marca, modelo: $modelo)
+  }
+`;
+
+export const QUERY_MOTORES_DE_VEHICULO = `
+  query MotoresDeVehiculo($marca: String!, $modelo: String!, $anio: Int) {
+    motoresDeVehiculo(marca: $marca, modelo: $modelo, anio: $anio)
+  }
+`;
+
+export const QUERY_CATALOGO_DE_MARCA = `
+  query CatalogoDeMarca($marca: String!) {
+    catalogoDeMarca(marca: $marca) { marca modelo anios { id anio motores origen } }
+  }
+`;
+
+export const MUTATION_GUARDAR_MODELO_DE_VEHICULO = `
+  mutation GuardarModeloDeVehiculo($datos: ModeloDeVehiculoInput!) {
+    guardarModeloDeVehiculo(datos: $datos) { id anio motores origen }
+  }
+`;
+
+export const MUTATION_QUITAR_MODELO_DE_VEHICULO = `
+  mutation QuitarModeloDeVehiculo($marca: String!, $modelo: String!, $anioDesde: Int!, $anioHasta: Int!) {
+    quitarModeloDeVehiculo(marca: $marca, modelo: $modelo, anioDesde: $anioDesde, anioHasta: $anioHasta)
   }
 `;

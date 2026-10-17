@@ -15,4 +15,5 @@ export function fechaHora(iso) {
   return momento.format(new Date(iso));
 }
 
+// Solo mientras llega el valor real (reglasDeEnvio): el admin lo cambia en Panel -> Ajustes.
 export const ENVIO_GRATIS = 999;

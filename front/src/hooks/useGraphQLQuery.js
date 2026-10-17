@@ -17,7 +17,11 @@ export function useGraphQLQuery(query, variables, { skip = false, version = 0 } 
     // Mientras se hidrata el HTML del build, el store aun no trae lo guardado (vehiculo activo, sesion):
     // se espera al estado real para no pedir dos veces. Entre tanto se queda en "cargando".
     if (!enNavegador) return undefined;
+    // Una consulta apagada no tiene datos: sin esto, al cerrar sesion se seguian viendo los coches
+    // del garage de quien salio (lo ultimo que se cargo antes de que la consulta se apagara).
     if (skip) {
+      setDatos(null);
+      setError(null);
       setCargando(false);
       return;
     }

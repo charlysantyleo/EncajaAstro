@@ -1,0 +1,31 @@
+---
+import Base from './Base.astro';
+import PuertaAdmin from '../components/admin/PuertaAdmin.jsx';
+import MenuPanel from '../components/admin/MenuPanel.jsx';
+
+// Marco de cada pagina del panel: puerta por rol, titulo y menu de secciones.
+// La herramienta de cada pagina va en el slot como su propia isla (client:only), anidada en la puerta.
+interface Props {
+  titulo: string;
+  ruta: string;
+  descripcion?: string;
+  roles?: string[];
+}
+const { titulo, ruta, descripcion, roles = ['ADMIN', 'EMPLEADO'] } = Astro.props;
+---
+
+<Base titulo={titulo === 'Panel' ? 'Panel | EnCaja Autopartes' : `${titulo} | Panel | EnCaja Autopartes`}>
+  <PuertaAdmin client:only="react" roles={roles}>
+    <div class="contenedor panel" style="max-width: 1240px">
+      <div class="encabezado-pagina">
+        <div>
+          <h1>{titulo}</h1>
+          {descripcion && <p style="margin-top: 12px; margin-bottom: 0">{descripcion}</p>}
+        </div>
+      </div>
+      <MenuPanel client:only="react" actual={ruta} />
+      <slot />
+    </div>
+  </PuertaAdmin>
+  <slot name="despues" />
+</Base>

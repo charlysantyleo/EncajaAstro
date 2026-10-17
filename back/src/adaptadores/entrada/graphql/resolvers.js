@@ -4,10 +4,10 @@
 import { withFilter } from 'graphql-subscriptions';
 
 /**
- * @param {{ catalogo, garage, pedidos, cuentas, pagos, direcciones }} casos  casos de uso ya armados (ver src/contenedor.js)
+ * @param {{ catalogo, garage, vehiculos, pedidos, cuentas, pagos, direcciones, ajustes }} casos  casos de uso ya armados (ver src/contenedor.js)
  * @param {import('../../../puertos/salida.js').Eventos} eventos
  */
-export function crearResolvers({ catalogo, garage, pedidos, cuentas, pagos, direcciones }, eventos) {
+export function crearResolvers({ catalogo, garage, vehiculos, pedidos, cuentas, pagos, direcciones, ajustes }, eventos) {
   return {
     Query: {
       yo: (_, __, { actor }) => cuentas.yo(actor),
@@ -17,7 +17,14 @@ export function crearResolvers({ catalogo, garage, pedidos, cuentas, pagos, dire
       productos: (_, filtros) => catalogo.buscarProductos(filtros),
       producto: (_, { id }) => catalogo.producto(id),
       productosCompatibles: (_, args) => catalogo.productosCompatibles(args),
-      vehiculosCompatibles: (_, { productoId }) => catalogo.vehiculosCompatibles(productoId),
+      vehiculosCompatibles: (_, { productoId }, { actor }) => catalogo.vehiculosCompatibles(actor, productoId),
+
+      marcasDeVehiculos: (_, { anio }) => vehiculos.marcas(anio),
+      modelosDeVehiculos: (_, { marca, anio }) => vehiculos.modelos(marca, anio),
+      aniosDeVehiculo: (_, { marca, modelo }) => vehiculos.anios(marca, modelo),
+      motoresDeVehiculo: (_, { marca, modelo, anio }) => vehiculos.motores(marca, modelo, anio),
+      buscarVehiculos: (_, { texto, limite }) => vehiculos.buscar(texto, limite),
+      catalogoDeMarca: (_, { marca }) => vehiculos.deMarca(marca),
       compatibilidades: (_, filtros) => catalogo.compatibilidades(filtros),
 
       vehiculos: (_, filtros, { actor }) => garage.vehiculos(actor, filtros),
@@ -35,6 +42,7 @@ export function crearResolvers({ catalogo, garage, pedidos, cuentas, pagos, dire
       pedidoPorCodigoDeMostrador: (_, { codigo }, { actor }) => pagos.pedidoPorCodigoDeMostrador(actor, codigo),
 
       reglasDeEnvio: () => direcciones.reglas(),
+      ajustesDeTienda: () => ajustes.actuales(),
       misDirecciones: (_, __, { actor }) => direcciones.mias(actor),
     },
 
@@ -60,6 +68,14 @@ export function crearResolvers({ catalogo, garage, pedidos, cuentas, pagos, dire
       verificarPago: (_, { referencia }) => pagos.verificar(referencia),
       eliminarDireccion: (_, { id }, { actor }) => direcciones.eliminar(actor, id),
       confirmarPagoEnMostrador: (_, { codigo }, { actor }) => pagos.confirmarPagoEnMostrador(actor, codigo),
+      cambiarStatusDePedido: (_, { id, status }, { actor }) => pedidos.cambiarStatus(actor, id, status),
+      cambiarRol: (_, { usuarioId, rol }, { actor }) => cuentas.cambiarRol(actor, usuarioId, rol),
+      actualizarAjustes: (_, { datos }, { actor }) => ajustes.actualizar(actor, datos),
+      ajustarStock: (_, { productoId, cantidad }, { actor }) => catalogo.ajustarStock(actor, productoId, cantidad),
+      subirImagen: (_, datos, { actor }) => catalogo.subirImagen(actor, datos),
+      eliminarCompatibilidad: (_, { id }, { actor }) => catalogo.eliminarCompatibilidad(actor, id),
+      guardarModeloDeVehiculo: (_, { datos }, { actor }) => vehiculos.guardar(actor, datos),
+      quitarModeloDeVehiculo: (_, rango, { actor }) => vehiculos.quitar(actor, rango),
     },
 
     Subscription: {
@@ -83,6 +99,7 @@ export function crearResolvers({ catalogo, garage, pedidos, cuentas, pagos, dire
     Producto: {
       categoria: (producto) => catalogo.categoriaDe(producto),
       compatibilidades: (producto) => catalogo.compatibilidades({ productoId: producto.id }),
+      precioParaTi: (producto, _, { actor }) => catalogo.precioPara(actor, producto),
     },
     Vehiculo: {
       usuario: (vehiculo, _, { actor }) => garage.duenoDe(actor, vehiculo),
@@ -91,7 +108,6 @@ export function crearResolvers({ catalogo, garage, pedidos, cuentas, pagos, dire
     },
     Compatibilidad: {
       producto: (compatibilidad) => catalogo.producto(compatibilidad.productoId),
-      vehiculo: (compatibilidad) => garage.vehiculoPorId(compatibilidad.vehiculoId),
     },
     DetallePedido: {
       producto: (detalle) => catalogo.producto(detalle.productoId),

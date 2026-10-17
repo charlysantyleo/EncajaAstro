@@ -4,9 +4,10 @@ import { Plus } from './ui/Iconos';
 import { enNota, useTienda } from '../store/useTienda';
 import { useProducto } from '../hooks/useCatalogo';
 import { imagenDe } from '../imagenes';
-import { ajusteDe } from '../lib/compat';
+import { ajusteDe, cubre, describir } from '../lib/compat';
 import { pesos } from '../lib/formato';
 import { Cantidad, NumeroGiro, Sello, useCambio } from './ui/Movimiento';
+import Precio from './ui/Precio';
 
 const SALIDA = [0.23, 1, 0.32, 1];
 
@@ -16,7 +17,7 @@ export default function ProductoCard({ producto, indice = 0, abierta = false, on
   const vehiculoActivo = useTienda((estado) => estado.vehiculoActivo);
   const reducido = useReducedMotion();
   const imagen = imagenDe(producto);
-  const ajuste = ajusteDe(producto, vehiculoActivo?.id);
+  const ajuste = ajusteDe(producto, vehiculoActivo);
   const agotada = producto.stock <= 0;
   // Lo que todavia se puede agregar: existencias menos lo que ya esta en la nota.
   const yaEnNota = useTienda(enNota(producto.id));
@@ -66,7 +67,7 @@ export default function ProductoCard({ producto, indice = 0, abierta = false, on
             <NumeroGiro valor={producto.stock} />
             <span className="renglon-stock-txt"> {agotada ? 'sin existencias' : 'en stock'}</span>
           </span>
-          <span className="col-precio renglon-precio">{pesos(producto.precio)}</span>
+          <Precio producto={producto} className="col-precio renglon-precio" />
         </button>
         <button
           type="button"
@@ -142,13 +143,10 @@ function Ficha({ productoId, imagen }) {
               <h5>Compatible con</h5>
               <ul>
                 {producto.compatibilidades.map((compatibilidad, i) => {
-                  const mio = compatibilidad.vehiculo.id === vehiculoActivo?.id;
+                  const mio = Boolean(vehiculoActivo && cubre(compatibilidad, vehiculoActivo));
                   return (
                     <li key={i} className={mio ? 'mio' : undefined}>
-                      <span>
-                        {compatibilidad.vehiculo.marca} {compatibilidad.vehiculo.modelo} {compatibilidad.vehiculo.anio}
-                        {compatibilidad.vehiculo.motor ? ` · ${compatibilidad.vehiculo.motor}` : ''}
-                      </span>
+                      <span>{describir(compatibilidad)}</span>
                       <span className="ficha-tipo">{compatibilidad.tipo === 'DIRECTO' ? 'Directo' : 'Equivalencia'}</span>
                       {compatibilidad.nota && <span className="ficha-nota">{compatibilidad.nota}</span>}
                     </li>
@@ -166,7 +164,7 @@ function Ficha({ productoId, imagen }) {
             >
               <Cantidad valor={cantidad} min={1} max={Math.max(1, caben)} onCambio={setCantidad} />
               <button className="btn btn-primario" type="submit" disabled={caben === 0}>
-                Agregar a la nota · {pesos(producto.precio * cantidad)}
+                Agregar a la nota · {pesos((producto.precioParaTi ?? producto.precio) * cantidad)}
               </button>
               {yaEnNota > 0 && (
                 <span className="apagado" style={{ alignSelf: 'center' }}>

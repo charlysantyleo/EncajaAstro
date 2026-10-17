@@ -3,9 +3,10 @@ import { CircleCheck, CircleAlert, Plus } from './ui/Iconos';
 import { enNota, useTienda } from '../store/useTienda';
 import { useProducto } from '../hooks/useCatalogo';
 import { imagenDe } from '../imagenes';
-import { pesos } from '../lib/formato';
+import { ajusteDe, cubre, describir } from '../lib/compat';
 import Capa from './ui/Capa';
 import { Cantidad, NumeroGiro, Sello } from './ui/Movimiento';
+import Precio from './ui/Precio';
 import { Cargando, ErrorConReintento } from './EstadoCarga';
 
 // Detalle de la pieza como cajon lateral (patron Drawer de beUI).
@@ -22,9 +23,7 @@ export default function ProductoModal() {
   const caben = Math.max(0, (producto?.stock ?? 0) - yaEnNota);
   const cantidad = Math.min(elegida, Math.max(1, caben));
 
-  const ajusteActivo = producto?.compatibilidades.find(
-    (compatibilidad) => compatibilidad.vehiculo.id === vehiculoActivo?.id
-  );
+  const ajusteActivo = ajusteDe(producto, vehiculoActivo);
 
   function manejarAgregar(evento) {
     evento.preventDefault();
@@ -58,7 +57,7 @@ export default function ProductoModal() {
           {producto.descripcion && <p style={{ margin: 0 }}>{producto.descripcion}</p>}
 
           <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12 }}>
-            <span className="capa-precio">{pesos(producto.precio)}</span>
+            <Precio producto={producto} className="capa-precio" />
             <span className={producto.stock > 0 ? 'pieza-existencias' : 'pieza-existencias cero'}>
               <span className="punto" aria-hidden="true" />
               {producto.stock > 0 ? (
@@ -91,12 +90,9 @@ export default function ProductoModal() {
               {producto.compatibilidades.map((compatibilidad, indice) => (
                 <li
                   key={indice}
-                  className={compatibilidad.vehiculo.id === vehiculoActivo?.id ? 'ajuste mio' : 'ajuste'}
+                  className={vehiculoActivo && cubre(compatibilidad, vehiculoActivo) ? 'ajuste mio' : 'ajuste'}
                 >
-                  <span>
-                    {compatibilidad.vehiculo.marca} {compatibilidad.vehiculo.modelo} {compatibilidad.vehiculo.anio}
-                    {compatibilidad.vehiculo.motor ? ` (${compatibilidad.vehiculo.motor})` : ''}
-                  </span>
+                  <span>{describir(compatibilidad)}</span>
                   <span className={compatibilidad.tipo === 'DIRECTO' ? 'etiqueta sello-azul' : 'etiqueta rojo'}>
                     {compatibilidad.tipo === 'DIRECTO' ? 'Directo' : 'Equivalencia'}
                   </span>

@@ -14,7 +14,7 @@ import {
   planDePago,
   venceEn,
 } from '../dominio/pagos.js';
-import { exigirAdmin } from '../dominio/permisos.js';
+import { exigirPersonal } from '../dominio/permisos.js';
 
 const NOMBRE = { [PROVEEDORES.MERCADO_PAGO]: 'Mercado Pago', [PROVEEDORES.PAYPAL]: 'PayPal' };
 
@@ -184,18 +184,18 @@ export function crearPagos({ repos, transaccion, eventos, pasarelas, urls }) {
       }
     },
 
-    // ---------- cobro en mostrador (solo ADMIN) ----------
+    // ---------- cobro en mostrador (personal: EMPLEADO o ADMIN) ----------
 
     // El pedido que corresponde a un codigo de mostrador, para revisarlo antes de cobrar.
     async pedidoPorCodigoDeMostrador(actor, codigo) {
-      exigirAdmin(actor);
+      exigirPersonal(actor);
       const pago = await repos.pagos.porCodigo(normalizarCodigoDeMostrador(codigo));
       return pago?.metodo === METODOS.PICKUP ? repos.pedidos.porId(pago.pedidoId) : null;
     },
 
     // Quien cobra en mostrador recibio el dinero: el pedido queda pagado.
     async confirmarPagoEnMostrador(actor, codigo) {
-      exigirAdmin(actor);
+      exigirPersonal(actor);
       const pago = await repos.pagos.porCodigo(normalizarCodigoDeMostrador(codigo));
       if (pago?.metodo !== METODOS.PICKUP) throw new ErrorDeNegocio('No hay ningún pedido para pagar en mostrador con ese código');
       const pedido = await repos.pedidos.porId(pago.pedidoId);

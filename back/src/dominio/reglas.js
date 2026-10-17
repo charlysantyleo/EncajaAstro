@@ -16,12 +16,13 @@ export function validarItemsDelPedido(items) {
 }
 
 // Valida un renglon del carrito contra el producto real y calcula su importe.
-export function armarLinea(producto, cantidad) {
+// `precio` es el que le toca a quien compra (precio de lista, o de mayoreo si es taller).
+export function armarLinea(producto, cantidad, precio = producto.precio) {
   if (cantidad < 1) throw new ErrorDeNegocio(`La cantidad de "${producto.nombre}" debe ser al menos 1`);
   if (producto.stock < cantidad) {
     throw new ErrorDeNegocio(`Sin stock suficiente de "${producto.nombre}" (disponible: ${producto.stock})`);
   }
-  return { producto, cantidad, precio: producto.precio, importe: producto.precio * cantidad };
+  return { producto, cantidad, precio, importe: Math.round(precio * cantidad * 100) / 100 };
 }
 
 export function totalDe(lineas) {
@@ -55,4 +56,19 @@ export function paginar(lista, { limite, desde } = {}) {
   if (desde) resultado = resultado.slice(desde);
   if (limite) resultado = resultado.slice(0, limite);
   return resultado;
+}
+
+// ---------- estado de un pedido ----------
+
+// Lo que el personal puede hacer con un pedido ya pagado: enviarlo (si es a domicilio) y entregarlo.
+const SIGUIENTES = { PAGADO: ['ENVIADO', 'ENTREGADO'], ENVIADO: ['ENTREGADO'] };
+
+export function validarCambioDeStatus(pedido, tipoDeEntrega, nuevo) {
+  if (!(SIGUIENTES[pedido.status] ?? []).includes(nuevo)) {
+    const motivo = pedido.status === 'PENDIENTE' ? 'todavía no está pagado' : `está ${pedido.status.toLowerCase()}`;
+    throw new ErrorDeNegocio(`El pedido N.º ${pedido.id} no se puede marcar como ${nuevo.toLowerCase()}: ${motivo}`);
+  }
+  if (nuevo === 'ENVIADO' && tipoDeEntrega !== 'DOMICILIO') {
+    throw new ErrorDeNegocio(`El pedido N.º ${pedido.id} se recoge en mostrador: márcalo como entregado`);
+  }
 }

@@ -36,14 +36,45 @@ npm run db:init
 
 Esto ejecuta `db.sql` contra `DATABASE_URL`: crea las tablas
 (`usuario`, `categoria`, `producto`, `vehiculo`, `compatibilidad`, `pedido`,
-`detalle_pedido`, `pago`, `entrega`, `direccion`, `mantenimiento`) y carga los datos semilla (usuarios demo,
-categorias, 16 productos, 5 vehiculos y sus compatibilidades).
+`detalle_pedido`, `pago`, `entrega`, `direccion`, `mantenimiento`, `ajuste`, `imagen`, `catalogo_vehiculo`) y carga
+los datos semilla (usuarios demo, categorias, 16 productos, 5 vehiculos y sus compatibilidades) y el catalogo de
+vehiculos de `datos/vehiculos.json`.
 
 Si tu base se creo antes de los cobros, agrega la tabla `pago` con
 `npm run db:pagos`; si se creo antes de pedir los datos de entrega, agrega
-las tablas `entrega` y `direccion` con `npm run db:entregas` (ninguno toca lo
-demas, y se pueden correr mas de una vez). Como configurar Mercado Pago y PayPal:
+las tablas `entrega` y `direccion` con `npm run db:entregas`; si se creo antes del
+panel, agrega las tablas `ajuste` (costo de envio y descuento de taller) e `imagen`
+(fotos de productos subidas desde el panel) con `npm run db:panel`; si se creo antes del
+catalogo de vehiculos, crealo y convierte las compatibilidades a rangos de años con
+`npm run db:vehiculos` (ninguno borra datos, y se pueden correr mas de una vez). Como configurar Mercado Pago y PayPal:
 [`../PAGOS.md`](../PAGOS.md).
+
+## Catalogo de vehiculos
+
+Los clientes eligen su coche de una lista compartida (marca, modelo, año y motor) en lugar de escribirlo,
+y cada compatibilidad dice "esta pieza embona en Nissan Versa 2012–2019" (opcionalmente "solo con motor
+1.6L 4 cil."). Asi el administrador registra una pieza una sola vez y le aparece a todo cliente con ese coche.
+
+La lista sale de tres fuentes gratuitas y queda guardada en `datos/vehiculos.json`:
+
+| Fuente | Que aporta |
+|---|---|
+| INEGI, Registro Administrativo de la Industria Automotriz de Vehiculos Ligeros (ventas mensuales por modelo) | Que modelos se venden en Mexico y en que años (desde 2005) |
+| NHTSA vPIC (gobierno de EE. UU.) | El nombre oficial de cada modelo y su marca real (INEGI escribe "Sentra 4 PTS" o "General Motors") |
+| FuelEconomy.gov (EPA, gobierno de EE. UU.) | Los motores de cada modelo y año, y los años anteriores a 2005 |
+
+```bash
+npm run vehiculos:armar   # vuelve a descargar las fuentes y regenera datos/vehiculos.json (unos minutos)
+npm run db:vehiculos      # carga el JSON a la base (y en bases viejas convierte las compatibilidades)
+```
+
+`vehiculos:armar` solo hace falta de vez en cuando (por ejemplo, una vez al año, para los modelos nuevos);
+el JSON resultante se sube al repositorio. Lo que el administrador agrega o corrige en **Panel → Vehiculos**
+queda marcado como `PANEL` y la carga no lo pisa. Los modelos que solo se venden en Mexico no traen motores
+(las fuentes de motores son de EE. UU.): el garage ofrece entonces una lista general de motores.
+
+Fuente de las ventas por modelo: INEGI, Registro Administrativo de la Industria Automotriz de Vehiculos
+Ligeros (RAIAVL), usado bajo sus [terminos de libre uso](https://www.inegi.org.mx/inegi/terminos.html).
 
 ## Correr el servidor
 
@@ -76,7 +107,7 @@ back/
 ├── index.js                  Arranque: arma la app y levanta el servidor
 ├── src/
 │   ├── dominio/              Reglas puras: permisos, validaciones, errores
-│   ├── aplicacion/           Casos de uso: catalogo, garage, pedidos, pagos, direcciones, cuentas
+│   ├── aplicacion/           Casos de uso: catalogo, garage, vehiculos, pedidos, pagos, direcciones, cuentas
 │   ├── puertos/salida.js     Contratos que la aplicacion necesita (repos, tokens...)
 │   ├── adaptadores/
 │   │   ├── entrada/          GraphQL (schema + resolvers) y HTTP (servidor, rutas de Google, webhook de pagos)
@@ -84,7 +115,8 @@ back/
 │   ├── contenedor.js         Conecta cada puerto con su adaptador
 │   └── config.js             Variables de entorno
 ├── db.sql                    Esquema + datos semilla, dialecto Postgres
-├── scripts/                  init-db.js (crea tablas), migrar-pagos.js, migrar-entregas.js y demo-passwords.js
+├── datos/vehiculos.json      Catalogo de vehiculos (INEGI + NHTSA + FuelEconomy.gov)
+├── scripts/                  init-db.js (crea tablas), migrar-*.js, demo-passwords.js y vehiculos/ (armar y cargar el catalogo)
 └── .env.example
 ```
 

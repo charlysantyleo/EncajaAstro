@@ -1,8 +1,13 @@
 export const typeDefs = `#graphql
   """Rol del usuario dentro del sistema."""
   enum Rol {
+    "Compra, garage, bitacora y direcciones guardadas."
     CLIENTE
+    "Como CLIENTE, con precio de mayoreo (descuentoTaller de los ajustes)."
     TALLER
+    "Mostrador: cobra pagos en mostrador, ve todos los pedidos y los marca enviados o entregados."
+    EMPLEADO
+    "Todo: lo de EMPLEADO, el catalogo, los usuarios y los ajustes de la tienda."
     ADMIN
   }
 
@@ -105,6 +110,8 @@ export const typeDefs = `#graphql
     stock: Int!
     categoria: Categoria
     compatibilidades: [Compatibilidad!]!
+    "Lo que paga quien consulta: precio de lista, o de mayoreo si su cuenta es de taller."
+    precioParaTi: Float!
   }
 
   """Vehiculo registrado en el garage de un usuario."""
@@ -122,13 +129,49 @@ export const typeDefs = `#graphql
     mantenimientos: [Mantenimiento!]!
   }
 
-  """Relacion muchos a muchos entre una pieza y un vehiculo, con el tipo de ajuste."""
+  """
+  En que vehiculos embona una pieza: un modelo del catalogo en un rango de años y, si importa, un motor.
+  Le aplica a cualquier coche del garage con esa marca, modelo, año (y motor).
+  """
   type Compatibilidad {
     id: ID!
     tipo: TipoCompatibilidad!
     nota: String
     producto: Producto!
-    vehiculo: Vehiculo!
+    marca: String!
+    modelo: String!
+    anioDesde: Int!
+    anioHasta: Int!
+    "null = cualquier motor de ese modelo."
+    motor: String
+  }
+
+  """Un modelo del catalogo de vehiculos en un año, con los motores que trajo."""
+  type ModeloDeVehiculo {
+    id: ID!
+    marca: String!
+    modelo: String!
+    anio: Int!
+    motores: [String!]!
+    "IMPORTADO (INEGI, NHTSA y FuelEconomy.gov) o PANEL (agregado o corregido por el administrador)."
+    origen: String!
+  }
+
+  """Un modelo del catalogo con todos sus años, para el panel."""
+  type ModeloDelCatalogo {
+    marca: String!
+    modelo: String!
+    anios: [ModeloDeVehiculo!]!
+  }
+
+  """Resultado de buscar un vehiculo por texto ("versa 2018")."""
+  type VehiculoEncontrado {
+    marca: String!
+    modelo: String!
+    "El año escrito en la busqueda, o null si no se escribio."
+    anio: Int
+    desde: Int!
+    hasta: Int!
   }
 
   """Renglon de un pedido: que producto, cuantas piezas y a que precio."""
@@ -233,7 +276,8 @@ export const typeDefs = `#graphql
     marca: String
     precio: Float!
     imagen: String
-    stock: Int!
+    "Al crear: existencias iniciales (0 si no viene). Al editar: si no viene, no se tocan (para sumar o restar usa ajustarStock)."
+    stock: Int
     categoriaId: ID
   }
 
@@ -257,12 +301,26 @@ export const typeDefs = `#graphql
     kilometraje: Int
   }
 
-  """Entrada para declarar que una pieza embona en un vehiculo."""
+  """Entrada para declarar que una pieza embona en un modelo del catalogo, de un año a otro."""
   input CompatibilidadInput {
     productoId: ID!
-    vehiculoId: ID!
+    marca: String!
+    modelo: String!
+    anioDesde: Int!
+    anioHasta: Int!
+    "Vacio = cualquier motor de ese modelo."
+    motor: String
     tipo: TipoCompatibilidad
     nota: String
+  }
+
+  """Entrada para agregar o corregir un modelo del catalogo de vehiculos en un rango de años."""
+  input ModeloDeVehiculoInput {
+    marca: String!
+    modelo: String!
+    anioDesde: Int!
+    anioHasta: Int!
+    motores: [String!]
   }
 
   """Datos del comprador cuando el pedido se hace como invitado."""
@@ -309,6 +367,23 @@ export const typeDefs = `#graphql
     ciudad: String!
     estado: String!
     referencias: String
+  }
+
+  """Ajustes de la tienda que el administrador cambia desde el panel."""
+  type Ajustes {
+    "Cuota del envio a domicilio."
+    costoEnvio: Float!
+    "Importe en piezas a partir del cual el envio es gratis."
+    envioGratisDesde: Float!
+    "Descuento de las cuentas TALLER, en porcentaje (0 a 50)."
+    descuentoTaller: Float!
+  }
+
+  """Ajustes a cambiar; los que no vengan se quedan como estan."""
+  input AjustesInput {
+    costoEnvio: Float
+    envioGratisDesde: Float
+    descuentoTaller: Float
   }
 
   """Lo que cuesta el envio a domicilio y a donde llega."""
@@ -392,8 +467,21 @@ export const typeDefs = `#graphql
     "Que piezas embonan en un vehiculo dado."
     productosCompatibles(vehiculoId: ID!, categoriaId: ID, soloDirectos: Boolean): [Producto!]!
 
-    "Relacion inversa: en que vehiculos entra una pieza."
+    "En cuales de los coches de mi garage embona una pieza (sin sesion: lista vacia)."
     vehiculosCompatibles(productoId: ID!): [Vehiculo!]!
+
+    "Catalogo de vehiculos: marcas (de un año, si se indica)."
+    marcasDeVehiculos(anio: Int): [String!]!
+    "Modelos de una marca (de un año, si se indica)."
+    modelosDeVehiculos(marca: String!, anio: Int): [String!]!
+    "Años de un modelo, del mas reciente al mas antiguo."
+    aniosDeVehiculo(marca: String!, modelo: String!): [Int!]!
+    "Motores de un modelo en un año (sin año: de todos sus años). Vacio si el catalogo no los conoce."
+    motoresDeVehiculo(marca: String!, modelo: String!, anio: Int): [String!]!
+    "Busca en el catalogo por texto: 'versa', 'nissan versa 2018'."
+    buscarVehiculos(texto: String!, limite: Int): [VehiculoEncontrado!]!
+    "Para el panel: los modelos de una marca con sus años y motores."
+    catalogoDeMarca(marca: String!): [ModeloDelCatalogo!]!
 
     "Vehiculos del garage, con filtro por dueno o por marca."
     vehiculos(usuarioId: ID, marca: String): [Vehiculo!]!
@@ -408,7 +496,7 @@ export const typeDefs = `#graphql
     pedidos(usuarioId: ID, status: StatusPedido): [Pedido!]!
     pedido(id: ID!): Pedido
 
-    "Solo ADMIN: el pedido de un codigo de mostrador, para revisarlo antes de cobrar."
+    "Personal (EMPLEADO o ADMIN): el pedido de un codigo de mostrador, para revisarlo antes de cobrar."
     pedidoPorCodigoDeMostrador(codigo: String!): Pedido
 
     "Metodos de pago que ofrece el checkout y cuales estan configurados."
@@ -419,6 +507,9 @@ export const typeDefs = `#graphql
 
     "Costo y cobertura del envio a domicilio."
     reglasDeEnvio: ReglasDeEnvio!
+
+    "Ajustes actuales de la tienda."
+    ajustesDeTienda: Ajustes!
 
     "Direcciones guardadas del usuario del token, la mas reciente primero."
     misDirecciones: [DireccionGuardada!]!
@@ -453,8 +544,14 @@ export const typeDefs = `#graphql
     "Solo ADMIN: da de alta un usuario con cualquier rol."
     registrarUsuario(datos: UsuarioInput!): Usuario!
 
-    "Declara que una pieza embona en un vehiculo. Rechaza duplicados."
+    "Solo ADMIN: declara que una pieza embona en un modelo de un año a otro. Rechaza rangos que se enciman."
     registrarCompatibilidad(datos: CompatibilidadInput!): Compatibilidad!
+
+    "Solo ADMIN: agrega un modelo al catalogo de vehiculos (o reemplaza sus motores) en un rango de años."
+    guardarModeloDeVehiculo(datos: ModeloDeVehiculoInput!): [ModeloDeVehiculo!]!
+
+    "Solo ADMIN: quita del catalogo un modelo en un rango de años. Regresa cuantos años quito."
+    quitarModeloDeVehiculo(marca: String!, modelo: String!, anioDesde: Int!, anioHasta: Int!): Int!
 
     "Mutation de negocio del modulo de compra: valida stock y compatibilidad, calcula el total, descuenta existencias, crea el pedido con su detalle e inicia el cobro."
     registrarPedido(datos: PedidoInput!): Pedido!
@@ -462,8 +559,26 @@ export const typeDefs = `#graphql
     "Pregunta a la pasarela como va el cobro y pone el pedido al dia (PAGADO si se aprobo, CANCELADO si se rechazo o vencio)."
     verificarPago(referencia: ID!): Pedido!
 
-    "Solo ADMIN: el comprador pago en mostrador; el pedido de ese codigo queda PAGADO."
+    "Personal (EMPLEADO o ADMIN): el comprador pago en mostrador; el pedido de ese codigo queda PAGADO."
     confirmarPagoEnMostrador(codigo: String!): Pedido!
+
+    "Personal (EMPLEADO o ADMIN): marca un pedido pagado como ENVIADO (solo a domicilio) o ENTREGADO."
+    cambiarStatusDePedido(id: ID!, status: StatusPedido!): Pedido!
+
+    "Solo ADMIN: cambia el rol de otra cuenta (no el propio)."
+    cambiarRol(usuarioId: ID!, rol: Rol!): Usuario!
+
+    "Solo ADMIN: costo de envio, envio gratis y descuento de taller."
+    actualizarAjustes(datos: AjustesInput!): Ajustes!
+
+    "Solo ADMIN: suma (o resta, con negativo) piezas a las existencias de un producto."
+    ajustarStock(productoId: ID!, cantidad: Int!): Producto!
+
+    "Solo ADMIN: guarda una foto de producto (WebP, JPG o PNG en base64, maximo 1.5 MB) y regresa su ruta para usarla en imagen."
+    subirImagen(tipo: String!, base64: String!): String!
+
+    "Solo ADMIN: quita una compatibilidad pieza-vehiculo."
+    eliminarCompatibilidad(id: ID!): Boolean!
 
     "Borra una direccion guardada del usuario del token."
     eliminarDireccion(id: ID!): Boolean!

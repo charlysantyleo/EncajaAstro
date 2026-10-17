@@ -1,0 +1,8 @@
+---
+import Panel from '../../layouts/Panel.astro';
+import VehiculosAdmin from '../../components/admin/VehiculosAdmin.jsx';
+---
+
+<Panel titulo="Vehículos" ruta="/admin/vehiculos" roles={['ADMIN']} descripcion="Catálogo de marcas, modelos, años y motores que los clientes eligen en su garage.">
+  <VehiculosAdmin client:only="react" />
+</Panel>

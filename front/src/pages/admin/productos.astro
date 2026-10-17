@@ -1,0 +1,8 @@
+---
+import Panel from '../../layouts/Panel.astro';
+import ProductosAdmin from '../../components/admin/ProductosAdmin.jsx';
+---
+
+<Panel titulo="Productos" ruta="/admin/productos" roles={['ADMIN']} descripcion="Catálogo, fotos, existencias y en qué vehículos embona cada pieza.">
+  <ProductosAdmin client:only="react" />
+</Panel>

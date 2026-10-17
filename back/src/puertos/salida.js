@@ -13,7 +13,9 @@
  *             precio: number, imagen: string|null, stock: number, categoriaId: number|null }} Producto
  * @typedef {{ id: number, usuarioId: number|null, apodo: string|null, marca: string, modelo: string, anio: number,
  *             motor: string|null, tipoCombustible: string, kilometraje: number|null }} Vehiculo
- * @typedef {{ id: number, productoId: number, vehiculoId: number, tipo: string, nota: string|null }} Compatibilidad
+ * @typedef {{ id: number, productoId: number, marca: string, modelo: string, anioDesde: number, anioHasta: number,
+ *             motor: string|null, tipo: string, nota: string|null }} Compatibilidad
+ * @typedef {{ id: number, marca: string, modelo: string, anio: number, motores: string[], origen: string }} ModeloDeVehiculo
  * @typedef {{ id: number, usuarioId: number, vehiculoId: number|null, fecha: string, total: number, status: string }} Pedido
  * @typedef {{ id: number, pedidoId: number, productoId: number, cantidad: number, precioUnitario: number, importe: number }} DetallePedido
  * @typedef {{ id: number, vehiculoId: number, productoId: number|null, pedidoId: number|null, fecha: string,
@@ -33,17 +35,26 @@
  * @typedef {object} Repositorios
  * @property {{ porId(id): Promise<Usuario|null>, porEmail(email): Promise<Usuario|null>, listar(f: { rol? }): Promise<Usuario[]>,
  *              crear(d: { nombre, email, passwordHash, rol }): Promise<Usuario>,
- *              cambiarPassword(id, passwordHash): Promise<Usuario> }} usuarios
+ *              cambiarPassword(id, passwordHash): Promise<Usuario>, cambiarRol(id, rol): Promise<Usuario> }} usuarios
  * @property {{ listar(): Promise<Categoria[]>, porId(id): Promise<Categoria|null>, crear(d): Promise<Categoria> }} categorias
  * @property {{ porId(id): Promise<Producto|null>, buscar(f: { categoriaId?, vehiculoId?, texto?, precioMin?, precioMax?, soloDirectos? }): Promise<Producto[]>,
  *              deCategoria(categoriaId): Promise<Producto[]>, crear(d): Promise<Producto>, actualizar(id, d): Promise<Producto>,
  *              eliminar(id): Promise<boolean>, descontarStock(id, cantidad): Promise<void>,
  *              reponerStock(id, cantidad): Promise<void> }} productos
  * @property {{ porId(id): Promise<Vehiculo|null>, listar(f: { usuarioId?, marca? }): Promise<Vehiculo[]>, deUsuario(usuarioId): Promise<Vehiculo[]>,
- *              compatiblesCon(productoId): Promise<Vehiculo[]>, crear(d): Promise<Vehiculo>, actualizar(id, d): Promise<Vehiculo>,
+ *              compatiblesCon(productoId, usuarioId): Promise<Vehiculo[]>, crear(d): Promise<Vehiculo>, actualizar(id, d): Promise<Vehiculo>,
  *              eliminar(id): Promise<boolean>, actualizarKilometraje(id, km): Promise<void> }} vehiculos
  * @property {{ listar(f: { productoId?, vehiculoId? }): Promise<Compatibilidad[]>, buscar(productoId, vehiculoId): Promise<Compatibilidad|null>,
- *              crear(d): Promise<Compatibilidad> }} compatibilidades
+ *              deModelo(productoId, m: { marca, modelo }): Promise<Compatibilidad[]>,
+ *              crear(d): Promise<Compatibilidad>, eliminar(id): Promise<boolean> }} compatibilidades
+ * @property {{ hayDatos(): Promise<boolean>, marcas(anio): Promise<string[]>, modelos(marca, anio): Promise<string[]>,
+ *              anios(marca, modelo): Promise<number[]>, motores(marca, modelo, anio): Promise<string[]>,
+ *              buscarUno(marca, modelo, anio): Promise<ModeloDeVehiculo|null>,
+ *              buscar(f: { terminos: string[], inicio: string, anio: number|null, limite: number }): Promise<object[]>,
+ *              deMarca(marca): Promise<ModeloDeVehiculo[]>, guardar(d): Promise<ModeloDeVehiculo[]>,
+ *              quitar(d): Promise<number> }} catalogoVehiculos
+ * @property {{ todos(): Promise<Record<string, number>>, guardar(clave, valor): Promise<void> }} ajustes
+ * @property {{ porId(id): Promise<{ id, tipo: string, datos: Uint8Array }|null>, crear(d: { tipo, base64 }): Promise<{ id }> }} imagenes
  * @property {{ porId(id): Promise<Pedido|null>, listar(f: { usuarioId?, status? }): Promise<Pedido[]>, deUsuario(usuarioId): Promise<Pedido[]>,
  *              crear(d): Promise<Pedido>, detallesDe(pedidoId): Promise<DetallePedido[]>, agregarDetalle(d): Promise<void>,
  *              incluyeProducto(pedidoId, productoId): Promise<boolean>, bloquear(id): Promise<Pedido|null>,

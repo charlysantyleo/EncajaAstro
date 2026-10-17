@@ -17,7 +17,14 @@ export function crearCuentas({ repos, tokens, passwords, identidad, correo, fron
 
   return {
     // Convierte el encabezado Authorization en el actor de la peticion (o null si es invitado).
-    actorDesde: (encabezado) => tokens.leer(encabezado),
+    // El rol se lee de la base, no del token: si el admin le cambia el rol a alguien (o se lo quita),
+    // aplica desde su siguiente peticion y no hasta que su sesion venza.
+    async actorDesde(encabezado) {
+      const delToken = tokens.leer(encabezado);
+      if (!delToken) return null;
+      const usuario = await repos.usuarios.porId(delToken.id);
+      return usuario ? { id: String(usuario.id), nombre: usuario.nombre, email: usuario.email, rol: usuario.rol } : null;
+    },
 
     yo: (actor) => (actor ? repos.usuarios.porId(actor.id) : null),
     usuarioPorId: (id) => repos.usuarios.porId(id),
@@ -27,6 +34,16 @@ export function crearCuentas({ repos, tokens, passwords, identidad, correo, fron
     usuarios(actor, { rol }) {
       exigirAdmin(actor);
       return repos.usuarios.listar({ rol });
+    },
+
+    // Solo ADMIN. No se cambia su propio rol: asi la tienda nunca se queda sin administrador por error.
+    async cambiarRol(actor, usuarioId, rol) {
+      exigirAdmin(actor);
+      if (!ROLES[rol]) throw new ErrorDeNegocio(`No existe el rol ${rol}`);
+      if (String(actor.id) === String(usuarioId)) throw new ErrorDeNegocio('No puedes cambiar tu propio rol');
+      const usuario = await repos.usuarios.porId(usuarioId);
+      if (!usuario) throw new ErrorDeNegocio(`No existe el usuario ${usuarioId}`);
+      return repos.usuarios.cambiarRol(usuario.id, rol);
     },
 
     usuario(actor, id) {

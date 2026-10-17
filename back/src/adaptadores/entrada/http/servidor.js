@@ -14,6 +14,7 @@ import { crearResolvers } from '../graphql/resolvers.js';
 import { formatearError } from '../graphql/errores.js';
 import { crearRutasGoogle } from './rutasGoogle.js';
 import { crearRutasPagos } from './rutasPagos.js';
+import { crearRutasImagenes } from './rutasImagenes.js';
 
 export async function iniciarServidor({ casos, eventos, config }) {
   const schema = makeExecutableSchema({ typeDefs, resolvers: crearResolvers(casos, eventos) });
@@ -24,7 +25,7 @@ export async function iniciarServidor({ casos, eventos, config }) {
   // Suscripciones: en WebSocket no hay encabezados, el JWT llega en connectionParams al conectar.
   const wsServer = new WebSocketServer({ server: httpServer, path: '/graphql' });
   const servidorWs = useServer(
-    { schema, context: (ctx) => ({ actor: casos.cuentas.actorDesde(ctx.connectionParams?.authorization) }) },
+    { schema, context: async (ctx) => ({ actor: await casos.cuentas.actorDesde(ctx.connectionParams?.authorization) }) },
     wsServer
   );
 
@@ -48,14 +49,16 @@ export async function iniciarServidor({ casos, eventos, config }) {
 
   app.use(crearRutasGoogle(casos, config));
   app.use(crearRutasPagos(casos));
+  app.use(crearRutasImagenes(casos));
 
   // Cada peticion GraphQL lee el JWT del encabezado Authorization; actor queda en null si es invitado.
   app.use(
     '/graphql',
     cors(),
-    express.json(),
+    // Holgura para las fotos de producto que el panel manda en base64 (se comprimen antes de subirlas).
+    express.json({ limit: '3mb' }),
     expressMiddleware(apollo, {
-      context: async ({ req }) => ({ actor: casos.cuentas.actorDesde(req.headers.authorization) }),
+      context: async ({ req }) => ({ actor: await casos.cuentas.actorDesde(req.headers.authorization) }),
     })
   );
 

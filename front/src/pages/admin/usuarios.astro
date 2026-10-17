@@ -1,0 +1,8 @@
+---
+import Panel from '../../layouts/Panel.astro';
+import UsuariosAdmin from '../../components/admin/UsuariosAdmin.jsx';
+---
+
+<Panel titulo="Usuarios" ruta="/admin/usuarios" roles={['ADMIN']} descripcion="Cuentas de la tienda y qué puede hacer cada una.">
+  <UsuariosAdmin client:only="react" />
+</Panel>

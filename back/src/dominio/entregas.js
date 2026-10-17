@@ -5,10 +5,6 @@ import { METODOS } from './pagos.js';
 
 export const TIPOS_ENTREGA = { DOMICILIO: 'DOMICILIO', TIENDA: 'TIENDA' };
 
-// Envio a domicilio: cuota fija, gratis a partir de cierto importe en piezas.
-export const COSTO_ENVIO = 199;
-export const ENVIO_GRATIS_DESDE = 999;
-
 // Cobertura: la zona metropolitana de Guadalajara. Acatlan de Juarez aparece en unas listas oficiales
 // y en otras no; se incluye para no dejar fuera a nadie de la zona.
 export const ESTADO_DE_COBERTURA = 'Jalisco';
@@ -30,8 +26,9 @@ const ALIAS_DE_MUNICIPIO = { tlaquepaque: 'San Pedro Tlaquepaque', tlajomulco: '
 // Sin acentos ni mayusculas, para comparar lo que escribe la gente.
 const plano = (valor) => String(valor ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().replace(/\s+/g, ' ').toLowerCase();
 
-export function costoDeEnvio(tipo, importeDePiezas) {
-  return tipo === TIPOS_ENTREGA.DOMICILIO && importeDePiezas < ENVIO_GRATIS_DESDE ? COSTO_ENVIO : 0;
+// El costo y el importe para que salga gratis vienen de los ajustes de la tienda (dominio/ajustes.js).
+export function costoDeEnvio(tipo, importeDePiezas, ajustes) {
+  return tipo === TIPOS_ENTREGA.DOMICILIO && importeDePiezas < ajustes.envioGratisDesde ? ajustes.costoEnvio : 0;
 }
 
 // Regresa el nombre oficial del municipio si esta en cobertura; si no, lanza el motivo.

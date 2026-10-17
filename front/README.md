@@ -35,7 +35,17 @@ al navegador). Otros comandos: `npm run build` (genera `dist/`) y
 | `/pago` | `PagoView` | `?ref=<referencia del pago>` |
 | `/entrar` | `EntrarView` | `#token=...` (regreso de Google) |
 | `/restablecer` | `RestablecerView` | `#token=...` (enlace del correo para cambiar la contraseña) |
-| `/admin` | panel (HTML estatico tras `PuertaAdmin`) | |
+| `/admin` | panel: cobro en mostrador y graficas (estas solo para `ADMIN`) | |
+| `/admin/pedidos` | `PedidosAdmin`: todos los pedidos, marcar enviado o entregado | |
+| `/admin/productos` | `ProductosAdmin`: catalogo, fotos, existencias y compatibilidades por rango de años (solo `ADMIN`) | |
+| `/admin/vehiculos` | `VehiculosAdmin`: catalogo de marcas, modelos, años y motores (solo `ADMIN`) | |
+| `/admin/usuarios` | `UsuariosAdmin`: roles de las cuentas (solo `ADMIN`) | |
+| `/admin/ajustes` | `AjustesAdmin`: envio, descuento de taller y sistemas del catalogo (solo `ADMIN`) | |
+
+Todas las paginas del panel usan `layouts/Panel.astro`: `PuertaAdmin` deja pasar
+segun el rol (`EMPLEADO` o `ADMIN`, o solo `ADMIN`) y `MenuPanel` muestra solo las
+secciones que ese rol puede abrir. La puerta es comodidad visual: quien decide
+es el backend.
 
 Los ids viajan como query params (no `/categoria/[id]`) para que el build
 estatico no necesite el backend encendido.

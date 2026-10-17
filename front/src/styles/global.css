@@ -624,6 +624,11 @@ button.indice-col.activo svg { opacity: 1; color: var(--rojo-texto); }
 .bitacora-fecha { font-family: var(--f-mono); font-size: var(--t-meta); color: var(--tinta-2); }
 .bitacora-desc { font-weight: 600; }
 
+/* precio de mayoreo: el precio de taller y, debajo, el de lista tachado */
+.precio-taller { display: inline-flex; flex-direction: column; align-items: flex-end; line-height: 1.15; }
+.precio-lista { font-size: 0.72em; color: var(--tinta-2); font-weight: 400; }
+.capa-precio.precio-taller { align-items: flex-start; }
+
 /* ---------- formas de pago (checkout) ---------- */
 
 .metodos { margin: 0; padding: 0; border: none; border-top: 1px solid var(--regla-suave); min-width: 0; }
@@ -668,6 +673,66 @@ button.indice-col.activo svg { opacity: 1; color: var(--rojo-texto); }
 .pago-acciones { display: flex; align-items: center; gap: var(--e3); flex-wrap: wrap; }
 
 /* ---------- panel de administracion ---------- */
+
+.panel-menu { margin-bottom: var(--e8); overflow-x: auto; }
+a.chip { display: inline-flex; align-items: center; text-decoration: none; }
+.admin-seccion { display: flex; flex-direction: column; gap: var(--e4); min-width: 0; margin-bottom: var(--e12); }
+.admin-listo { margin: 0; font-size: var(--t-meta); font-weight: 600; color: var(--tinta); }
+.admin-listo::before { content: ''; display: inline-block; width: 8px; height: 8px; margin-right: 8px; background: var(--rojo); }
+.admin-buscador { flex: 1; min-width: 220px; max-width: 420px; }
+
+/* en pantallas angostas se desplaza la tabla, no la pagina */
+.tabla-envoltura { position: relative; min-width: 0; max-width: 100%; overflow-x: auto; }
+.tabla { width: 100%; min-width: 720px; border-collapse: collapse; font-size: var(--t-meta); }
+.tabla th { padding: var(--e2) var(--e3) var(--e2) 0; border-bottom: 1px solid var(--regla); text-align: left; font-weight: 600; color: var(--tinta-2); white-space: nowrap; }
+.tabla td { padding: var(--e3) var(--e3) var(--e3) 0; border-bottom: 1px solid var(--regla-suave); vertical-align: middle; }
+.tabla .num { text-align: right; font-family: var(--f-mono); white-space: nowrap; }
+.tabla-abrir { padding: 0; min-height: 0; border: none; background: none; font-weight: 600; color: var(--rojo-texto); text-decoration: underline; text-underline-offset: 3px; }
+.tabla-acciones { display: flex; gap: var(--e2); flex-wrap: wrap; justify-content: flex-end; }
+.tabla-detalle td { background: var(--n1); padding: var(--e4); }
+.tabla-foto { display: block; width: 56px; aspect-ratio: 4 / 3; background: #fff; overflow: hidden; }
+.tabla-foto img { width: 100%; height: 100%; object-fit: cover; }
+.tabla-select { min-height: 36px; min-width: 160px; }
+.detalle-pedido { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--e6); }
+.detalle-datos { display: flex; flex-direction: column; gap: var(--e3); }
+.detalle-datos dt { font-weight: 600; color: var(--tinta-2); }
+.estado-pedido { font-weight: 600; white-space: nowrap; }
+.estado-pedido::before { content: ''; display: inline-block; width: 8px; height: 8px; margin-right: 6px; box-shadow: inset 0 0 0 2px var(--tinta); }
+.estado-pedido.pagado::before { background: var(--rojo); box-shadow: none; }
+.estado-pedido.enviado::before { box-shadow: inset 0 0 0 2px var(--rojo); }
+.estado-pedido.entregado::before { background: var(--tinta); box-shadow: none; }
+.estado-pedido.cancelado { color: var(--n5); text-decoration: line-through; }
+
+.ajuste-stock { display: flex; align-items: center; gap: var(--e2); }
+.ajuste-stock > span { min-width: 2.5em; text-align: right; }
+.ajuste-stock .input { width: 84px; min-height: 36px; }
+
+.editor-foto { display: flex; gap: var(--e4); align-items: center; }
+.editor-foto-marco { display: grid; place-items: center; flex: none; width: 160px; aspect-ratio: 4 / 3; background: #fff; border: 1px solid var(--regla-suave); overflow: hidden; }
+.editor-foto-marco img { width: 100%; height: 100%; object-fit: cover; }
+.editor-foto-acciones { display: flex; flex-direction: column; align-items: flex-start; gap: var(--e2); }
+.editor-foto-acciones label.btn { cursor: pointer; }
+.editor-compat { display: flex; flex-direction: column; gap: var(--e2); }
+.editor-compat-nueva { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr) auto; gap: var(--e2); align-items: center; }
+.nueva-compat { display: flex; flex-direction: column; gap: var(--e3); padding-top: var(--e3); border-top: 1px solid var(--regla-suave); }
+
+/* ---------- catalogo de vehiculos: buscador y listas en cascada ---------- */
+
+.buscador-vehiculo .buscador { max-width: none; }
+.resultados-vehiculo { list-style: none; margin: 0; padding: 0; border: 1px solid var(--n3); border-top: none; background: var(--superficie); }
+.resultados-vehiculo li + li { border-top: 1px solid var(--regla-suave); }
+.resultados-vehiculo button {
+  display: flex; align-items: baseline; justify-content: space-between; gap: var(--e3);
+  width: 100%; min-height: 44px; padding: 0 var(--e3);
+  background: none; border: none; text-align: left; font-weight: 600; color: var(--tinta);
+}
+.resultados-vehiculo button:focus-visible { outline: 2px solid var(--rojo); outline-offset: -2px; }
+@media (hover: hover) and (pointer: fine) { .resultados-vehiculo button:hover { background: var(--n1); } }
+.grupo-vehiculo { margin: 0; padding: 0; border: none; min-width: 0; display: flex; flex-direction: column; gap: var(--e2); }
+.grupo-vehiculo legend { padding: 0; margin-bottom: var(--e2); }
+
+.roles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--e4); margin: 0; }
+.roles dt { font-weight: 600; }
 
 .cobro { display: flex; flex-direction: column; gap: var(--e4); margin-bottom: var(--e12); }
 .cobro-buscar { display: flex; align-items: flex-end; gap: var(--e3); flex-wrap: wrap; }
@@ -799,6 +864,9 @@ button.indice-col.activo svg { opacity: 1; color: var(--rojo-texto); }
   .nota-estado { display: none; }
   .indicadores { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .grafica, .grafica.ancha, .grafica.angosta { grid-column: 1 / -1; }
+  .roles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .detalle-pedido { grid-template-columns: minmax(0, 1fr); }
+  .editor-compat-nueva { grid-template-columns: minmax(0, 1fr); }
   .graficas { row-gap: var(--e8); }
 }
 

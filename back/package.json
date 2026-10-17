@@ -12,7 +12,10 @@
     "db:init": "node scripts/init-db.js",
     "db:passwords": "node scripts/demo-passwords.js",
     "db:pagos": "node scripts/migrar-pagos.js",
-    "db:entregas": "node scripts/migrar-entregas.js"
+    "db:entregas": "node scripts/migrar-entregas.js",
+    "db:panel": "node scripts/migrar-panel.js",
+    "db:vehiculos": "node scripts/migrar-vehiculos.js",
+    "vehiculos:armar": "node scripts/vehiculos/armar-catalogo.js"
   },
   "dependencies": {
     "@apollo/server": "^5.5.1",

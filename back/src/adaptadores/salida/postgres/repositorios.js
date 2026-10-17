@@ -32,7 +32,25 @@ const aVehiculo = (f) =>
     kilometraje: f.kilometraje,
   };
 const aCompatibilidad = (f) =>
-  f && { id: f.id, productoId: f.producto_id, vehiculoId: f.vehiculo_id, tipo: f.tipo, nota: f.nota };
+  f && {
+    id: f.id,
+    productoId: f.producto_id,
+    marca: f.marca,
+    modelo: f.modelo,
+    anioDesde: f.anio_desde,
+    anioHasta: f.anio_hasta,
+    motor: f.motor,
+    tipo: f.tipo,
+    nota: f.nota,
+  };
+const aModeloDeVehiculo = (f) =>
+  f && { id: f.id, marca: f.marca, modelo: f.modelo, anio: f.anio, motores: f.motores ?? [], origen: f.origen };
+
+// La compatibilidad "c" cubre al vehiculo "v": misma marca y modelo, año dentro del rango y, si la compatibilidad
+// pide un motor, ese motor. Es la regla cubre() de dominio/vehiculos.js escrita en SQL.
+const CUBRE = `lower(c.marca) = lower(v.marca) AND lower(c.modelo) = lower(v.modelo)
+  AND v.anio BETWEEN c.anio_desde AND c.anio_hasta
+  AND (c.motor IS NULL OR lower(c.motor) = lower(coalesce(v.motor, '')))`;
 const aPedido = (f) =>
   f && { id: f.id, usuarioId: f.usuario_id, vehiculoId: f.vehiculo_id, fecha: f.fecha, total: numero(f.total), status: f.status };
 const aDetalle = (f) =>
@@ -146,6 +164,7 @@ export function crearRepositorios(db) {
           [nombre, email, passwordHash, rol],
           aUsuario
         ),
+      cambiarRol: (id, rol) => una('UPDATE usuario SET rol = $1 WHERE id = $2 RETURNING *', [rol, id], aUsuario),
       cambiarPassword: (id, passwordHash) =>
         una('UPDATE usuario SET password = $1 WHERE id = $2 RETURNING *', [passwordHash, id], aUsuario),
     },
@@ -163,27 +182,27 @@ export function crearRepositorios(db) {
         todas('SELECT * FROM producto WHERE categoria_id = $1 ORDER BY nombre', [categoriaId], aProducto),
       buscar({ categoriaId, vehiculoId, texto, precioMin, precioMax, soloDirectos }) {
         const { where, parametros } = armarWhere([
-          ['compatibilidad.vehiculo_id = ?', vehiculoId],
-          ["compatibilidad.tipo = 'DIRECTO'", Boolean(vehiculoId && soloDirectos)],
+          ['v.id = ?', vehiculoId],
+          ["c.tipo = 'DIRECTO'", Boolean(vehiculoId && soloDirectos)],
           ['producto.categoria_id = ?', categoriaId],
           ['(producto.nombre ILIKE ? OR producto.numero_parte ILIKE ? OR producto.marca ILIKE ?)', texto ? `%${texto}%` : null],
           ['producto.precio >= ?', precioMin],
           ['producto.precio <= ?', precioMax],
         ]);
-        const join = vehiculoId ? ' JOIN compatibilidad ON compatibilidad.producto_id = producto.id' : '';
+        const join = vehiculoId ? ` JOIN compatibilidad c ON c.producto_id = producto.id JOIN vehiculo v ON ${CUBRE}` : '';
         return todas(`SELECT DISTINCT producto.* FROM producto${join}${where} ORDER BY producto.nombre`, parametros, aProducto);
       },
       crear: (p) =>
         una(
           `INSERT INTO producto (nombre, descripcion, numero_parte, marca, precio, imagen, stock, categoria_id)
            VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
-          [p.nombre, p.descripcion, p.numeroParte, p.marca, p.precio, p.imagen, p.stock, p.categoriaId],
+          [p.nombre, p.descripcion, p.numeroParte, p.marca, p.precio, p.imagen, p.stock ?? 0, p.categoriaId],
           aProducto
         ),
       actualizar: (id, p) =>
         una(
           `UPDATE producto SET nombre = $1, descripcion = $2, numero_parte = $3, marca = $4,
-             precio = $5, imagen = $6, stock = $7, categoria_id = $8
+             precio = $5, imagen = $6, stock = COALESCE($7, stock), categoria_id = $8
            WHERE id = $9 RETURNING *`,
           [p.nombre, p.descripcion, p.numeroParte, p.marca, p.precio, p.imagen, p.stock, p.categoriaId, id],
           aProducto
@@ -208,13 +227,14 @@ export function crearRepositorios(db) {
       },
       deUsuario: (usuarioId) =>
         todas('SELECT * FROM vehiculo WHERE usuario_id = $1 ORDER BY marca, modelo', [usuarioId], aVehiculo),
-      compatiblesCon: (productoId) =>
+      // Los coches de un usuario en los que embona una pieza.
+      compatiblesCon: (productoId, usuarioId) =>
         todas(
-          `SELECT vehiculo.* FROM vehiculo
-           JOIN compatibilidad ON compatibilidad.vehiculo_id = vehiculo.id
-           WHERE compatibilidad.producto_id = $1
-           ORDER BY vehiculo.marca, vehiculo.modelo, vehiculo.anio`,
-          [productoId],
+          `SELECT DISTINCT v.* FROM vehiculo v
+           JOIN compatibilidad c ON ${CUBRE}
+           WHERE c.producto_id = $1 AND v.usuario_id = $2
+           ORDER BY v.marca, v.modelo, v.anio`,
+          [productoId, usuarioId],
           aVehiculo
         ),
       crear: (v) =>
@@ -239,25 +259,144 @@ export function crearRepositorios(db) {
     },
 
     compatibilidades: {
+      // Con vehiculoId: las compatibilidades que cubren ese coche del garage.
       listar({ productoId, vehiculoId } = {}) {
         const { where, parametros } = armarWhere([
-          ['producto_id = ?', productoId],
-          ['vehiculo_id = ?', vehiculoId],
+          ['c.producto_id = ?', productoId],
+          ['v.id = ?', vehiculoId],
         ]);
-        return todas(`SELECT * FROM compatibilidad${where}`, parametros, aCompatibilidad);
+        const join = vehiculoId ? ` JOIN vehiculo v ON ${CUBRE}` : '';
+        return todas(
+          `SELECT c.* FROM compatibilidad c${join}${where}
+           ORDER BY c.marca, c.modelo, c.anio_desde, c.motor NULLS FIRST`,
+          parametros,
+          aCompatibilidad
+        );
       },
+      // La que aplica a ese coche; si hay una para su motor y otra general, gana la de su motor.
       buscar: (productoId, vehiculoId) =>
         una(
-          'SELECT * FROM compatibilidad WHERE producto_id = $1 AND vehiculo_id = $2',
+          `SELECT c.* FROM compatibilidad c JOIN vehiculo v ON ${CUBRE}
+           WHERE c.producto_id = $1 AND v.id = $2
+           ORDER BY c.motor IS NULL, c.tipo <> 'DIRECTO'
+           LIMIT 1`,
           [productoId, vehiculoId],
           aCompatibilidad
         ),
-      crear: ({ productoId, vehiculoId, tipo, nota }) =>
-        una(
-          'INSERT INTO compatibilidad (producto_id, vehiculo_id, tipo, nota) VALUES ($1, $2, $3, $4) RETURNING *',
-          [productoId, vehiculoId, tipo, nota],
+      deModelo: (productoId, { marca, modelo }) =>
+        todas(
+          'SELECT * FROM compatibilidad WHERE producto_id = $1 AND lower(marca) = lower($2) AND lower(modelo) = lower($3)',
+          [productoId, marca, modelo],
           aCompatibilidad
         ),
+      crear: (c) =>
+        una(
+          `INSERT INTO compatibilidad (producto_id, marca, modelo, anio_desde, anio_hasta, motor, tipo, nota)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+          [c.productoId, c.marca, c.modelo, c.anioDesde, c.anioHasta, c.motor, c.tipo, c.nota],
+          aCompatibilidad
+        ),
+      eliminar: async (id) => (await db.query('DELETE FROM compatibilidad WHERE id = $1', [id])).rowCount > 0,
+    },
+
+    // Catalogo compartido de vehiculos: una fila por marca, modelo y año, con sus motores.
+    catalogoVehiculos: {
+      hayDatos: async () => (await db.query('SELECT EXISTS (SELECT 1 FROM catalogo_vehiculo) AS hay')).rows[0].hay,
+      marcas: async (anio) =>
+        (
+          await db.query(
+            `SELECT marca FROM catalogo_vehiculo${anio ? ' WHERE anio = $1' : ''} GROUP BY marca ORDER BY lower(marca)`,
+            anio ? [anio] : []
+          )
+        ).rows.map((f) => f.marca),
+      modelos: async (marca, anio) =>
+        (
+          await db.query(
+            `SELECT modelo FROM catalogo_vehiculo
+             WHERE lower(marca) = lower($1)${anio ? ' AND anio = $2' : ''} GROUP BY modelo ORDER BY lower(modelo)`,
+            anio ? [marca, anio] : [marca]
+          )
+        ).rows.map((f) => f.modelo),
+      anios: async (marca, modelo) =>
+        (
+          await db.query(
+            'SELECT anio FROM catalogo_vehiculo WHERE lower(marca) = lower($1) AND lower(modelo) = lower($2) ORDER BY anio DESC',
+            [marca, modelo]
+          )
+        ).rows.map((f) => f.anio),
+      // Sin año: los motores de todos los años de ese modelo (para elegir el de una compatibilidad).
+      motores: async (marca, modelo, anio) =>
+        (
+          await db.query(
+            `SELECT DISTINCT unnest(motores) AS motor FROM catalogo_vehiculo
+             WHERE lower(marca) = lower($1) AND lower(modelo) = lower($2)${anio ? ' AND anio = $3' : ''}`,
+            anio ? [marca, modelo, anio] : [marca, modelo]
+          )
+        ).rows.map((f) => f.motor),
+      buscarUno: (marca, modelo, anio) =>
+        una(
+          'SELECT * FROM catalogo_vehiculo WHERE lower(marca) = lower($1) AND lower(modelo) = lower($2) AND anio = $3',
+          [marca, modelo, anio],
+          aModeloDeVehiculo
+        ),
+      // terminos: patrones ILIKE que deben aparecer todos en "marca modelo"; inicio: el primero, para poner
+      // antes los modelos que empiezan con lo que se escribio. Agrupa por modelo con su primer y ultimo año.
+      async buscar({ terminos, inicio, anio, limite }) {
+        const parametros = [terminos, inicio];
+        if (anio) parametros.push(anio);
+        const filas = (
+          await db.query(
+            `SELECT marca, modelo, min(anio) AS desde, max(anio) AS hasta
+             FROM catalogo_vehiculo
+             WHERE (marca || ' ' || modelo) ILIKE ALL($1::text[])${anio ? ' AND anio = $3' : ''}
+             GROUP BY marca, modelo
+             ORDER BY bool_or(modelo ILIKE $2) DESC, lower(marca), lower(modelo)
+             LIMIT ${Number(limite)}`,
+            parametros
+          )
+        ).rows;
+        return filas.map((f) => ({ marca: f.marca, modelo: f.modelo, anio: anio ?? null, desde: f.desde, hasta: f.hasta }));
+      },
+      deMarca: (marca) =>
+        todas('SELECT * FROM catalogo_vehiculo WHERE lower(marca) = lower($1) ORDER BY lower(modelo), anio', [marca], aModeloDeVehiculo),
+      // Lo que se guarda desde el panel reemplaza los motores y ya no lo pisa la importacion.
+      guardar: ({ marca, modelo, anioDesde, anioHasta, motores }) =>
+        todas(
+          `INSERT INTO catalogo_vehiculo (marca, modelo, anio, motores, origen)
+           SELECT $1, $2, anio, $5::text[], 'PANEL' FROM generate_series($3::int, $4::int) AS anio
+           ON CONFLICT ((lower(marca)), (lower(modelo)), anio)
+           DO UPDATE SET motores = EXCLUDED.motores, origen = 'PANEL'
+           RETURNING *`,
+          [marca, modelo, anioDesde, anioHasta, motores],
+          aModeloDeVehiculo
+        ),
+      quitar: async ({ marca, modelo, anioDesde, anioHasta }) =>
+        (
+          await db.query(
+            `DELETE FROM catalogo_vehiculo
+             WHERE lower(marca) = lower($1) AND lower(modelo) = lower($2) AND anio BETWEEN $3 AND $4`,
+            [marca, modelo, anioDesde, anioHasta]
+          )
+        ).rowCount,
+    },
+
+    // Ajustes de la tienda como clave/valor; se guardan como texto y se leen como numero.
+    ajustes: {
+      todos: async () =>
+        Object.fromEntries((await db.query('SELECT clave, valor FROM ajuste')).rows.map((f) => [f.clave, Number(f.valor)])),
+      guardar: async (clave, valor) => {
+        await db.query(
+          'INSERT INTO ajuste (clave, valor) VALUES ($1, $2) ON CONFLICT (clave) DO UPDATE SET valor = EXCLUDED.valor',
+          [clave, String(valor)]
+        );
+      },
+    },
+
+    // Fotos de producto. Llegan en base64 desde GraphQL y se guardan como bytes.
+    imagenes: {
+      porId: (id) => una('SELECT id, tipo, datos FROM imagen WHERE id = $1', [id], (f) => f && { id: f.id, tipo: f.tipo, datos: f.datos }),
+      crear: ({ tipo, base64 }) =>
+        una('INSERT INTO imagen (tipo, datos) VALUES ($1, $2) RETURNING id', [tipo, Buffer.from(base64, 'base64')], (f) => f && { id: f.id }),
     },
 
     pedidos: {

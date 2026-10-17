@@ -3,6 +3,7 @@ import { fileURLToPath } from 'url';
 import path from 'path';
 import 'dotenv/config';
 import pg from 'pg';
+import { cargarCatalogo } from './vehiculos/cargar.js';
 
 const { Pool } = pg;
 
@@ -29,8 +30,9 @@ const cliente = await pool.connect();
 try {
   await cliente.query('BEGIN');
   await cliente.query(sql);
+  const vehiculos = await cargarCatalogo(cliente);
   await cliente.query('COMMIT');
-  console.log('Base de datos inicializada desde db.sql');
+  console.log(`Base de datos inicializada desde db.sql, con ${vehiculos} modelos y años en el catalogo de vehiculos`);
 } catch (error) {
   await cliente.query('ROLLBACK');
   console.error('No se pudo inicializar la base de datos:', error.message);

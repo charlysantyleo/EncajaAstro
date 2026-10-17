@@ -36,14 +36,33 @@ CREATE TABLE vehiculo (
   kilometraje INTEGER
 );
 
+-- Catalogo compartido de vehiculos que se venden en Mexico: una fila por marca, modelo y año.
+-- Se llena con "npm run db:vehiculos" (datos/vehiculos.json: INEGI, NHTSA y FuelEconomy.gov) y desde el panel.
+CREATE TABLE catalogo_vehiculo (
+  id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  marca TEXT NOT NULL,
+  modelo TEXT NOT NULL,
+  anio INTEGER NOT NULL,
+  motores TEXT[] NOT NULL DEFAULT '{}',
+  origen TEXT NOT NULL DEFAULT 'PANEL'
+);
+CREATE UNIQUE INDEX catalogo_vehiculo_clave ON catalogo_vehiculo (lower(marca), lower(modelo), anio);
+
+-- En que vehiculos embona una pieza: un modelo en un rango de años y, si importa, un motor (NULL = cualquiera).
+-- Aplica a todo coche del garage con esa marca, modelo y año.
 CREATE TABLE compatibilidad (
   id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   producto_id INTEGER NOT NULL REFERENCES producto(id),
-  vehiculo_id INTEGER NOT NULL REFERENCES vehiculo(id),
+  marca TEXT NOT NULL,
+  modelo TEXT NOT NULL,
+  anio_desde INTEGER NOT NULL,
+  anio_hasta INTEGER NOT NULL,
+  motor TEXT,
   tipo TEXT NOT NULL DEFAULT 'DIRECTO',
   nota TEXT,
-  UNIQUE(producto_id, vehiculo_id)
+  CHECK (anio_desde <= anio_hasta)
 );
+CREATE INDEX compatibilidad_modelo ON compatibilidad (lower(marca), lower(modelo));
 
 CREATE TABLE pedido (
   id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -108,6 +127,18 @@ CREATE TABLE direccion (
   referencias TEXT
 );
 
+CREATE TABLE ajuste (
+  clave TEXT PRIMARY KEY,
+  valor TEXT NOT NULL
+);
+
+CREATE TABLE imagen (
+  id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  tipo TEXT NOT NULL,
+  datos BYTEA NOT NULL,
+  creada TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
 CREATE TABLE mantenimiento (
   id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   vehiculo_id INTEGER NOT NULL REFERENCES vehiculo(id),
@@ -122,7 +153,8 @@ INSERT INTO usuario (nombre, email, password, rol) VALUES
   ('Santiago Castaneda', 'santiago@encaja.mx', '$2b$10$lh53eU/s1eC3KuE02cy/hOzHahHAiXlFDba8vYu5VM1OVBMLxaIy2', 'CLIENTE'),
   ('Raul Esau Garcia', 'raul@encaja.mx', '$2b$10$lh53eU/s1eC3KuE02cy/hOzHahHAiXlFDba8vYu5VM1OVBMLxaIy2', 'CLIENTE'),
   ('Taller El Tornillo', 'taller@encaja.mx', '$2b$10$lh53eU/s1eC3KuE02cy/hOzHahHAiXlFDba8vYu5VM1OVBMLxaIy2', 'TALLER'),
-  ('Administracion EnCaja', 'admin@encaja.mx', '$2b$10$lh53eU/s1eC3KuE02cy/hOzHahHAiXlFDba8vYu5VM1OVBMLxaIy2', 'ADMIN');
+  ('Administracion EnCaja', 'admin@encaja.mx', '$2b$10$lh53eU/s1eC3KuE02cy/hOzHahHAiXlFDba8vYu5VM1OVBMLxaIy2', 'ADMIN'),
+  ('Mostrador EnCaja', 'mostrador@encaja.mx', '$2b$10$lh53eU/s1eC3KuE02cy/hOzHahHAiXlFDba8vYu5VM1OVBMLxaIy2', 'EMPLEADO');
 
 INSERT INTO categoria (nombre, descripcion) VALUES
   ('Frenos', 'Balatas, discos y componentes del sistema de frenado'),
@@ -151,40 +183,40 @@ INSERT INTO producto (nombre, descripcion, numero_parte, marca, precio, imagen, 
   ('Foco H4', 'Foco halogeno H4, se vende por par.', 'FH-0100', 'Philips', 219.00, NULL, 40, 6);
 
 INSERT INTO vehiculo (usuario_id, apodo, marca, modelo, anio, motor, tipo_combustible, kilometraje) VALUES
-  (1, 'El azul', 'Nissan', 'Versa', 2018, '1.6L HR16DE', 'GASOLINA', 82000),
-  (1, 'El de trabajo', 'Volkswagen', 'Jetta', 2016, '2.0L', 'GASOLINA', 143000),
-  (2, NULL, 'Chevrolet', 'Aveo', 2019, '1.5L', 'GASOLINA', 60000),
-  (2, 'El nuevo', 'Toyota', 'Corolla', 2022, '1.8L Hybrid', 'HIBRIDO', 21000),
-  (3, NULL, 'Nissan', 'Versa', 2021, '1.6L HR16DE', 'GASOLINA', 34000);
+  (1, 'El azul', 'Nissan', 'Versa', 2018, '1.6L 4 cil.', 'GASOLINA', 82000),
+  (1, 'El de trabajo', 'Volkswagen', 'Jetta', 2016, '1.4L 4 cil. turbo', 'GASOLINA', 143000),
+  (2, NULL, 'Chevrolet', 'Aveo', 2019, '1.5L 4 cil.', 'GASOLINA', 60000),
+  (2, 'El nuevo', 'Toyota', 'Corolla', 2022, '1.8L 4 cil. híbrido', 'HIBRIDO', 21000),
+  (3, NULL, 'Nissan', 'Versa', 2021, '1.6L 4 cil.', 'GASOLINA', 34000);
 
-INSERT INTO compatibilidad (producto_id, vehiculo_id, tipo, nota) VALUES
-  (1, 1, 'DIRECTO', 'Ajuste original de fabrica'),
-  (3, 1, 'EQUIVALENCIA', 'Equivale al disco original, verificar espesor minimo'),
-  (4, 1, 'DIRECTO', NULL),
-  (5, 1, 'DIRECTO', NULL),
-  (7, 1, 'DIRECTO', 'Se requieren dos piezas'),
-  (10, 1, 'DIRECTO', 'Se requieren cuatro piezas'),
-  (14, 1, 'DIRECTO', NULL),
-  (16, 1, 'DIRECTO', NULL),
-  (2, 2, 'DIRECTO', NULL),
-  (4, 2, 'DIRECTO', NULL),
-  (5, 2, 'DIRECTO', NULL),
-  (8, 2, 'DIRECTO', NULL),
-  (11, 2, 'DIRECTO', 'Cambio recomendado cada 80,000 km'),
-  (12, 2, 'DIRECTO', NULL),
-  (1, 3, 'EQUIVALENCIA', 'Misma medida, cambia el sensor de desgaste'),
-  (4, 3, 'DIRECTO', NULL),
-  (5, 3, 'DIRECTO', NULL),
-  (9, 3, 'DIRECTO', NULL),
-  (10, 3, 'EQUIVALENCIA', 'Compatible con la misma rosca'),
-  (6, 4, 'DIRECTO', NULL),
-  (12, 4, 'DIRECTO', NULL),
-  (13, 4, 'DIRECTO', NULL),
-  (4, 4, 'DIRECTO', NULL),
-  (1, 5, 'DIRECTO', 'Ajuste original de fabrica'),
-  (3, 5, 'DIRECTO', NULL),
-  (4, 5, 'DIRECTO', NULL),
-  (5, 5, 'DIRECTO', NULL);
+INSERT INTO compatibilidad (producto_id, marca, modelo, anio_desde, anio_hasta, motor, tipo, nota) VALUES
+  (1, 'Nissan', 'Versa', 2012, 2019, NULL, 'DIRECTO', 'Ajuste original de fabrica'),
+  (3, 'Nissan', 'Versa', 2012, 2019, NULL, 'EQUIVALENCIA', 'Equivale al disco original, verificar espesor minimo'),
+  (4, 'Nissan', 'Versa', 2012, 2019, NULL, 'DIRECTO', NULL),
+  (5, 'Nissan', 'Versa', 2012, 2019, NULL, 'DIRECTO', NULL),
+  (7, 'Nissan', 'Versa', 2012, 2019, NULL, 'DIRECTO', 'Se requieren dos piezas'),
+  (10, 'Nissan', 'Versa', 2012, 2019, '1.6L 4 cil.', 'DIRECTO', 'Se requieren cuatro piezas'),
+  (14, 'Nissan', 'Versa', 2012, 2019, NULL, 'DIRECTO', NULL),
+  (16, 'Nissan', 'Versa', 2012, 2019, NULL, 'DIRECTO', NULL),
+  (2, 'Volkswagen', 'Jetta', 2011, 2018, NULL, 'DIRECTO', NULL),
+  (4, 'Volkswagen', 'Jetta', 2011, 2018, NULL, 'DIRECTO', NULL),
+  (5, 'Volkswagen', 'Jetta', 2011, 2018, NULL, 'DIRECTO', NULL),
+  (8, 'Volkswagen', 'Jetta', 2011, 2018, NULL, 'DIRECTO', NULL),
+  (11, 'Volkswagen', 'Jetta', 2011, 2018, NULL, 'DIRECTO', 'Cambio recomendado cada 80,000 km'),
+  (12, 'Volkswagen', 'Jetta', 2011, 2018, NULL, 'DIRECTO', NULL),
+  (1, 'Chevrolet', 'Aveo', 2018, 2023, NULL, 'EQUIVALENCIA', 'Misma medida, cambia el sensor de desgaste'),
+  (4, 'Chevrolet', 'Aveo', 2018, 2023, NULL, 'DIRECTO', NULL),
+  (5, 'Chevrolet', 'Aveo', 2018, 2023, NULL, 'DIRECTO', NULL),
+  (9, 'Chevrolet', 'Aveo', 2018, 2023, NULL, 'DIRECTO', NULL),
+  (10, 'Chevrolet', 'Aveo', 2018, 2023, NULL, 'EQUIVALENCIA', 'Compatible con la misma rosca'),
+  (6, 'Toyota', 'Corolla', 2020, 2025, NULL, 'DIRECTO', NULL),
+  (12, 'Toyota', 'Corolla', 2020, 2025, NULL, 'DIRECTO', NULL),
+  (13, 'Toyota', 'Corolla', 2020, 2025, NULL, 'DIRECTO', NULL),
+  (4, 'Toyota', 'Corolla', 2020, 2025, NULL, 'DIRECTO', NULL),
+  (1, 'Nissan', 'Versa', 2020, 2026, NULL, 'DIRECTO', 'Ajuste original de fabrica'),
+  (3, 'Nissan', 'Versa', 2020, 2026, NULL, 'DIRECTO', NULL),
+  (4, 'Nissan', 'Versa', 2020, 2026, NULL, 'DIRECTO', NULL),
+  (5, 'Nissan', 'Versa', 2020, 2026, NULL, 'DIRECTO', NULL);
 
 INSERT INTO pedido (usuario_id, vehiculo_id, fecha, total, status) VALUES
   (1, 1, '2026-06-20', 798.00, 'ENTREGADO');

@@ -1,20 +1,18 @@
 // Casos de uso de envio: reglas que el checkout necesita mostrar (costo, cobertura) y las direcciones
 // que un usuario guarda en su cuenta para no volver a teclearlas.
 import { exigirDueno, exigirSesion } from '../dominio/permisos.js';
-import { COSTO_ENVIO, ENVIO_GRATIS_DESDE, ESTADO_DE_COBERTURA, MUNICIPIOS_DE_COBERTURA, esLaMismaDireccion } from '../dominio/entregas.js';
+import { ESTADO_DE_COBERTURA, MUNICIPIOS_DE_COBERTURA, esLaMismaDireccion } from '../dominio/entregas.js';
 
 /**
- * @param {{ repos: import('../puertos/salida.js').Repositorios }} puertos
+ * @param {{ repos: import('../puertos/salida.js').Repositorios, ajustes: ReturnType<typeof import('./ajustes.js').crearAjustes> }} puertos
  */
-export function crearDirecciones({ repos }) {
+export function crearDirecciones({ repos, ajustes }) {
   return {
     // Publico: lo que cuesta el envio y a donde llega, para que el checkout no lo tenga copiado.
-    reglas: () => ({
-      costo: COSTO_ENVIO,
-      gratisDesde: ENVIO_GRATIS_DESDE,
-      estado: ESTADO_DE_COBERTURA,
-      municipios: MUNICIPIOS_DE_COBERTURA,
-    }),
+    async reglas() {
+      const { costoEnvio, envioGratisDesde } = await ajustes.actuales();
+      return { costo: costoEnvio, gratisDesde: envioGratisDesde, estado: ESTADO_DE_COBERTURA, municipios: MUNICIPIOS_DE_COBERTURA };
+    },
 
     mias(actor) {
       exigirSesion(actor);

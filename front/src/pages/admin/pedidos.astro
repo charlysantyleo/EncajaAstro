@@ -1,0 +1,8 @@
+---
+import Panel from '../../layouts/Panel.astro';
+import PedidosAdmin from '../../components/admin/PedidosAdmin.jsx';
+---
+
+<Panel titulo="Pedidos" ruta="/admin/pedidos" descripcion="Todos los pedidos. Márcalos como enviados o entregados cuando salgan de la tienda.">
+  <PedidosAdmin client:only="react" />
+</Panel>

@@ -17,7 +17,16 @@ export const IMAGENES = {
   "TD-0871": "/img/placa/td0871.webp",
 };
 
+// Las fotos que se suben desde el panel viven en el backend (/imagenes/:id).
+const ORIGEN_API = new URL(import.meta.env.PUBLIC_API_URL || 'http://localhost:4000/graphql').origin;
+
+export function urlDeImagen(ruta) {
+  if (!ruta) return null;
+  return ruta.startsWith('/imagenes/') ? `${ORIGEN_API}${ruta}` : ruta;
+}
+
+// La foto subida desde el panel manda; si no hay, la del catalogo original por numero de parte.
 export function imagenDe(producto) {
   if (!producto) return null;
-  return IMAGENES[producto.numeroParte] ?? producto.imagen ?? null;
+  return urlDeImagen(producto.imagen) ?? IMAGENES[producto.numeroParte] ?? null;
 }

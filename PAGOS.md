@@ -35,7 +35,7 @@ cd back && npm run db:entregas
 
 Reglas de entrega (todas en `back/src/dominio/entregas.js`):
 
-- **Envío a domicilio**: $199, gratis si las piezas suman $999 o más. El envío se suma al total del pedido, que es lo que se cobra.
+- **Envío a domicilio**: $199, gratis si las piezas suman $999 o más (los dos montos se cambian en Panel → Ajustes). El envío se suma al total del pedido, que es lo que se cobra.
 - **Cobertura**: solo los municipios de la zona metropolitana de Guadalajara. Fuera de ahí el pedido se rechaza y se sugiere recoger en mostrador.
 - **Recoger en mostrador**: sin costo. Es la única entrega que admite "Pagar al recoger".
 - **Direcciones guardadas**: solo con sesión, y solo si el comprador deja marcada la casilla. No se duplican.
@@ -87,7 +87,7 @@ En local se puede abrir un túnel (por ejemplo `ngrok http 4000`) y poner esa UR
 
 ## Pagar al recoger: código de mostrador
 
-Al confirmar un pedido con "Pagar al recoger", el pago recibe un código de 8 caracteres (por ejemplo `K7M3-Q9TP`, sin letras que se confundan al dictarlas). El comprador lo ve en la página de su pedido. En mostrador, un administrador entra al **Panel** → **Cobrar en mostrador**, escribe el código (con o sin guion, en minúsculas o mayúsculas), revisa el pedido y, ya recibido el dinero, confirma el pago: el pedido queda **PAGADO** y el comprador lo ve así en su página.
+Al confirmar un pedido con "Pagar al recoger", el pago recibe un código de 8 caracteres (por ejemplo `K7M3-Q9TP`, sin letras que se confundan al dictarlas). El comprador lo ve en la página de su pedido. En mostrador, un empleado o un administrador entra al **Panel** → **Mostrador**, escribe el código (con o sin guion, en minúsculas o mayúsculas), revisa el pedido y, ya recibido el dinero, confirma el pago: el pedido queda **PAGADO** y el comprador lo ve así en su página.
 
 ## Cómo viaja un cobro
 

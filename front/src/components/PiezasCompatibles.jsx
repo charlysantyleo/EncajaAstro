@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { useTienda } from '../store/useTienda';
 import { useCategorias, useProductos } from '../hooks/useCatalogo';
-import { pesos } from '../lib/formato';
 import { Cargando, ErrorConReintento } from './EstadoCarga';
 import { Interruptor } from './ui/Movimiento';
+import Precio from './ui/Precio';
 
 export default function PiezasCompatibles({ vehiculoId }) {
   const ir = useTienda((estado) => estado.ir);
@@ -51,7 +51,7 @@ export default function PiezasCompatibles({ vehiculoId }) {
                 <span className="pieza-fila-meta">
                   {producto.categoria?.nombre} · {producto.numeroParte}
                 </span>
-                <span className="pieza-fila-precio">{pesos(producto.precio)}</span>
+                <Precio producto={producto} className="pieza-fila-precio" />
               </button>
             </li>
           ))}

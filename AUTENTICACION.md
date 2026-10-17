@@ -70,21 +70,37 @@ En "Entrar" → "¿Olvidaste tu contraseña?" se escribe el correo. El servidor 
 
 ## 5. Quién puede hacer qué (`back/src/dominio/permisos.js`)
 
-Tres funciones del dominio hacen cumplir las reglas, y los casos de uso (`back/src/aplicacion/`) las llaman:
+Hay cuatro roles:
+
+| Rol | Qué puede hacer |
+|---|---|
+| `CLIENTE` | Comprar; su garage y la bitácora de sus vehículos; sus direcciones; ver sus pedidos. |
+| `TALLER` | Lo mismo que un cliente, con **precio de mayoreo**: el catálogo, el carrito y el cobro usan el precio con descuento (10 % por defecto; se cambia en Panel → Ajustes). |
+| `EMPLEADO` | Mostrador: cobra los pedidos de "Pagar al recoger", ve **todos** los pedidos (con teléfono y dirección de entrega) y los marca enviados o entregados. No toca catálogo, precios, usuarios ni ajustes. |
+| `ADMIN` | Todo lo del empleado, más productos, fotos, existencias, compatibilidades, sistemas del catálogo, roles de los usuarios, costo de envío y descuento de taller. |
+
+El rol se lee de la base en **cada petición**, no del token: si el admin le cambia el rol a alguien, aplica desde su siguiente acción, sin esperar a que venza su sesión. Un admin no puede cambiarse su propio rol, así la tienda nunca se queda sin administrador.
+
+Cuatro funciones del dominio hacen cumplir las reglas, y los casos de uso (`back/src/aplicacion/`) las llaman:
 
 - `exigirSesion(actor)`: debe haber usuario. Si no, error `UNAUTHENTICATED`.
+- `exigirPersonal(actor)`: el rol debe ser `EMPLEADO` o `ADMIN`. Si no, error `FORBIDDEN`.
 - `exigirAdmin(actor)`: el rol debe ser `ADMIN`. Si no, error `FORBIDDEN`.
 - `exigirDueno(actor, usuarioId)`: el recurso debe ser tuyo, salvo que seas admin.
 
 | Operación | Regla |
 |---|---|
-| Catálogo, categorías, compatibilidades, stock en vivo | Público |
+| Catálogo, categorías, compatibilidades, stock en vivo, catálogo de vehículos (`buscarVehiculos`, `marcasDeVehiculos`…) | Público |
 | `registrarPedido` (comprar) | Público: se puede comprar como invitado. Con sesión, el pedido queda a nombre de tu cuenta |
 | `crearCuenta`, `iniciarSesion` | Público |
-| `yo`, `vehiculos`, `pedidos` | Con sesión. Solo ves **los tuyos** (el admin ve todos) |
+| `yo`, `vehiculos` | Con sesión. Solo ves **los tuyos** (el admin ve todos) |
+| `pedidos`, `pedido` | Con sesión. Solo ves **los tuyos**; el personal (empleado y admin) ve todos |
+| `precioParaTi` de cada producto | Público: el precio de lista, o el de mayoreo si la sesión es de `TALLER` |
+| `pedidoPorCodigoDeMostrador`, `confirmarPagoEnMostrador`, `cambiarStatusDePedido` | `EMPLEADO` o `ADMIN` |
 | `vehiculo`, `mantenimientos`, editar o borrar vehículo, `registrarMantenimiento` | Solo el dueño o el admin |
-| `agregarVehiculo` | Con sesión. El dueño lo toma el servidor del token, no lo manda el cliente |
-| Crear o editar productos y categorías, `registrarCompatibilidad`, `registrarUsuario`, `usuarios` | Solo `ADMIN` |
+| `agregarVehiculo` | Con sesión. El dueño lo toma el servidor del token, no lo manda el cliente. El coche debe estar en el catálogo de vehículos |
+| Crear o editar productos y categorías, `ajustarStock`, `subirImagen`, `registrarCompatibilidad`, `eliminarCompatibilidad`, `guardarModeloDeVehiculo`, `quitarModeloDeVehiculo`, `registrarUsuario`, `usuarios`, `cambiarRol`, `actualizarAjustes` | Solo `ADMIN` |
+| `vehiculosCompatibles` (en cuáles de mis coches embona una pieza) | Con sesión: solo tus coches. Sin sesión, lista vacía |
 
 Detalle importante: antes, el front mandaba `usuarioId` y el servidor le creía. Ahora el id sale del **token firmado**, así que no se puede falsificar.
 
@@ -115,6 +131,7 @@ Detalle importante: antes, el front mandaba `usuarioId` y el servidor le creía.
 3. Usuarios de ejemplo, todos con la contraseña `encaja123`:
    - `santiago@encaja.mx` (cliente, tiene el Versa y el Jetta)
    - `taller@encaja.mx` (taller)
+   - `mostrador@encaja.mx` (empleado; solo existe en bases creadas desde cero con `npm run db:init`. En una base anterior, dale el rol a una cuenta desde Panel → Usuarios)
    - `admin@encaja.mx` (admin)
 
 ### Activar "Continuar con Google" (opcional)
