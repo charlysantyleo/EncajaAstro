@@ -3,6 +3,7 @@
 // del panel salen de una sola agregacion ($facet). Los documentos se borran solos a los 180 dias (indice TTL).
 import dns from 'node:dns';
 import { MongoClient } from 'mongodb';
+import { ErrorDeNegocio } from '../../../dominio/errores.js';
 
 const DIAS_QUE_SE_GUARDA = 180;
 const COLECCION = 'actividad';
@@ -22,14 +23,37 @@ function prepararDns(servidores) {
   console.log(`MongoDB: se usan los DNS ${usar.join(', ')} para resolver la direccion del cluster.`);
 }
 
+// El panel (solo ADMIN) recibe el motivo de una falla de conexion en palabras, para que se pueda arreglar sin
+// leer los logs del servidor. Nunca lleva la contraseña: el error completo se queda en la consola.
+export function explicarFalla(error) {
+  const texto = `${error?.name ?? ''} ${error?.message ?? ''} ${error?.cause?.message ?? ''}`;
+  if (/bad auth|authentication failed|AuthenticationFailed/i.test(texto) || error?.code === 8000 || error?.code === 18) {
+    return 'MongoDB rechazó el usuario o la contraseña de MONGODB_URI. Revisa la variable en el servidor y el usuario en Atlas → Database Access.';
+  }
+  if (/querySrv ENOTFOUND|ENOTFOUND/i.test(texto)) {
+    return 'No se encontró el cluster de MONGODB_URI: revisa la dirección que va después de la @.';
+  }
+  if (/querySrv/i.test(texto)) {
+    return 'El servidor no pudo resolver la dirección de Atlas (DNS). Prueba con la variable MONGODB_DNS=1.1.1.1,8.8.8.8.';
+  }
+  // Atlas corta el saludo TLS ("SSL alert number 80") a las IP que no estan en su lista de acceso.
+  if (/ServerSelection|timed out|ECONNRESET|ETIMEDOUT|closed|tlsv1 alert|SSL alert/i.test(texto)) {
+    return 'El servidor no pudo conectarse a MongoDB Atlas. Lo más común: en Atlas → Network Access falta permitir 0.0.0.0/0 (Render se conecta desde IP que cambian).';
+  }
+  return `MongoDB respondió con un error (${error?.name ?? 'desconocido'}). El detalle está en la consola del servidor.`;
+}
+
 /** @returns {import('../../../puertos/salida.js').Actividad} */
 export function crearActividadMongo({ uri, baseDeDatos, servidoresDns }) {
   if (uri.startsWith('mongodb+srv://')) prepararDns(servidoresDns);
   // Si MongoDB no responde en 5 s se da por caido: la tienda sigue y solo se pierde ese evento.
-  const cliente = new MongoClient(uri, { serverSelectionTimeoutMS: 5000, appName: 'encaja-back' });
+  const nuevoCliente = () => new MongoClient(uri, { serverSelectionTimeoutMS: 5000, appName: 'encaja-back' });
+  let cliente = nuevoCliente();
   let lista = null;
 
-  // Conecta y crea los indices la primera vez que se usa; si falla, el siguiente uso lo vuelve a intentar.
+  // Conecta y crea los indices la primera vez que se usa. Si la primera conexion falla, el driver deja ese cliente
+  // cerrado para siempre ("Topology is closed"), asi que se cambia por uno nuevo: el siguiente uso vuelve a intentar
+  // y, en cuanto MongoDB este disponible (por ejemplo, al permitir la IP en Atlas), se conecta sin reiniciar el servidor.
   function coleccion() {
     lista ??= (async () => {
       const actividad = cliente.db(baseDeDatos).collection(COLECCION);
@@ -40,6 +64,9 @@ export function crearActividadMongo({ uri, baseDeDatos, servidoresDns }) {
       return actividad;
     })().catch((error) => {
       lista = null;
+      const anterior = cliente;
+      cliente = nuevoCliente();
+      anterior.close().catch(() => {});
       throw error;
     });
     return lista;
@@ -59,36 +86,46 @@ export function crearActividadMongo({ uri, baseDeDatos, servidoresDns }) {
       await (await coleccion()).insertOne({ ...evento });
     },
 
-    async resumen({ inicio, zonaHoraria, limite }) {
-      const [r] = await (await coleccion())
-        .aggregate([
-          { $match: { fecha: { $gte: inicio } } },
-          {
-            $facet: {
-              porTipo: [{ $group: { _id: '$tipo', valor: { $sum: 1 } } }],
-              porDia: [
-                { $group: { _id: { $dateToString: { format: '%Y-%m-%d', date: '$fecha', timezone: zonaHoraria } }, valor: { $sum: 1 } } },
-                { $sort: { _id: 1 } },
-              ],
-              masBuscado: masFrecuentes({ tipo: 'BUSQUEDA' }, '$texto', limite),
-              sinResultados: masFrecuentes({ tipo: 'BUSQUEDA', resultados: 0 }, '$texto', limite),
-              vehiculos: masFrecuentes({ tipo: 'VEHICULO_AGREGADO' }, { $concat: ['$marca', ' ', '$modelo'] }, limite),
-              piezasMasVistas: masFrecuentes({ tipo: 'VISTA_PRODUCTO' }, '$productoId', limite, { nombre: { $last: '$producto' } }),
-            },
-          },
-        ])
-        .toArray();
-      const serie = (filas) => filas.map((f) => ({ etiqueta: f.nombre ?? String(f._id), valor: f.valor }));
-      return {
-        porTipo: Object.fromEntries(r.porTipo.map((f) => [f._id, f.valor])),
-        porDia: serie(r.porDia),
-        masBuscado: serie(r.masBuscado),
-        sinResultados: serie(r.sinResultados),
-        vehiculos: serie(r.vehiculos),
-        piezasMasVistas: serie(r.piezasMasVistas),
-      };
+    async resumen(filtro) {
+      try {
+        return await resumir(filtro);
+      } catch (error) {
+        console.error('[mongo] No se pudo leer la actividad:', error);
+        throw new ErrorDeNegocio(explicarFalla(error));
+      }
     },
 
     cerrar: () => cliente.close(),
   };
+
+  async function resumir({ inicio, zonaHoraria, limite }) {
+    const actividad = await coleccion();
+    const [r] = await actividad
+      .aggregate([
+        { $match: { fecha: { $gte: inicio } } },
+        {
+          $facet: {
+            porTipo: [{ $group: { _id: '$tipo', valor: { $sum: 1 } } }],
+            porDia: [
+              { $group: { _id: { $dateToString: { format: '%Y-%m-%d', date: '$fecha', timezone: zonaHoraria } }, valor: { $sum: 1 } } },
+              { $sort: { _id: 1 } },
+            ],
+            masBuscado: masFrecuentes({ tipo: 'BUSQUEDA' }, '$texto', limite),
+            sinResultados: masFrecuentes({ tipo: 'BUSQUEDA', resultados: 0 }, '$texto', limite),
+            vehiculos: masFrecuentes({ tipo: 'VEHICULO_AGREGADO' }, { $concat: ['$marca', ' ', '$modelo'] }, limite),
+            piezasMasVistas: masFrecuentes({ tipo: 'VISTA_PRODUCTO' }, '$productoId', limite, { nombre: { $last: '$producto' } }),
+          },
+        },
+      ])
+      .toArray();
+    const serie = (filas) => filas.map((f) => ({ etiqueta: f.nombre ?? String(f._id), valor: f.valor }));
+    return {
+      porTipo: Object.fromEntries(r.porTipo.map((f) => [f._id, f.valor])),
+      porDia: serie(r.porDia),
+      masBuscado: serie(r.masBuscado),
+      sinResultados: serie(r.sinResultados),
+      vehiculos: serie(r.vehiculos),
+      piezasMasVistas: serie(r.piezasMasVistas),
+    };
+  }
 }
