@@ -146,6 +146,65 @@ export const typeDefs = `#graphql
     motor: String
   }
 
+  """Un punto de una grafica: una etiqueta (dia, estado, pieza...) y su valor."""
+  type PuntoDeSerie {
+    etiqueta: String!
+    valor: Float!
+  }
+
+  """Numeros del panel para un periodo. Las ventas salen de PostgreSQL; la actividad, de MongoDB."""
+  type Tablero {
+    dias: Int!
+    "Primer dia del periodo (AAAA-MM-DD)."
+    desde: String!
+    "Importe de los pedidos pagados, enviados o entregados."
+    ventas: Float!
+    pedidosPagados: Int!
+    ticketPromedio: Float!
+    "Productos con pocasExistencias piezas o menos (hoy, no en el periodo)."
+    piezasPorAgotarse: Int!
+    pocasExistencias: Int!
+    ventasPorDia: [PuntoDeSerie!]!
+    pedidosPorEstado: [PuntoDeSerie!]!
+    formasDePago: [PuntoDeSerie!]!
+    "Unidades vendidas por pieza (nombre · numero de parte)."
+    piezasMasVendidas: [PuntoDeSerie!]!
+    "Lo que viene de MongoDB. Null si MongoDB fallo: las ventas se siguen viendo."
+    actividad: ActividadDelTablero
+  }
+
+  """Actividad de la tienda guardada en MongoDB."""
+  type ActividadDelTablero {
+    "False si el servidor no tiene MONGODB_URI (no se guarda la actividad)."
+    disponible: Boolean!
+    "Busquedas, piezas vistas, agregadas a la nota y pedidos del periodo."
+    embudo: [PuntoDeSerie!]!
+    actividadPorDia: [PuntoDeSerie!]!
+    masBuscado: [PuntoDeSerie!]!
+    busquedasSinResultados: [PuntoDeSerie!]!
+    "Marca y modelo de los coches que los clientes agregaron a su garage."
+    vehiculosMasComunes: [PuntoDeSerie!]!
+    piezasMasVistas: [PuntoDeSerie!]!
+  }
+
+  """Que hizo un visitante."""
+  enum TipoDeActividad {
+    BUSQUEDA
+    VISTA_PRODUCTO
+    AGREGAR_A_NOTA
+    VEHICULO_AGREGADO
+    PEDIDO
+  }
+
+  """Un evento de actividad tal como se avisa en vivo al panel."""
+  type ActividadEnVivo {
+    tipo: TipoDeActividad!
+    "Fecha y hora ISO."
+    fecha: String!
+    "Ej.: Buscó “balatas versa” (3 resultados)."
+    descripcion: String!
+  }
+
   """Un modelo del catalogo de vehiculos en un año, con los motores que trajo."""
   type ModeloDeVehiculo {
     id: ID!
@@ -483,6 +542,9 @@ export const typeDefs = `#graphql
     "Para el panel: los modelos de una marca con sus años y motores."
     catalogoDeMarca(marca: String!): [ModeloDelCatalogo!]!
 
+    "Solo ADMIN: numeros y graficas del panel de los ultimos dias (7, 30, 90...)."
+    tablero(dias: Int = 30): Tablero!
+
     "Vehiculos del garage, con filtro por dueno o por marca."
     vehiculos(usuarioId: ID, marca: String): [Vehiculo!]!
     vehiculo(id: ID!): Vehiculo
@@ -550,6 +612,9 @@ export const typeDefs = `#graphql
     "Solo ADMIN: agrega un modelo al catalogo de vehiculos (o reemplaza sus motores) en un rango de años."
     guardarModeloDeVehiculo(datos: ModeloDeVehiculoInput!): [ModeloDeVehiculo!]!
 
+    "Anota que se abrio una pieza (VISTA_PRODUCTO) o que se agrego a la nota (AGREGAR_A_NOTA). Publico; lo demas lo anota el servidor."
+    registrarActividad(tipo: TipoDeActividad!, productoId: ID!, cantidad: Int): Boolean!
+
     "Solo ADMIN: quita del catalogo un modelo en un rango de años. Regresa cuantos años quito."
     quitarModeloDeVehiculo(marca: String!, modelo: String!, anioDesde: Int!, anioHasta: Int!): Int!
 
@@ -590,5 +655,11 @@ export const typeDefs = `#graphql
   type Subscription {
     "Se dispara cada vez que cambia el stock de un producto (compra o edicion de catalogo), para refrescar el catalogo sin recargar la pagina."
     stockActualizado(productoId: ID): Producto!
+
+    "Personal (EMPLEADO o ADMIN): pedido nuevo o que cambio de estado (pagado, cancelado, enviado, entregado)."
+    pedidoActualizado: Pedido!
+
+    "Solo ADMIN: cada evento de actividad que se guarda (busqueda, pieza vista, nota, garage, pedido)."
+    actividadRegistrada: ActividadEnVivo!
   }
 `;

@@ -1,8 +1,10 @@
 import { Fragment, useMemo, useState } from 'react';
 import { Loader2 } from '../ui/Iconos';
 import { graphqlRequest } from '../../graphql/client';
-import { MUTATION_CAMBIAR_STATUS_PEDIDO, QUERY_PEDIDOS_PANEL } from '../../graphql/queries';
+import { MUTATION_CAMBIAR_STATUS_PEDIDO, QUERY_PEDIDOS_PANEL, SUSCRIPCION_PEDIDOS } from '../../graphql/queries';
 import { useGraphQLQuery } from '../../hooks/useGraphQLQuery';
+import { useSuscripcion } from '../../hooks/useSuscripcion';
+import EnVivo from './EnVivo';
 import { pesos } from '../../lib/formato';
 import { METODOS, STATUS_PEDIDO } from '../../lib/pagos';
 import { direccionEnUnaLinea } from '../../lib/entrega';
@@ -27,17 +29,33 @@ function acciones(pedido) {
 const ETIQUETA_ACCION = { ENVIADO: 'Marcar enviado', ENTREGADO: 'Marcar entregado' };
 
 // Pedidos de todas las cuentas para el personal: quien compro, como se entrega y como va el pago.
-// Desde aqui se marcan como enviados (a domicilio) o entregados.
+// Desde aqui se marcan como enviados (a domicilio) o entregados. La lista se actualiza sola por WebSocket:
+// los pedidos nuevos aparecen arriba y los cambios (pagado en linea, cobrado en mostrador...) se ven al momento.
 function PedidosAdmin() {
   const { datos, cargando, error, recargar } = useGraphQLQuery(QUERY_PEDIDOS_PANEL);
+  // Version mas reciente de cada pedido, por una accion propia o porque llego en vivo.
   const [cambios, setCambios] = useState({});
+  const [nuevos, setNuevos] = useState(() => new Set());
   const [filtro, setFiltro] = useState('ATENDER');
   const [abierto, setAbierto] = useState(null);
   const [trabajando, setTrabajando] = useState(null);
   const [aviso, setAviso] = useState(null);
 
-  // Lo que regresa cada cambio de estado reemplaza al pedido de la lista, sin volver a pedirla toda.
-  const pedidos = useMemo(() => (datos?.pedidos ?? []).map((pedido) => cambios[pedido.id] ?? pedido), [datos, cambios]);
+  const conexion = useSuscripcion(SUSCRIPCION_PEDIDOS, ({ pedidoActualizado: pedido }) => {
+    setCambios((anteriores) => ({ ...anteriores, [pedido.id]: pedido }));
+    if (!(datos?.pedidos ?? []).some((p) => p.id === pedido.id)) setNuevos((anteriores) => new Set(anteriores).add(pedido.id));
+  });
+
+  // Lo que regresa cada cambio de estado (o llega en vivo) reemplaza al pedido de la lista, sin volver a pedirla toda;
+  // los que no estaban en la lista van arriba.
+  const pedidos = useMemo(() => {
+    const lista = datos?.pedidos ?? [];
+    const conocidos = new Set(lista.map((p) => p.id));
+    const llegados = Object.values(cambios)
+      .filter((p) => !conocidos.has(p.id))
+      .sort((a, b) => Number(b.id) - Number(a.id));
+    return [...llegados, ...lista.map((pedido) => cambios[pedido.id] ?? pedido)];
+  }, [datos, cambios]);
   const visibles = pedidos.filter(FILTROS.find(([clave]) => clave === filtro)[2]);
 
   async function cambiarStatus(pedido, status) {
@@ -67,9 +85,7 @@ function PedidosAdmin() {
             </button>
           ))}
         </div>
-        <button type="button" className="btn btn-texto btn-chico" onClick={recargar}>
-          Actualizar
-        </button>
+        <EnVivo estado={conexion} />
       </div>
 
       {aviso && (
@@ -109,6 +125,7 @@ function PedidosAdmin() {
                       >
                         N.º {pedido.id}
                       </button>
+                      {nuevos.has(pedido.id) && <span className="etiqueta relleno pedido-nuevo">Nuevo</span>}
                       <div className="apagado mono">{pedido.fecha}</div>
                     </td>
                     <td>

@@ -3,7 +3,9 @@ import { useTienda } from '../store/useTienda';
 export const API_URL = import.meta.env.PUBLIC_API_URL || 'http://localhost:4000/graphql';
 
 // Cada peticion lleva el JWT de la sesion (si hay) en el encabezado Authorization.
-export async function graphqlRequest(query, variables = {}, { token } = {}) {
+// Con { parcial: true }, si llego algo de datos se regresa { datos, errores } en lugar de fallar
+// (el tablero muestra las ventas aunque la parte de MongoDB falle).
+export async function graphqlRequest(query, variables = {}, { token, parcial = false } = {}) {
   const jwt = token ?? useTienda.getState().sesion?.token;
   const respuesta = await fetch(API_URL, {
     method: 'POST',
@@ -19,6 +21,8 @@ export async function graphqlRequest(query, variables = {}, { token } = {}) {
   }
 
   const resultado = await respuesta.json();
+
+  if (parcial && resultado.data) return { datos: resultado.data, errores: resultado.errors ?? [] };
 
   if (resultado.errors?.length) {
     // Si el servidor ya no reconoce el token (vencio o cambio el secreto), se cierra la sesion local.

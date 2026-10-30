@@ -2,8 +2,10 @@ import { useMemo, useState } from 'react';
 import { AnimatePresence } from 'motion/react';
 import { Plus, Search } from '../ui/Iconos';
 import { graphqlRequest } from '../../graphql/client';
-import { MUTATION_AJUSTAR_STOCK, QUERY_CATEGORIAS, QUERY_PRODUCTOS_PANEL } from '../../graphql/queries';
+import { MUTATION_AJUSTAR_STOCK, QUERY_CATEGORIAS, QUERY_PRODUCTOS_PANEL, SUSCRIPCION_STOCK_PANEL } from '../../graphql/queries';
 import { useGraphQLQuery } from '../../hooks/useGraphQLQuery';
+import { useSuscripcion } from '../../hooks/useSuscripcion';
+import EnVivo from './EnVivo';
 import { imagenDe } from '../../imagenes';
 import { pesos } from '../../lib/formato';
 import { Cargando, ErrorConReintento } from '../EstadoCarga';
@@ -59,6 +61,10 @@ function ProductosAdmin() {
   const [editando, setEditando] = useState(null); // null = cerrado, 'nuevo' o el id
   const [existencias, setExistencias] = useState({});
   const [aviso, setAviso] = useState(null);
+  // Las existencias se mueven solas: cada venta, cancelacion o ajuste llega por WebSocket.
+  const conexion = useSuscripcion(SUSCRIPCION_STOCK_PANEL, ({ stockActualizado: producto }) =>
+    setExistencias((anteriores) => ({ ...anteriores, [producto.id]: producto.stock }))
+  );
 
   const lista = useMemo(() => {
     const texto = busqueda.trim().toLowerCase();
@@ -84,9 +90,12 @@ function ProductosAdmin() {
           <Search size={18} />
           <input className="input" type="search" placeholder="Buscar por nombre, número de parte o marca" aria-label="Buscar productos" value={busqueda} onChange={(evento) => setBusqueda(evento.target.value)} />
         </div>
-        <button type="button" className="btn btn-primario" onClick={() => setEditando('nuevo')}>
-          <Plus size={18} /> Nuevo producto
-        </button>
+        <div className="hoja-acciones">
+          <EnVivo estado={conexion} />
+          <button type="button" className="btn btn-primario" onClick={() => setEditando('nuevo')}>
+            <Plus size={18} /> Nuevo producto
+          </button>
+        </div>
       </div>
 
       {aviso && (

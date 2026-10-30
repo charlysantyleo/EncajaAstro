@@ -4,11 +4,12 @@ import { esAdmin, esDuenoOAdmin, exigirSesion, usuarioParaFiltrar } from '../dom
 import { COMBUSTIBLE_POR_DEFECTO, hoy, validarKilometraje } from '../dominio/reglas.js';
 import { vehiculoPropio } from './comun.js';
 import { segunCatalogo } from './vehiculos.js';
+import { TIPOS_DE_ACTIVIDAD } from '../dominio/actividad.js';
 
 /**
  * @param {{ repos: import('../puertos/salida.js').Repositorios, transaccion: import('../puertos/salida.js').Transaccion }} puertos
  */
-export function crearGarage({ repos, transaccion }) {
+export function crearGarage({ repos, transaccion, actividad }) {
   return {
     vehiculos(actor, { usuarioId, marca }) {
       return repos.vehiculos.listar({ usuarioId: usuarioParaFiltrar(actor, usuarioId), marca });
@@ -31,7 +32,7 @@ export function crearGarage({ repos, transaccion }) {
       const usuarioId = esAdmin(actor) && datos.usuarioId ? datos.usuarioId : actor.id;
       // El coche se elige del catalogo y se guarda con sus nombres, para que las compatibilidades lo encuentren.
       const vehiculo = await segunCatalogo(repos, datos);
-      return repos.vehiculos.crear({
+      const creado = await repos.vehiculos.crear({
         usuarioId,
         apodo: datos.apodo ?? null,
         marca: vehiculo.marca,
@@ -41,6 +42,14 @@ export function crearGarage({ repos, transaccion }) {
         tipoCombustible: datos.tipoCombustible ?? COMBUSTIBLE_POR_DEFECTO,
         kilometraje: datos.kilometraje ?? null,
       });
+      actividad.anotar({
+        tipo: TIPOS_DE_ACTIVIDAD.VEHICULO_AGREGADO,
+        usuarioId,
+        marca: creado.marca,
+        modelo: creado.modelo,
+        anio: creado.anio,
+      });
+      return creado;
     },
 
     async actualizarVehiculo(actor, id, datos) {

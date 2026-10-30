@@ -3,6 +3,10 @@ import { persist } from 'zustand/middleware';
 import { rutas, navegar, volver, rutaActual } from '../lib/rutas';
 import { imagenDe } from '../imagenes';
 
+// La actividad para el panel se carga aparte (import dinamico): no pesa en la primera carga ni crea un ciclo
+// store -> cliente GraphQL -> store.
+const anotar = (...datos) => import('../lib/actividad').then(({ anotarActividad }) => anotarActividad(...datos));
+
 // Que pasa con cada evento:
 //  - navegacion: cambia de pagina (cada pantalla ahora es una URL real).
 //  - estado: cambia el store (modales, carrito, filtros).
@@ -94,6 +98,7 @@ export const useTienda = create(
 
           // --- estado ---
           case 'verProducto':
+            anotar('VISTA_PRODUCTO', payload.productoId);
             return set({ modal: 'producto', productoId: payload.productoId });
 
           case 'agregarAlCarrito': {
@@ -111,7 +116,7 @@ export const useTienda = create(
             }
             const nuevo = existente
               ? carrito.map((item) =>
-                  item.productoId === producto.id ? { ...item, cantidad: item.cantidad + cantidad } : item
+                  item.productoId === producto.id ? { ...item, cantidad: item.cantidad + cantidad, stock: producto.stock ?? item.stock } : item
                 )
               : [...carrito, {
                   productoId: producto.id,
@@ -121,7 +126,10 @@ export const useTienda = create(
                   // Lo que paga esta cuenta (de mayoreo si es taller); el servidor lo vuelve a calcular al cobrar.
                   precio: producto.precioParaTi ?? producto.precio,
                   cantidad,
+                  // Existencias al agregarla: tope de la cantidad en la nota lateral si no llega el stock en vivo.
+                  stock: producto.stock ?? null,
                 }];
+            anotar('AGREGAR_A_NOTA', producto.id, cantidad);
             // Se queda en la pagina: la nota lateral y el aviso confirman el cambio.
             return set({
               carrito: nuevo,

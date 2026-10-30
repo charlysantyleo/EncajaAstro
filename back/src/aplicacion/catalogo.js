@@ -4,6 +4,7 @@ import { exigirAdmin } from '../dominio/permisos.js';
 import { COMPATIBILIDAD_POR_DEFECTO, paginar } from '../dominio/reglas.js';
 import { precioPara } from '../dominio/ajustes.js';
 import { seEnciman, validarCompatibilidad } from '../dominio/vehiculos.js';
+import { TIPOS_DE_ACTIVIDAD, normalizarBusqueda } from '../dominio/actividad.js';
 
 // Fotos que el panel puede subir y su tamaño maximo (el panel las comprime antes a WebP).
 const TIPOS_DE_IMAGEN = ['image/webp', 'image/jpeg', 'image/png'];
@@ -13,7 +14,7 @@ const BYTES_MAXIMOS_DE_IMAGEN = 1.5 * 1024 * 1024;
  * @param {{ repos: import('../puertos/salida.js').Repositorios, eventos: import('../puertos/salida.js').Eventos,
  *           ajustes: ReturnType<typeof import('./ajustes.js').crearAjustes> }} puertos
  */
-export function crearCatalogo({ repos, eventos, ajustes }) {
+export function crearCatalogo({ repos, eventos, ajustes, actividad }) {
   async function avisarStock(productoId) {
     const producto = await repos.productos.porId(productoId);
     if (producto) eventos.stockCambio(producto);
@@ -47,8 +48,19 @@ export function crearCatalogo({ repos, eventos, ajustes }) {
 
     imagen: (id) => repos.imagenes.porId(id),
 
-    async buscarProductos({ limite, desde, ...filtros }) {
-      return paginar(await repos.productos.buscar(filtros), { limite, desde });
+    async buscarProductos({ limite, desde, texto, ...filtros }, actor = null) {
+      const buscado = texto?.trim() || null;
+      const productos = await repos.productos.buscar({ ...filtros, texto: buscado });
+      // Una busqueda escrita se anota una vez (no por cada pagina) con cuantas piezas encontro.
+      if (buscado && !desde) {
+        actividad.anotar({
+          tipo: TIPOS_DE_ACTIVIDAD.BUSQUEDA,
+          usuarioId: actor?.id ?? null,
+          texto: normalizarBusqueda(buscado),
+          resultados: productos.length,
+        });
+      }
+      return paginar(productos, { limite, desde });
     },
 
     async productosCompatibles({ vehiculoId, categoriaId, soloDirectos }) {

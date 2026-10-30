@@ -89,12 +89,41 @@ puerto, mismo path: Express y el `WebSocketServer` comparten el mismo
 
 ## Subscriptions
 
-`stockActualizado(productoId: ID)` se dispara cada vez que cambia el stock de
-un producto: al registrar un pedido (`registrarPedido`) o al editar un
-producto desde el catalogo (`actualizarProducto`). Sin argumento, la
-subscription recibe el evento de cualquier producto; con `productoId`, solo
-los de esa pieza. El frontend la usa para refrescar el stock que se ve en el
-catalogo sin recargar la pagina.
+Todas van por el mismo WebSocket. El JWT llega en `connectionParams` al conectar
+y con el se revisa el permiso de cada una.
+
+| Subscription | Quien | Cuando se dispara |
+|---|---|---|
+| `stockActualizado(productoId: ID)` | Publica | Cambia el stock de un producto: un pedido, un pago cancelado o vencido, un ajuste o una edicion desde el panel. Con `productoId`, solo los de esa pieza |
+| `pedidoActualizado` | `EMPLEADO` o `ADMIN` | Pedido nuevo, o que cambio de estado (pagado en linea, cobrado en mostrador, cancelado, enviado, entregado) |
+| `actividadRegistrada` | `ADMIN` | Cada evento de actividad que se guarda en MongoDB, ya descrito ("Buscó “balatas” (2 resultados)") |
+
+El catalogo usa la primera para el stock en vivo; el panel usa las tres:
+la lista de pedidos, las existencias de productos y el tablero se actualizan solos.
+
+## Actividad en MongoDB y tablero del panel
+
+Las ventas del tablero salen de PostgreSQL (`tablero(dias)`); lo que hacen los
+visitantes se guarda en MongoDB, en la coleccion `actividad`, un documento por evento:
+
+| Evento | Quien lo anota |
+|---|---|
+| `BUSQUEDA` (texto y cuantos resultados hubo) | El servidor, al buscar con texto (una vez por busqueda, no por pagina) |
+| `VISTA_PRODUCTO` | El navegador, al abrir la ficha o el cajon de una pieza (`registrarActividad`) |
+| `AGREGAR_A_NOTA` (cuantas piezas) | El navegador, al agregar a la nota (`registrarActividad`) |
+| `VEHICULO_AGREGADO` (marca, modelo, año) | El servidor, al agregar un coche al garage |
+| `PEDIDO` (total y piezas) | El servidor, al registrar un pedido |
+
+Las graficas de actividad (del interes a la compra, actividad por dia, lo mas
+buscado, busquedas sin resultados, vehiculos de los clientes y piezas mas vistas)
+salen de una sola agregacion (`$facet`). Los eventos se borran solos a los 180 dias
+(indice TTL). Guardar un evento nunca frena ni rompe una busqueda o una compra: si
+MongoDB no responde, solo se avisa en la consola.
+
+Para activarlo: crea un cluster gratis (M0) en [MongoDB Atlas](https://cloud.mongodb.com),
+un usuario de base de datos y, en Network Access, permite la IP de tu servidor
+(en Render, `0.0.0.0/0`). Copia el connection string a `MONGODB_URI` en `.env`
+(y en las variables de entorno de Render). La coleccion y sus indices se crean solos.
 
 ## Estructura (arquitectura hexagonal)
 
@@ -107,11 +136,11 @@ back/
 ├── index.js                  Arranque: arma la app y levanta el servidor
 ├── src/
 │   ├── dominio/              Reglas puras: permisos, validaciones, errores
-│   ├── aplicacion/           Casos de uso: catalogo, garage, vehiculos, pedidos, pagos, direcciones, cuentas
+│   ├── aplicacion/           Casos de uso: catalogo, garage, vehiculos, pedidos, pagos, direcciones, cuentas, actividad, tablero
 │   ├── puertos/salida.js     Contratos que la aplicacion necesita (repos, tokens...)
 │   ├── adaptadores/
 │   │   ├── entrada/          GraphQL (schema + resolvers) y HTTP (servidor, rutas de Google, webhook de pagos)
-│   │   └── salida/           Postgres, JWT, bcrypt, Google, pasarelas de pago, eventos en memoria
+│   │   └── salida/           Postgres, MongoDB (actividad), JWT, bcrypt, Google, pasarelas de pago, correo, eventos en memoria
 │   ├── contenedor.js         Conecta cada puerto con su adaptador
 │   └── config.js             Variables de entorno
 ├── db.sql                    Esquema + datos semilla, dialecto Postgres

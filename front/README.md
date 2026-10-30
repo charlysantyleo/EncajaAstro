@@ -59,11 +59,11 @@ estatico no necesite el backend encendido.
 | `TopBar` | `client:load` | Se usa desde el primer momento. Su HTML ya viene en el build, asi que la barra se ve antes de que cargue React. |
 | `HomeView` | `client:load` | El build deja pintada la estructura del catalogo (indice de sistemas, esqueletos); los datos llegan al hidratar. |
 | `CategoriaView`, `GarageView`, `VehiculoView`, `CarritoView`, `CheckoutView`, `PagoView`, `EntrarView` | `client:only="react"` | Dependen de la URL (`?id`, `?ref`) o de `localStorage` (nota, sesion): el build no puede pintarlas sin mostrar un estado falso. |
-| `Nota` (franja inferior) | `client:idle` | Solo en inicio y catalogo. |
+| `Nota` (franja inferior) | `client:idle` | Solo en inicio y catalogo. En inicio, en pantallas de 1180px o mas se esconde: la nota se ve a la derecha (`NotaLateral`, dentro de `HomeView`). |
 | `StockEnVivo` (WebSocket) | `client:idle` | Solo en las paginas que muestran existencias. |
 | `Capas` (avisos y dialogos) | `client:idle` | Cada dialogo es un `lazy()`: su JavaScript se descarga hasta que se abre. |
 | `Pie.astro` | ninguna | Componente de Astro: HTML puro, cero JavaScript. |
-| `admin/Grafica.jsx` | ninguna | Componente de React usado sin `client:*`: Astro lo convierte en HTML. Cuando tenga datos, basta agregarle `client:visible`. |
+| `admin/TableroAdmin.jsx` | `client:only="react"` | Tablero del panel (solo `ADMIN`): pide los numeros y se queda escuchando pedidos, existencias y actividad por WebSocket para actualizarse solo. Sus graficas (`admin/Grafica.jsx`) son SVG y HTML hechos a mano, sin librerias. |
 | Formulario de tarjeta | `lazy()` | El script de Mercado Pago solo se baja si se elige pagar con tarjeta. |
 
 Reglas para que una isla con HTML del build no falle al hidratar:

@@ -4,6 +4,7 @@ import CatalogoLayout from './CatalogoLayout';
 import BandaVehiculo from './BandaVehiculo';
 import PedidoConfirmado from './PedidoConfirmado';
 import ListaProductos from './ListaProductos';
+import NotaLateral from './NotaLateral';
 import { comoIsla } from './ui/Isla';
 
 function HomeView() {
@@ -17,7 +18,7 @@ function HomeView() {
   });
 
   return (
-    <CatalogoLayout>
+    <CatalogoLayout nota={<NotaLateral />}>
       <PedidoConfirmado />
       <BandaVehiculo />
       <ListaProductos

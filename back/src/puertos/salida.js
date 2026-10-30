@@ -127,7 +127,22 @@
 
 /**
  * Eventos en tiempo real (PubSub en memoria en el adaptador actual).
- * @typedef {{ stockCambio(producto: Producto): void, escucharStock(): AsyncIterator<any> }} Eventos
+ * @typedef {{ stockCambio(producto: Producto): void, escucharStock(): AsyncIterator<any>,
+ *             pedidoCambio(pedido: Pedido): void, escucharPedidos(): AsyncIterator<any>,
+ *             actividadNueva(a: { tipo: string, fecha: string, descripcion: string }): void,
+ *             escucharActividad(): AsyncIterator<any> }} Eventos
+ */
+
+/**
+ * Actividad de la tienda (MongoDB en el adaptador actual; desactivada si no hay MONGODB_URI).
+ * Un evento es { tipo, fecha: Date, ...datos } con datos segun el tipo (texto y resultados de una busqueda,
+ * producto de una vista, marca/modelo/anio de un coche, pedidoId y total de un pedido).
+ * @typedef {{ etiqueta: string, valor: number }} PuntoDeSerie
+ * @typedef {{ disponible: boolean, registrar(evento: object): Promise<void>,
+ *             resumen(f: { inicio: Date, zonaHoraria: string, limite: number }): Promise<{
+ *               porTipo: Record<string, number>, porDia: PuntoDeSerie[], masBuscado: PuntoDeSerie[],
+ *               sinResultados: PuntoDeSerie[], vehiculos: PuntoDeSerie[], piezasMasVistas: PuntoDeSerie[] }>,
+ *             cerrar(): Promise<void> }} Actividad
  */
 
 export {};

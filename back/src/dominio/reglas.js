@@ -31,8 +31,12 @@ export function totalDe(lineas) {
 
 export const STATUS_INICIAL_PEDIDO = 'PENDIENTE';
 
-export function hoy() {
-  return new Date().toISOString().slice(0, 10);
+// La tienda esta en Guadalajara: "hoy" es el dia de alla, no el de UTC (que cambia a las 6 de la tarde).
+export const ZONA_HORARIA = 'America/Mexico_City';
+const DIA_LOCAL = new Intl.DateTimeFormat('en-CA', { timeZone: ZONA_HORARIA });
+
+export function hoy(fecha = new Date()) {
+  return DIA_LOCAL.format(fecha);
 }
 
 // ---------- garage ----------

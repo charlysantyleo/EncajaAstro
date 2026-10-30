@@ -9,7 +9,8 @@ import { comoIsla } from './ui/Isla';
 
 // La nota: franja fija al pie con piezas, total y avance al envio gratis.
 // Se despliega hacia arriba para ver y quitar renglones sin salir del catalogo.
-function Nota() {
+// conLateral: en la pagina de inicio, en pantallas anchas se esconde porque la nota ya se ve a la derecha.
+function Nota({ conLateral = false }) {
   const carrito = useTienda((estado) => estado.carrito);
   const quitarDelCarrito = useTienda((estado) => estado.quitarDelCarrito);
   const ir = useTienda((estado) => estado.ir);
@@ -35,7 +36,7 @@ function Nota() {
   }, [abierta]);
 
   return (
-    <aside className={abierta ? 'nota-franja abierta' : 'nota-franja'} aria-label="Tu nota">
+    <aside className={['nota-franja', abierta && 'abierta', conLateral && 'con-lateral'].filter(Boolean).join(' ')} aria-label="Tu nota">
       <AnimatePresence initial={false}>
         {abierta && (
           <motion.div

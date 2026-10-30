@@ -4,17 +4,20 @@
 import { withFilter } from 'graphql-subscriptions';
 
 /**
- * @param {{ catalogo, garage, vehiculos, pedidos, cuentas, pagos, direcciones, ajustes }} casos  casos de uso ya armados (ver src/contenedor.js)
+ * @param {{ catalogo, garage, vehiculos, pedidos, cuentas, pagos, direcciones, ajustes, actividad, tablero }} casos  casos de uso ya armados (ver src/contenedor.js)
  * @param {import('../../../puertos/salida.js').Eventos} eventos
  */
-export function crearResolvers({ catalogo, garage, vehiculos, pedidos, cuentas, pagos, direcciones, ajustes }, eventos) {
+export function crearResolvers(
+  { catalogo, garage, vehiculos, pedidos, cuentas, pagos, direcciones, ajustes, actividad, tablero },
+  eventos
+) {
   return {
     Query: {
       yo: (_, __, { actor }) => cuentas.yo(actor),
 
       categorias: () => catalogo.categorias(),
       categoria: (_, { id }) => catalogo.categoria(id),
-      productos: (_, filtros) => catalogo.buscarProductos(filtros),
+      productos: (_, filtros, { actor }) => catalogo.buscarProductos(filtros, actor),
       producto: (_, { id }) => catalogo.producto(id),
       productosCompatibles: (_, args) => catalogo.productosCompatibles(args),
       vehiculosCompatibles: (_, { productoId }, { actor }) => catalogo.vehiculosCompatibles(actor, productoId),
@@ -25,6 +28,7 @@ export function crearResolvers({ catalogo, garage, vehiculos, pedidos, cuentas, 
       motoresDeVehiculo: (_, { marca, modelo, anio }) => vehiculos.motores(marca, modelo, anio),
       buscarVehiculos: (_, { texto, limite }) => vehiculos.buscar(texto, limite),
       catalogoDeMarca: (_, { marca }) => vehiculos.deMarca(marca),
+      tablero: (_, { dias }, { actor }) => tablero.ventas(actor, dias),
       compatibilidades: (_, filtros) => catalogo.compatibilidades(filtros),
 
       vehiculos: (_, filtros, { actor }) => garage.vehiculos(actor, filtros),
@@ -76,6 +80,7 @@ export function crearResolvers({ catalogo, garage, vehiculos, pedidos, cuentas, 
       eliminarCompatibilidad: (_, { id }, { actor }) => catalogo.eliminarCompatibilidad(actor, id),
       guardarModeloDeVehiculo: (_, { datos }, { actor }) => vehiculos.guardar(actor, datos),
       quitarModeloDeVehiculo: (_, rango, { actor }) => vehiculos.quitar(actor, rango),
+      registrarActividad: (_, datos, { actor }) => actividad.desdeLaTienda(actor, datos),
     },
 
     Subscription: {
@@ -85,6 +90,14 @@ export function crearResolvers({ catalogo, garage, vehiculos, pedidos, cuentas, 
           (payload, { productoId }) => !productoId || String(payload.stockActualizado.id) === String(productoId)
         ),
       },
+      // El permiso se revisa al suscribirse con el actor de connectionParams (el JWT del WebSocket).
+      pedidoActualizado: { subscribe: (_, __, { actor }) => pedidos.escucharCambios(actor) },
+      actividadRegistrada: { subscribe: (_, __, { actor }) => actividad.escuchar(actor) },
+    },
+
+    // La actividad (MongoDB) se resuelve aparte: si MongoDB falla, el tablero sigue con las ventas.
+    Tablero: {
+      actividad: (t, _, { actor }) => tablero.actividad(actor, t.dias),
     },
 
     // Campos anidados: los objetos del dominio ya traen numeroParte, precio, etc.;

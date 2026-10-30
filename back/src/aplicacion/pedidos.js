@@ -12,6 +12,7 @@ import {
   validarItemsDelPedido,
 } from '../dominio/reglas.js';
 import { vehiculoPropio } from './comun.js';
+import { TIPOS_DE_ACTIVIDAD } from '../dominio/actividad.js';
 
 /**
  * @param {{ repos: import('../puertos/salida.js').Repositorios, transaccion: import('../puertos/salida.js').Transaccion,
@@ -19,8 +20,14 @@ import { vehiculoPropio } from './comun.js';
  *           direcciones: ReturnType<typeof import('./direcciones.js').crearDirecciones>,
  *           ajustes: ReturnType<typeof import('./ajustes.js').crearAjustes> }} puertos
  */
-export function crearPedidos({ repos, transaccion, eventos, pagos, direcciones, ajustes }) {
+export function crearPedidos({ repos, transaccion, eventos, pagos, direcciones, ajustes, actividad }) {
   return {
+    // Pedidos nuevos y cambios de estado en vivo, para el panel (solo el personal).
+    escucharCambios(actor) {
+      exigirPersonal(actor);
+      return eventos.escucharPedidos();
+    },
+
     // Cada quien ve sus pedidos; el personal de la tienda ve todos (y puede filtrar por usuario).
     pedidos(actor, { usuarioId, status }) {
       exigirSesion(actor);
@@ -41,7 +48,9 @@ export function crearPedidos({ repos, transaccion, eventos, pagos, direcciones, 
       const entrega = await repos.entregas.dePedido(pedido.id);
       validarCambioDeStatus(pedido, entrega?.tipo ?? 'TIENDA', status);
       await repos.pedidos.cambiarStatus(pedido.id, status);
-      return repos.pedidos.porId(pedido.id);
+      const actualizado = await repos.pedidos.porId(pedido.id);
+      eventos.pedidoCambio(actualizado);
+      return actualizado;
     },
 
     pedidoPorId: (id) => repos.pedidos.porId(id),
@@ -140,7 +149,16 @@ export function crearPedidos({ repos, transaccion, eventos, pagos, direcciones, 
         ],
       });
 
-      return repos.pedidos.porId(pedido.id);
+      const registrado = await repos.pedidos.porId(pedido.id);
+      eventos.pedidoCambio(registrado);
+      actividad.anotar({
+        tipo: TIPOS_DE_ACTIVIDAD.PEDIDO,
+        usuarioId: registrado.usuarioId,
+        pedidoId: registrado.id,
+        total: registrado.total,
+        piezas: items.reduce((suma, item) => suma + item.cantidad, 0),
+      });
+      return registrado;
     },
   };
 }

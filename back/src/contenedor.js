@@ -20,6 +20,10 @@ import { crearPagos } from './aplicacion/pagos.js';
 import { crearDirecciones } from './aplicacion/direcciones.js';
 import { crearAjustes } from './aplicacion/ajustes.js';
 import { crearVehiculos } from './aplicacion/vehiculos.js';
+import { crearActividad } from './aplicacion/actividad.js';
+import { crearTablero } from './aplicacion/tablero.js';
+import { crearActividadMongo } from './adaptadores/salida/mongo/actividadMongo.js';
+import { crearActividadDesactivada } from './adaptadores/salida/mongo/actividadDesactivada.js';
 import { PROVEEDORES } from './dominio/pagos.js';
 
 // El pool se puede inyectar para correr la aplicacion contra otra base (por ejemplo, una en memoria en pruebas).
@@ -39,6 +43,8 @@ export function armarAplicacion(config, { pool = crearPool(config.baseDeDatos) }
       : remitente && brevoApiKey
         ? crearCorreoBrevo(config.correo)
         : crearCorreoEnConsola();
+  // La actividad va a MongoDB si hay MONGODB_URI; si no, la tienda funciona igual y no se guarda.
+  const registroDeActividad = config.mongo?.uri ? crearActividadMongo(config.mongo) : crearActividadDesactivada();
   const pasarelas = {
     [PROVEEDORES.MERCADO_PAGO]: crearPasarelaMercadoPago(config.mercadoPago),
     [PROVEEDORES.PAYPAL]: crearPasarelaPaypal(config.paypal),
@@ -54,16 +60,19 @@ export function armarAplicacion(config, { pool = crearPool(config.baseDeDatos) }
   });
   const ajustes = crearAjustes({ repos });
   const direcciones = crearDirecciones({ repos, ajustes });
+  const actividad = crearActividad({ actividad: registroDeActividad, eventos, repos });
   const casos = {
-    catalogo: crearCatalogo({ repos, eventos, ajustes }),
-    garage: crearGarage({ repos, transaccion }),
+    catalogo: crearCatalogo({ repos, eventos, ajustes, actividad }),
+    garage: crearGarage({ repos, transaccion, actividad }),
     vehiculos: crearVehiculos({ repos }),
-    pedidos: crearPedidos({ repos, transaccion, eventos, pagos, direcciones, ajustes }),
+    pedidos: crearPedidos({ repos, transaccion, eventos, pagos, direcciones, ajustes, actividad }),
+    actividad,
+    tablero: crearTablero({ repos, actividad: registroDeActividad }),
     cuentas: crearCuentas({ repos, tokens, passwords, identidad, correo, frontUrl: config.frontUrl }),
     pagos,
     direcciones,
     ajustes,
   };
 
-  return { casos, eventos, pool };
+  return { casos, eventos, pool, actividad: registroDeActividad };
 }

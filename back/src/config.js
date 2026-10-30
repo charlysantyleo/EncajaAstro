@@ -40,6 +40,11 @@ export const config = {
     publicKey: process.env.MP_PUBLIC_KEY,
     webhookSecret: process.env.MP_WEBHOOK_SECRET,
   },
+  // Actividad de la tienda para las graficas del panel (opcional): sin MONGODB_URI no se guarda.
+  mongo: {
+    uri: process.env.MONGODB_URI,
+    baseDeDatos: process.env.MONGODB_DB || 'encaja',
+  },
   paypal: {
     clientId: process.env.PAYPAL_CLIENT_ID,
     clientSecret: process.env.PAYPAL_CLIENT_SECRET,

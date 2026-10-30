@@ -426,3 +426,52 @@ export const MUTATION_QUITAR_MODELO_DE_VEHICULO = `
     quitarModeloDeVehiculo(marca: $marca, modelo: $modelo, anioDesde: $anioDesde, anioHasta: $anioHasta)
   }
 `;
+
+// ---------- tablero y panel en vivo ----------
+
+const SERIE = `etiqueta valor`;
+
+export const QUERY_TABLERO = `
+  query Tablero($dias: Int) {
+    tablero(dias: $dias) {
+      dias desde ventas pedidosPagados ticketPromedio piezasPorAgotarse pocasExistencias
+      ventasPorDia { ${SERIE} }
+      pedidosPorEstado { ${SERIE} }
+      formasDePago { ${SERIE} }
+      piezasMasVendidas { ${SERIE} }
+      actividad {
+        disponible
+        embudo { ${SERIE} }
+        actividadPorDia { ${SERIE} }
+        masBuscado { ${SERIE} }
+        busquedasSinResultados { ${SERIE} }
+        vehiculosMasComunes { ${SERIE} }
+        piezasMasVistas { ${SERIE} }
+      }
+    }
+  }
+`;
+
+export const SUSCRIPCION_PEDIDOS = `
+  subscription PedidoActualizado {
+    pedidoActualizado {${CAMPOS_PEDIDO_PANEL}}
+  }
+`;
+
+export const SUSCRIPCION_ACTIVIDAD = `
+  subscription ActividadRegistrada {
+    actividadRegistrada { tipo fecha descripcion }
+  }
+`;
+
+export const SUSCRIPCION_STOCK_PANEL = `
+  subscription StockPanel {
+    stockActualizado { id stock }
+  }
+`;
+
+export const MUTATION_REGISTRAR_ACTIVIDAD = `
+  mutation RegistrarActividad($tipo: TipoDeActividad!, $productoId: ID!, $cantidad: Int) {
+    registrarActividad(tipo: $tipo, productoId: $productoId, cantidad: $cantidad)
+  }
+`;

@@ -96,7 +96,9 @@ Cuatro funciones del dominio hacen cumplir las reglas, y los casos de uso (`back
 | `yo`, `vehiculos` | Con sesión. Solo ves **los tuyos** (el admin ve todos) |
 | `pedidos`, `pedido` | Con sesión. Solo ves **los tuyos**; el personal (empleado y admin) ve todos |
 | `precioParaTi` de cada producto | Público: el precio de lista, o el de mayoreo si la sesión es de `TALLER` |
-| `pedidoPorCodigoDeMostrador`, `confirmarPagoEnMostrador`, `cambiarStatusDePedido` | `EMPLEADO` o `ADMIN` |
+| `pedidoPorCodigoDeMostrador`, `confirmarPagoEnMostrador`, `cambiarStatusDePedido`, suscripción `pedidoActualizado` | `EMPLEADO` o `ADMIN` |
+| `tablero` (ventas y actividad), suscripción `actividadRegistrada` | Solo `ADMIN` |
+| `registrarActividad` (pieza vista o agregada a la nota) | Público. Con sesión, el evento queda ligado a tu cuenta (como las búsquedas, el garage y los pedidos) |
 | `vehiculo`, `mantenimientos`, editar o borrar vehículo, `registrarMantenimiento` | Solo el dueño o el admin |
 | `agregarVehiculo` | Con sesión. El dueño lo toma el servidor del token, no lo manda el cliente. El coche debe estar en el catálogo de vehículos |
 | Crear o editar productos y categorías, `ajustarStock`, `subirImagen`, `registrarCompatibilidad`, `eliminarCompatibilidad`, `guardarModeloDeVehiculo`, `quitarModeloDeVehiculo`, `registrarUsuario`, `usuarios`, `cambiarRol`, `actualizarAjustes` | Solo `ADMIN` |

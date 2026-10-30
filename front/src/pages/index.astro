@@ -8,6 +8,7 @@ import StockEnVivo from '../components/StockEnVivo.jsx';
 <Base titulo="EnCaja Autopartes">
   <!-- El build ya deja pintada la estructura del catalogo; React la toma en cuanto carga. -->
   <HomeView client:load />
-  <Nota client:idle />
+  <!-- En pantallas anchas la nota se ve a la derecha del catalogo (NotaLateral, dentro de HomeView). -->
+  <Nota client:idle conLateral />
   <StockEnVivo client:idle />
 </Base>

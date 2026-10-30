@@ -4,6 +4,7 @@ import ProductoCard from './ProductoCard';
 import { Interruptor } from './ui/Movimiento';
 import { Cargando, ErrorConReintento } from './EstadoCarga';
 import { ChevronsUpDown } from './ui/Iconos';
+import { anotarActividad } from '../lib/actividad';
 
 // Columnas ordenables del indice. "relevancia" es el orden que manda el servidor.
 const ORDENES = {
@@ -106,7 +107,11 @@ export default function ListaProductos({ productos, cargando, error, recargar, v
                 producto={producto}
                 indice={indice}
                 abierta={abierta === producto.id}
-                onAlternar={() => setAbierta((actual) => (actual === producto.id ? null : producto.id))}
+                onAlternar={() => {
+                  // Abrir la ficha cuenta como "pieza vista" en el panel; cerrarla no.
+                  if (abierta !== producto.id) anotarActividad('VISTA_PRODUCTO', producto.id);
+                  setAbierta((actual) => (actual === producto.id ? null : producto.id));
+                }}
               />
             ))}
           </ul>

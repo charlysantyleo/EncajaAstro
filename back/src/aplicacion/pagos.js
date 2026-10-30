@@ -71,6 +71,7 @@ export function crearPagos({ repos, transaccion, eventos, pasarelas, urls }) {
       return true;
     });
     if (cambio && status !== STATUS_PAGO.PENDIENTE) await avisarStock(pago.pedidoId);
+    if (cambio) eventos.pedidoCambio(await repos.pedidos.porId(pago.pedidoId));
   }
 
   function iniciarEnPasarela(plan, cobro) {

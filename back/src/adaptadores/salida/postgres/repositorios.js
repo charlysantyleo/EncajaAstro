@@ -380,6 +380,45 @@ export function crearRepositorios(db) {
         ).rowCount,
     },
 
+    // Numeros de ventas para el panel. Vendido = pedido pagado, enviado o entregado.
+    tablero: {
+      async ventas({ desde, limite, pocasExistencias }) {
+        const vendido = "pedido.status IN ('PAGADO', 'ENVIADO', 'ENTREGADO')";
+        const filas = async (sql, parametros) => (await db.query(sql, parametros)).rows;
+        const [porDia, porEstado, formasDePago, masVendidas, [agotandose]] = await Promise.all([
+          filas(
+            `SELECT fecha, sum(total) AS importe FROM pedido WHERE fecha >= $1 AND ${vendido} GROUP BY fecha ORDER BY fecha`,
+            [desde]
+          ),
+          filas('SELECT status, count(*)::int AS pedidos FROM pedido WHERE fecha >= $1 GROUP BY status', [desde]),
+          filas(
+            `SELECT pago.metodo, pago.proveedor, count(*)::int AS pedidos FROM pago
+             JOIN pedido ON pedido.id = pago.pedido_id
+             WHERE pedido.fecha >= $1 AND ${vendido} GROUP BY pago.metodo, pago.proveedor`,
+            [desde]
+          ),
+          filas(
+            `SELECT producto.nombre, producto.numero_parte, sum(detalle_pedido.cantidad)::int AS unidades
+             FROM detalle_pedido
+             JOIN pedido ON pedido.id = detalle_pedido.pedido_id
+             JOIN producto ON producto.id = detalle_pedido.producto_id
+             WHERE pedido.fecha >= $1 AND ${vendido}
+             GROUP BY producto.id, producto.nombre, producto.numero_parte
+             ORDER BY unidades DESC, producto.nombre LIMIT $2`,
+            [desde, limite]
+          ),
+          filas('SELECT count(*)::int AS piezas FROM producto WHERE stock <= $1', [pocasExistencias]),
+        ]);
+        return {
+          porDia: porDia.map((f) => ({ etiqueta: f.fecha, valor: numero(f.importe) })),
+          porEstado: Object.fromEntries(porEstado.map((f) => [f.status, f.pedidos])),
+          formasDePago: formasDePago.map((f) => ({ metodo: f.metodo, proveedor: f.proveedor, pedidos: f.pedidos })),
+          masVendidas: masVendidas.map((f) => ({ etiqueta: `${f.nombre} · ${f.numero_parte}`, valor: f.unidades })),
+          piezasPorAgotarse: agotandose.piezas,
+        };
+      },
+    },
+
     // Ajustes de la tienda como clave/valor; se guardan como texto y se leen como numero.
     ajustes: {
       todos: async () =>
