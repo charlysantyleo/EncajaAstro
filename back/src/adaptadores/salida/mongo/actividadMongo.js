@@ -1,13 +1,30 @@
 // Adaptador de salida: implementa el puerto Actividad con MongoDB. Cada busqueda, pieza vista, pieza agregada
 // a la nota, coche agregado al garage y pedido es un documento de la coleccion "actividad"; las graficas
 // del panel salen de una sola agregacion ($facet). Los documentos se borran solos a los 180 dias (indice TTL).
+import dns from 'node:dns';
 import { MongoClient } from 'mongodb';
 
 const DIAS_QUE_SE_GUARDA = 180;
 const COLECCION = 'actividad';
 
+// Las direcciones mongodb+srv:// de Atlas necesitan un registro DNS de tipo SRV, y Node lo pregunta con su propio
+// resolutor. En Windows, cuando el DNS del sistema es una direccion IPv6 de enlace local (fe80::...), Node no la
+// entiende y pregunta a 127.0.0.1, donde nadie contesta: "querySrv ECONNREFUSED". En ese caso (o si se indica
+// MONGODB_DNS) se usan otros servidores DNS. Solo afecta a dns.resolve*, que en este backend usa el driver de MongoDB.
+const DNS_PUBLICOS = ['1.1.1.1', '8.8.8.8'];
+
+function prepararDns(servidores) {
+  const actuales = dns.getServers();
+  const soloLocal = actuales.length > 0 && actuales.every((s) => s === '127.0.0.1' || s === '::1');
+  const usar = servidores?.length ? servidores : soloLocal && process.platform === 'win32' ? DNS_PUBLICOS : null;
+  if (!usar) return;
+  dns.setServers(usar);
+  console.log(`MongoDB: se usan los DNS ${usar.join(', ')} para resolver la direccion del cluster.`);
+}
+
 /** @returns {import('../../../puertos/salida.js').Actividad} */
-export function crearActividadMongo({ uri, baseDeDatos }) {
+export function crearActividadMongo({ uri, baseDeDatos, servidoresDns }) {
+  if (uri.startsWith('mongodb+srv://')) prepararDns(servidoresDns);
   // Si MongoDB no responde en 5 s se da por caido: la tienda sigue y solo se pierde ese evento.
   const cliente = new MongoClient(uri, { serverSelectionTimeoutMS: 5000, appName: 'encaja-back' });
   let lista = null;

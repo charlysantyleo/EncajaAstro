@@ -44,6 +44,8 @@ export const config = {
   mongo: {
     uri: process.env.MONGODB_URI,
     baseDeDatos: process.env.MONGODB_DB || 'encaja',
+    // Opcional: servidores DNS para resolver mongodb+srv:// (ej. "1.1.1.1,8.8.8.8"). Ver actividadMongo.js.
+    servidoresDns: process.env.MONGODB_DNS?.split(',').map((s) => s.trim()).filter(Boolean),
   },
   paypal: {
     clientId: process.env.PAYPAL_CLIENT_ID,

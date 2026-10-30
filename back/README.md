@@ -125,6 +125,10 @@ un usuario de base de datos y, en Network Access, permite la IP de tu servidor
 (en Render, `0.0.0.0/0`). Copia el connection string a `MONGODB_URI` en `.env`
 (y en las variables de entorno de Render). La coleccion y sus indices se crean solos.
 
+Si en Windows sale `querySrv ECONNREFUSED`: Node no encontro el DNS del sistema (pasa cuando el DNS de la red es una
+direccion IPv6 `fe80::...`) y no puede resolver la direccion `mongodb+srv://` de Atlas. El backend lo detecta y usa
+1.1.1.1 y 8.8.8.8 para esa consulta; con `MONGODB_DNS` se pueden indicar otros servidores.
+
 ## Estructura (arquitectura hexagonal)
 
 El backend esta organizado en capas: el negocio en el centro y la tecnologia
