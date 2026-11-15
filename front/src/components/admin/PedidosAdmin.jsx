@@ -8,6 +8,7 @@ import EnVivo from './EnVivo';
 import { pesos } from '../../lib/formato';
 import { METODOS, STATUS_PEDIDO } from '../../lib/pagos';
 import { direccionEnUnaLinea } from '../../lib/entrega';
+import { rutas } from '../../lib/rutas';
 import { Cargando, ErrorConReintento } from '../EstadoCarga';
 import { comoIsla } from '../ui/Isla';
 
@@ -199,6 +200,17 @@ function PedidosAdmin() {
                               <div>
                                 <dt>Estado del pago</dt>
                                 <dd>{pedido.pago.status.toLowerCase()}</dd>
+                              </div>
+                            )}
+                            {pedido.pago && ['PAGADO', 'ENVIADO', 'ENTREGADO'].includes(pedido.status) && (
+                              <div>
+                                <dt>Comprobante</dt>
+                                <dd>
+                                  {pedido.factura ? `Factura ${pedido.factura.serie}-${pedido.factura.folio} · ` : 'Sin factura · '}
+                                  <a href={rutas.comprobante(pedido.pago.referencia)} target="_blank" rel="noreferrer">
+                                    {pedido.factura ? 'Ver o corregir' : 'Ver comprobante o facturar'}
+                                  </a>
+                                </dd>
                               </div>
                             )}
                           </dl>

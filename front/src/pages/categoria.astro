@@ -5,8 +5,9 @@ import Nota from '../components/Nota.jsx';
 import StockEnVivo from '../components/StockEnVivo.jsx';
 ---
 
-<Base titulo="Catalogo | EnCaja Autopartes">
-  <!-- client:only: el titulo y el filtro salen de la URL (?id, ?q), que el build no conoce. -->
+<!-- Resultados de busqueda (?q=) y URL viejas (?id=, ?slug=): cambian con cada visitante, no se indexan. -->
+<Base titulo="Buscar refacciones | EnCaja Autopartes" descripcion="Busca refacciones por nombre o número de parte en EnCaja Autopartes." noindex>
+  <!-- client:only: el titulo y el filtro salen de la URL, que el build no conoce. -->
   <CategoriaView client:only="react" />
   <Nota client:idle />
   <StockEnVivo client:idle />

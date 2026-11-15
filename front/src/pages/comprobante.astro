@@ -1,0 +1,9 @@
+---
+import Base from '../layouts/Base.astro';
+import ComprobanteView from '../components/ComprobanteView.jsx';
+---
+
+<Base titulo="Comprobante y factura | EnCaja Autopartes">
+  <!-- client:only: el pedido se busca con el ?ref de la URL, como en la pagina del pago. -->
+  <ComprobanteView client:only="react" />
+</Base>

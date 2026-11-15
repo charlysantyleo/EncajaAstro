@@ -4,11 +4,11 @@
 import { withFilter } from 'graphql-subscriptions';
 
 /**
- * @param {{ catalogo, garage, vehiculos, pedidos, cuentas, pagos, direcciones, ajustes, actividad, tablero }} casos  casos de uso ya armados (ver src/contenedor.js)
+ * @param {{ catalogo, garage, vehiculos, pedidos, cuentas, pagos, direcciones, ajustes, actividad, tablero, facturacion }} casos  casos de uso ya armados (ver src/contenedor.js)
  * @param {import('../../../puertos/salida.js').Eventos} eventos
  */
 export function crearResolvers(
-  { catalogo, garage, vehiculos, pedidos, cuentas, pagos, direcciones, ajustes, actividad, tablero },
+  { catalogo, garage, vehiculos, pedidos, cuentas, pagos, direcciones, ajustes, actividad, tablero, facturacion },
   eventos
 ) {
   return {
@@ -29,6 +29,8 @@ export function crearResolvers(
       buscarVehiculos: (_, { texto, limite }) => vehiculos.buscar(texto, limite),
       catalogoDeMarca: (_, { marca }) => vehiculos.deMarca(marca),
       tablero: (_, { dias }, { actor }) => tablero.ventas(actor, dias),
+      facturacion: (_, __, { actor }) => facturacion.configuracion(actor),
+      facturaPorReferencia: (_, { referencia }) => facturacion.facturaPorReferencia(referencia),
       compatibilidades: (_, filtros) => catalogo.compatibilidades(filtros),
 
       vehiculos: (_, filtros, { actor }) => garage.vehiculos(actor, filtros),
@@ -81,6 +83,8 @@ export function crearResolvers(
       guardarModeloDeVehiculo: (_, { datos }, { actor }) => vehiculos.guardar(actor, datos),
       quitarModeloDeVehiculo: (_, rango, { actor }) => vehiculos.quitar(actor, rango),
       registrarActividad: (_, datos, { actor }) => actividad.desdeLaTienda(actor, datos),
+      solicitarFactura: (_, { referencia, datos }) => facturacion.solicitar(referencia, datos),
+      cambiarClaveSatDeCategoria: (_, { id, claveSat }, { actor }) => facturacion.cambiarClaveSat(actor, id, claveSat),
     },
 
     Subscription: {
@@ -131,6 +135,8 @@ export function crearResolvers(
       detalles: (pedido) => pedidos.detallesDe(pedido),
       pago: (pedido) => pagos.pagoDe(pedido),
       entrega: (pedido, _, { actor }) => pedidos.entregaDe(actor, pedido),
+      desglose: (pedido) => facturacion.desgloseParaMostrar(pedido),
+      factura: (pedido, _, { actor }) => facturacion.facturaDe(actor, pedido),
     },
     Mantenimiento: {
       vehiculo: (mantenimiento) => garage.vehiculoPorId(mantenimiento.vehiculoId),

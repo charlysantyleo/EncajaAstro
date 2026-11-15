@@ -5,6 +5,7 @@ import { Interruptor } from './ui/Movimiento';
 import { Cargando, ErrorConReintento } from './EstadoCarga';
 import { ChevronsUpDown } from './ui/Iconos';
 import { anotarActividad } from '../lib/actividad';
+import { useDelNavegador } from '../hooks/useEnNavegador';
 
 // Columnas ordenables del indice. "relevancia" es el orden que manda el servidor.
 const ORDENES = {
@@ -34,8 +35,8 @@ function Encabezado({ campo, orden, onOrden, children, className }) {
 // Indice tipografico de piezas: una fila por pieza alineada a la rejilla, no tarjetas.
 // Orden y "solo con existencias" son del lado del cliente; "solo ajuste directo" viaja al backend.
 export default function ListaProductos({ productos, cargando, error, recargar, vacio, esqueletos = 8 }) {
-  const vehiculoActivo = useTienda((estado) => estado.vehiculoActivo);
-  const soloDirectos = useTienda((estado) => estado.soloDirectos);
+  const vehiculoActivo = useDelNavegador(useTienda((estado) => estado.vehiculoActivo), null);
+  const soloDirectos = useDelNavegador(useTienda((estado) => estado.soloDirectos), false);
   const ir = useTienda((estado) => estado.ir);
 
   const [orden, setOrden] = useState({ campo: null, dir: 'asc' });

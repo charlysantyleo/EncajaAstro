@@ -19,7 +19,9 @@ export function useCategorias() {
   return { categorias: datos?.categorias ?? [], cargando, error, recargar };
 }
 
-export function useProductos({ categoriaId, vehiculoId, texto, soloDirectos, limite } = {}) {
+// iniciales: la lista que ya trae el HTML del build para esta misma consulta (sin vehiculo ni texto). Se muestra
+// mientras llega la del servidor, asi la pagina no pasa por esqueletos y no se mueve al cargar.
+export function useProductos({ categoriaId, vehiculoId, texto, soloDirectos, limite, iniciales = null, omitir = false } = {}) {
   const version = useTienda((estado) => estado.version);
   const stockEnVivo = useStockEnVivo((estado) => estado.stock);
   const { datos, cargando, error, recargar } = useGraphQLQuery(
@@ -31,12 +33,13 @@ export function useProductos({ categoriaId, vehiculoId, texto, soloDirectos, lim
       soloDirectos: Boolean(soloDirectos),
       limite: limite ?? null,
     },
-    { version }
+    { version, skip: omitir }
   );
-  const productos = (datos?.productos ?? []).map((producto) =>
+  const usarIniciales = Boolean(iniciales) && !vehiculoId && !texto && !datos;
+  const productos = (datos?.productos ?? (usarIniciales ? iniciales : [])).map((producto) =>
     stockEnVivo[producto.id] != null ? { ...producto, stock: stockEnVivo[producto.id] } : producto
   );
-  return { productos, cargando, error, recargar };
+  return { productos, cargando: usarIniciales ? false : cargando, error, recargar };
 }
 
 export function useProducto(productoId) {

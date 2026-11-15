@@ -3,6 +3,6 @@ import Panel from '../../layouts/Panel.astro';
 import AjustesAdmin from '../../components/admin/AjustesAdmin.jsx';
 ---
 
-<Panel titulo="Ajustes" ruta="/admin/ajustes" roles={['ADMIN']} descripcion="Envío, precio de taller y sistemas del catálogo.">
+<Panel titulo="Ajustes" ruta="/admin/ajustes" roles={['ADMIN']} descripcion="Envío, precio de taller, sistemas del catálogo y facturación.">
   <AjustesAdmin client:only="react" />
 </Panel>

@@ -35,6 +35,7 @@ al navegador). Otros comandos: `npm run build` (genera `dist/`) y
 | `/pago` | `PagoView` | `?ref=<referencia del pago>` |
 | `/entrar` | `EntrarView` | `#token=...` (regreso de Google) |
 | `/restablecer` | `RestablecerView` | `#token=...` (enlace del correo para cambiar la contraseña) |
+| `/comprobante` | `ComprobanteView` | `?ref=<referencia del pago>`: comprobante de compra y factura CFDI (ver `../FACTURACION.md`) |
 | `/admin` | panel: cobro en mostrador y graficas (estas solo para `ADMIN`) | |
 | `/admin/pedidos` | `PedidosAdmin`: todos los pedidos, marcar enviado o entregado | |
 | `/admin/productos` | `ProductosAdmin`: catalogo, fotos, existencias y compatibilidades por rango de años (solo `ADMIN`) | |

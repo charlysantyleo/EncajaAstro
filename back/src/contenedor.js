@@ -22,6 +22,9 @@ import { crearAjustes } from './aplicacion/ajustes.js';
 import { crearVehiculos } from './aplicacion/vehiculos.js';
 import { crearActividad } from './aplicacion/actividad.js';
 import { crearTablero } from './aplicacion/tablero.js';
+import { crearFacturacion } from './aplicacion/facturacion.js';
+import { crearXmlCfdi } from './adaptadores/salida/cfdi/xmlCfdi.js';
+import { crearSelloCsd } from './adaptadores/salida/cfdi/selloCsd.js';
 import { crearActividadMongo } from './adaptadores/salida/mongo/actividadMongo.js';
 import { crearActividadDesactivada } from './adaptadores/salida/mongo/actividadDesactivada.js';
 import { PROVEEDORES } from './dominio/pagos.js';
@@ -68,6 +71,12 @@ export function armarAplicacion(config, { pool = crearPool(config.baseDeDatos) }
     pedidos: crearPedidos({ repos, transaccion, eventos, pagos, direcciones, ajustes, actividad }),
     actividad,
     tablero: crearTablero({ repos, actividad: registroDeActividad }),
+    facturacion: crearFacturacion({
+      repos,
+      xml: crearXmlCfdi(),
+      sellador: crearSelloCsd(config.facturacion?.csd ?? {}, config.facturacion?.emisor?.rfc),
+      facturacion: config.facturacion ?? { emisor: {}, serie: 'A', claveEnvio: '78102203' },
+    }),
     cuentas: crearCuentas({ repos, tokens, passwords, identidad, correo, frontUrl: config.frontUrl }),
     pagos,
     direcciones,

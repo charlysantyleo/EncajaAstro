@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, animate, motion, useMotionValue, useReducedMotion, useTransform } from 'motion/react';
 import { Minus, Plus } from './Iconos';
 import { pesos } from '../../lib/formato';
+import { useAnimarEntrada } from '../../hooks/useEnNavegador';
 
 // Patrones de movimiento (motion): números con resorte, interruptor, cantidad, cinta pintada.
 
@@ -95,13 +96,13 @@ export function Cantidad({ valor, min = 1, max = 999, onCambio, etiqueta = 'Cant
 const CLASE_TONO = { amarillo: 'directo', azul: 'equivalente', rojo: 'agotado', verde: 'correcto' };
 
 export function Sello({ texto, tono = 'amarillo', retraso = 0, enLinea = false }) {
-  const reducido = useReducedMotion();
+  const animar = useAnimarEntrada();
   return (
     <span className={['sello', CLASE_TONO[tono] ?? 'directo', enLinea ? 'en-linea' : ''].filter(Boolean).join(' ')}>
       <motion.span
         className="sello-cuadro"
         aria-hidden="true"
-        initial={reducido ? false : { clipPath: 'inset(0 100% 0 0)' }}
+        initial={animar ? { clipPath: 'inset(0 100% 0 0)' } : false}
         animate={{ clipPath: 'inset(0 0% 0 0)' }}
         transition={{ duration: 0.35, ease: [0.77, 0, 0.175, 1], delay: retraso }}
       />

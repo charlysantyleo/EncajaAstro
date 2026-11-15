@@ -33,7 +33,7 @@
   --invertido-tenue: #a3a39e;
 
   /* marca: el logo trae negro y rojo; en tema oscuro se usa la version con el negro en claro */
-  --logo: url('/marca/logo.png');
+  --logo: url('/marca/logo.webp');
   --isotipo: url('/marca/isotipo.png');
 
   --f: 'Geist Variable', ui-sans-serif, system-ui, sans-serif;
@@ -86,7 +86,7 @@
     --invertido-texto: #0d0d0d;
     --invertido-tenue: #5c5c58;
     --sombra-capa: 0 24px 64px -24px rgb(0 0 0 / 0.8);
-    --logo: url('/marca/logo-oscuro.png');
+    --logo: url('/marca/logo-oscuro.webp');
     --isotipo: url('/marca/isotipo-oscuro.png');
   }
 }
@@ -112,7 +112,7 @@
   --invertido-texto: #0d0d0d;
   --invertido-tenue: #5c5c58;
   --sombra-capa: 0 24px 64px -24px rgb(0 0 0 / 0.8);
-  --logo: url('/marca/logo-oscuro.png');
+  --logo: url('/marca/logo-oscuro.webp');
   --isotipo: url('/marca/isotipo-oscuro.png');
 }
 
@@ -145,7 +145,8 @@ h1, h2, h3, h4 {
 h1 { font-size: clamp(40px, 5vw, 64px); letter-spacing: -0.04em; line-height: 0.95; }
 h2 { font-size: clamp(32px, 3.6vw, 44px); letter-spacing: -0.035em; }
 h3, h4 { font-size: var(--t-titulo); }
-h5 {
+/* titulo-chico: se ve como h5 sin serlo (etiquetas de seccion que no deben brincar niveles de titulo) */
+h5, .titulo-chico {
   margin: 0;
   font-size: var(--t-meta);
   font-weight: 600;
@@ -486,7 +487,8 @@ button.indice-col.activo svg { opacity: 1; color: var(--rojo-texto); }
   transition: background-color 0.15s ease;
 }
 @media (hover: hover) and (pointer: fine) { .renglon-abrir:hover { background: var(--n1); } }
-.renglon-foto { width: 96px; aspect-ratio: 4 / 3; background: #fff; overflow: hidden; }
+/* la foto ocupa su columna (96px, o menos cuando la nota va a la derecha) y nunca se sale encima del numero de parte */
+.renglon-foto { width: 100%; max-width: 96px; aspect-ratio: 4 / 3; background: #fff; overflow: hidden; }
 .renglon-foto img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s var(--salida); }
 @media (hover: hover) and (pointer: fine) { .renglon-abrir:hover .renglon-foto img { transform: scale(1.06); } }
 .renglon.agotada .renglon-foto img { filter: grayscale(1); opacity: 0.55; }
@@ -521,7 +523,11 @@ button.indice-col.activo svg { opacity: 1; color: var(--rojo-texto); }
 .ficha-datos dt { font-size: var(--t-meta); color: var(--tinta-2); }
 .ficha-datos dd { font-weight: 600; }
 .ficha-descripcion { margin: 0; color: var(--tinta-2); }
-.ficha-compat h5 { margin-bottom: var(--e2); }
+.ficha-compat h5, .ficha-compat .titulo-chico { margin-bottom: var(--e2); }
+.ficha-enlace { align-self: flex-start; margin-top: var(--e2); }
+/* titulo-seccion: un h2 con el tamaño de un titulo de seccion (Resumen de la nota) */
+h2.titulo-seccion { font-size: var(--t-titulo); letter-spacing: -0.03em; }
+a.sistema { text-decoration: none; }
 .ficha-compat ul { list-style: none; margin: 0; padding: 0; }
 .ficha-compat li { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2px var(--e3); padding: var(--e2) 0; border-top: 1px solid var(--regla-suave); font-size: var(--t-meta); }
 .ficha-compat li.mio { font-weight: 600; }
@@ -1028,4 +1034,80 @@ a.indicador-nota { color: var(--tinta-2); text-underline-offset: 3px; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+}
+
+/* ---------- comprobante de compra y factura ---------- */
+
+.comprobante-hoja {
+  display: flex; flex-direction: column; gap: var(--e6);
+  padding: var(--e8); background: var(--superficie); border-top: 3px solid var(--regla); box-shadow: 0 0 0 1px var(--regla-suave);
+}
+.comprobante-cabeza { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--e6); flex-wrap: wrap; }
+.comprobante-cabeza h2 { margin: 0 0 4px; font-size: var(--t-titulo); letter-spacing: -0.02em; }
+.comprobante-cabeza p { margin: 0 0 var(--e2); }
+.comprobante-emisor { display: flex; flex-direction: column; gap: 2px; text-align: right; font-size: var(--t-meta); color: var(--tinta-2); }
+.comprobante-emisor strong { color: var(--tinta); font-size: var(--t-cuerpo); }
+.comprobante-aviso { margin: 0; padding: var(--e3) var(--e4); border-left: 3px solid var(--rojo); background: var(--n1); font-size: var(--t-meta); font-weight: 600; }
+.comprobante-datos { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--e4) var(--e6); margin: 0; }
+.comprobante-datos dt { font-size: 12px; font-weight: 600; color: var(--tinta-2); text-transform: uppercase; letter-spacing: 0.04em; }
+.comprobante-datos dd { margin: 2px 0 0; font-size: var(--t-meta); }
+.comprobante-tabla { width: 100%; border-collapse: collapse; font-size: var(--t-meta); }
+.comprobante-tabla th { padding: var(--e2) var(--e2) var(--e2) 0; border-bottom: 1px solid var(--regla); text-align: left; font-weight: 600; color: var(--tinta-2); white-space: nowrap; }
+.comprobante-tabla td { padding: var(--e2) var(--e2) var(--e2) 0; border-bottom: 1px solid var(--regla-suave); vertical-align: top; }
+.comprobante-tabla .num { text-align: right; font-family: var(--f-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.comprobante-totales { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; margin: 0; }
+.comprobante-totales div { display: flex; gap: var(--e6); min-width: 260px; justify-content: space-between; font-size: var(--t-meta); }
+.comprobante-totales dd { margin: 0; font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+.comprobante-totales .comprobante-total { padding-top: var(--e2); border-top: 1px solid var(--regla); font-size: var(--t-cuerpo); font-weight: 700; }
+.comprobante-sellos { display: flex; flex-direction: column; gap: var(--e3); font-size: 11px; color: var(--tinta-2); }
+.comprobante-sellos p { margin: 0; display: flex; flex-direction: column; gap: 2px; }
+.comprobante-sellos p:first-child { display: block; }
+.comprobante-sellos .mono { overflow-wrap: anywhere; word-break: break-all; color: var(--tinta); }
+.comprobante-leyenda { margin: 0; font-size: 12px; color: var(--tinta-2); }
+.comprobante-pagina .comprobante-hoja + .admin-listo, .comprobante-pagina .factura-formulario, .comprobante-corregir { margin-top: var(--e6); }
+.factura-formulario { padding: var(--e6); }
+.clave-sat form { display: flex; gap: var(--e2); }
+.clave-sat .input { width: 120px; min-height: 36px; }
+
+@media (max-width: 700px) {
+  .comprobante-hoja { padding: var(--e4); }
+  .comprobante-emisor { text-align: left; }
+  .comprobante-tabla { display: block; overflow-x: auto; }
+  .comprobante-totales div { min-width: 0; width: 100%; }
+}
+
+/* Al imprimir (o guardar en PDF) solo sale la hoja, en negro sobre blanco. */
+@media print {
+  @page { margin: 14mm; }
+  body, .app { background: #fff !important; color: #000 !important; }
+  .cabecera, .pie, .nota-franja, .avisos, .enlace-volver, .encabezado-pagina, .factura-formulario,
+  .comprobante-corregir, .comprobante-pagina > .admin-listo, .skip-link { display: none !important; }
+  .comprobante-pagina { max-width: none !important; padding: 0 !important; margin: 0 !important; }
+  .comprobante-hoja { padding: 0; box-shadow: none; border-top-color: #000; background: #fff; color: #000;
+    --tinta: #000; --tinta-2: #333; --regla: #000; --regla-suave: #bbb; --n1: #f2f2f2; --superficie: #fff; }
+  .comprobante-tabla { display: table; }
+  .comprobante-tabla tr { break-inside: avoid; }
+}
+
+/* ---------- pagina de producto ---------- */
+
+.migas ol { display: flex; flex-wrap: wrap; gap: var(--e2); margin: 0 0 var(--e6); padding: 0; list-style: none; font-size: var(--t-meta); color: var(--tinta-2); }
+.migas li + li::before { content: '/'; margin-right: var(--e2); color: var(--n5); }
+.migas a { color: var(--tinta-2); text-underline-offset: 3px; }
+.migas [aria-current] { color: var(--tinta); font-weight: 600; }
+.ficha-producto { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--e8); align-items: start; }
+.ficha-producto-foto { display: grid; place-items: center; aspect-ratio: 4 / 3; background: #fff; border: 1px solid var(--regla-suave); overflow: hidden; }
+.ficha-producto-foto img { width: 100%; height: 100%; object-fit: contain; }
+.ficha-producto-foto span { font-size: 48px; font-weight: 700; color: var(--n5); }
+.ficha-producto-info { display: flex; flex-direction: column; gap: var(--e3); }
+.ficha-producto-info h1 { font-size: clamp(32px, 4vw, 52px); }
+.ficha-producto-info p { margin: 0; }
+.ficha-producto-precio { font-family: var(--f-mono); font-size: var(--t-titulo); font-weight: 500; }
+.ficha-producto-precio .apagado { font-family: var(--f); font-size: var(--t-meta); font-weight: 400; }
+.ficha-ajuste { display: flex; gap: var(--e2); align-items: center; font-weight: 600; font-size: var(--t-meta); }
+.ficha-pagina .ficha-comprar { display: flex; flex-wrap: wrap; gap: var(--e3); margin-top: var(--e2); }
+.ficha-seccion { margin-top: var(--e12); max-width: 760px; }
+.ficha-seccion h2 { margin-bottom: var(--e3); }
+@media (max-width: 860px) {
+  .ficha-producto { grid-template-columns: minmax(0, 1fr); gap: var(--e6); }
 }

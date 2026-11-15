@@ -6,7 +6,20 @@ const numero = (valor) => (valor == null ? null : Number(valor));
 
 const aUsuario = (f) =>
   f && { id: f.id, nombre: f.nombre, email: f.email, rol: f.rol, passwordHash: f.password };
-const aCategoria = (f) => f && { id: f.id, nombre: f.nombre, descripcion: f.descripcion };
+const aCategoria = (f) => f && { id: f.id, nombre: f.nombre, descripcion: f.descripcion, claveSat: f.clave_sat };
+const aFactura = (f) =>
+  f && {
+    id: f.id,
+    pedidoId: f.pedido_id,
+    serie: f.serie,
+    folio: f.folio,
+    estado: f.estado,
+    rfcReceptor: f.rfc_receptor,
+    datos: f.datos,
+    xml: f.xml,
+    uuid: f.uuid,
+    creada: f.creada,
+  };
 const aProducto = (f) =>
   f && {
     id: f.id,
@@ -174,6 +187,24 @@ export function crearRepositorios(db) {
       porId: (id) => una('SELECT * FROM categoria WHERE id = $1', [id], aCategoria),
       crear: ({ nombre, descripcion }) =>
         una('INSERT INTO categoria (nombre, descripcion) VALUES ($1, $2) RETURNING *', [nombre, descripcion], aCategoria),
+      cambiarClaveSat: (id, claveSat) =>
+        una('UPDATE categoria SET clave_sat = $1 WHERE id = $2 RETURNING *', [claveSat, id], aCategoria),
+    },
+
+    // Una factura por pedido: volver a generarla (corregir los datos fiscales) la reemplaza con el mismo folio.
+    facturas: {
+      dePedido: (pedidoId) => una('SELECT * FROM factura WHERE pedido_id = $1', [pedidoId], aFactura),
+      siguienteFolio: async () => Number((await db.query("SELECT nextval('factura_folio') AS folio")).rows[0].folio),
+      guardar: (f) =>
+        una(
+          `INSERT INTO factura (pedido_id, serie, folio, estado, rfc_receptor, datos, xml)
+           VALUES ($1, $2, $3, $4, $5, $6, $7)
+           ON CONFLICT (pedido_id) DO UPDATE SET serie = EXCLUDED.serie, folio = EXCLUDED.folio, estado = EXCLUDED.estado,
+             rfc_receptor = EXCLUDED.rfc_receptor, datos = EXCLUDED.datos, xml = EXCLUDED.xml, creada = now()
+           RETURNING *`,
+          [f.pedidoId, f.serie, f.folio, f.estado, f.rfcReceptor, JSON.stringify(f.datos), f.xml],
+          aFactura
+        ),
     },
 
     productos: {

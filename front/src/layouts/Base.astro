@@ -1,17 +1,40 @@
 ---
 import '@fontsource-variable/geist';
 import '@fontsource-variable/geist-mono';
+import geistLatin from '@fontsource-variable/geist/files/geist-latin-wght-normal.woff2?url';
 import '../styles/global.css';
 import TopBar from '../components/TopBar.jsx';
 import Capas from '../components/Capas.jsx';
 import Pie from '../components/Pie.astro';
 
 // Marco comun de todas las paginas. Cada pieza carga solo lo que necesita y cuando lo necesita:
-//   TopBar  client:load   se usa desde el primer momento (buscar, nota, entrar)
+//   TopBar  client:idle   su HTML viene completo del build (enlaces y buscador funcionan sin JS); el menu de
+//                         vehiculo y la nota se activan cuando el navegador queda libre
 //   <slot>                la vista de cada pagina, con la directiva que le toque
 //   Pie                   HTML puro, sin JavaScript
 //   Capas   client:idle   avisos y dialogos; se hidratan cuando el navegador queda libre
-const { titulo = 'EnCaja Autopartes' } = Astro.props;
+//
+// SEO: cada pagina manda su titulo (<= 60 caracteres) y su descripcion (<= 160). La canonical y Open Graph
+// salen de aqui; las paginas privadas (sesion, pedidos, panel) van con noindex.
+interface Props {
+  titulo?: string;
+  descripcion?: string;
+  imagen?: string | null;
+  tipo?: 'website' | 'product';
+  noindex?: boolean;
+  jsonLd?: object | null;
+}
+const {
+  titulo = 'EnCaja Autopartes',
+  descripcion = 'Refacciones para tu auto con compatibilidad verificada por marca, modelo y año. Envío en Guadalajara o recoge en mostrador.',
+  imagen = '/marca/icono-512.png',
+  tipo = 'website',
+  noindex = false,
+  jsonLd = null,
+} = Astro.props;
+// Sin query params: /categoria?q=balatas y /categoria son la misma pagina para un buscador.
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+const imagenAbsoluta = imagen ? new URL(imagen, Astro.site).href : null;
 ---
 
 <!doctype html>
@@ -19,14 +42,28 @@ const { titulo = 'EnCaja Autopartes' } = Astro.props;
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="Catálogo de refacciones con compatibilidad vehicular verificada" />
+    <title>{titulo}</title>
+    <meta name="description" content={descripcion} />
+    <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex, follow" />}
+    <meta property="og:site_name" content="EnCaja Autopartes" />
+    <meta property="og:locale" content="es_MX" />
+    <meta property="og:type" content={tipo} />
+    <meta property="og:title" content={titulo} />
+    <meta property="og:description" content={descripcion} />
+    <meta property="og:url" content={canonical} />
+    {imagenAbsoluta && <meta property="og:image" content={imagenAbsoluta} />}
+    <meta name="twitter:card" content={imagenAbsoluta ? 'summary_large_image' : 'summary'} />
+    {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
     <meta name="theme-color" content="#F7F7F5" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#0D0D0D" media="(prefers-color-scheme: dark)" />
     <meta name="color-scheme" content="light dark" />
+    <!-- La fuente del texto (y del titulo grande, que es lo mas grande de la pagina) se pide de inmediato. -->
+    <link rel="preload" href={geistLatin} as="font" type="font/woff2" crossorigin />
     <link rel="icon" href="/favicon.ico" sizes="48x48" />
     <link rel="icon" type="image/png" href="/favicon.png" sizes="64x64" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <title>{titulo}</title>
+    <link rel="sitemap" href="/sitemap-index.xml" />
     <!-- Aplica el tema guardado antes de pintar, para que no parpadee. -->
     <script is:inline>
       try {
@@ -37,7 +74,7 @@ const { titulo = 'EnCaja Autopartes' } = Astro.props;
   </head>
   <body>
     <div class="app">
-      <TopBar client:load ruta={Astro.url.pathname} />
+      <TopBar client:idle ruta={Astro.url.pathname} />
       <main class="app-main">
         <slot />
       </main>

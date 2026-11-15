@@ -95,6 +95,8 @@ export const typeDefs = `#graphql
     id: ID!
     nombre: String!
     descripcion: String
+    "Clave de producto o servicio del SAT con la que se facturan sus piezas (01010101 = no existe en el catalogo)."
+    claveSat: String!
     productos: [Producto!]!
   }
 
@@ -144,6 +146,108 @@ export const typeDefs = `#graphql
     anioHasta: Int!
     "null = cualquier motor de ese modelo."
     motor: String
+  }
+
+  """Datos fiscales de quien emite o recibe una factura."""
+  type DatosFiscales {
+    rfc: String!
+    nombre: String!
+    regimenFiscal: String!
+    regimenFiscalNombre: String!
+    codigoPostal: String!
+  }
+
+  """Un renglon del comprobante: precios sin IVA (valorUnitario, importe) y el IVA de ese renglon."""
+  type ConceptoFacturado {
+    descripcion: String!
+    numeroParte: String
+    cantidad: Int!
+    "Clave de producto o servicio del SAT (c_ClaveProdServ)."
+    claveProdServ: String!
+    "Clave de unidad del SAT: H87 pieza, E48 servicio."
+    claveUnidad: String!
+    unidad: String!
+    valorUnitario: Float!
+    importe: Float!
+    iva: Float!
+  }
+
+  """Desglose del IVA de un pedido: el comprobante de compra. Los precios de la tienda ya incluyen IVA."""
+  type Desglose {
+    conceptos: [ConceptoFacturado!]!
+    subtotal: Float!
+    iva: Float!
+    total: Float!
+  }
+
+  """SIN_SELLO: la tienda no tiene CSD. SELLADA: con el sello de la tienda, falta timbrar. TIMBRADA: con el timbre de un PAC (validez fiscal)."""
+  enum EstadoFactura {
+    SIN_SELLO
+    SELLADA
+    TIMBRADA
+  }
+
+  """Factura CFDI 4.0 de un pedido."""
+  type Factura {
+    id: ID!
+    serie: String!
+    folio: Int!
+    estado: EstadoFactura!
+    "Folio fiscal; solo existe cuando la timbra un PAC."
+    uuid: String
+    "Fecha del comprobante (hora de Guadalajara)."
+    fecha: String!
+    emisor: DatosFiscales!
+    receptor: DatosFiscales!
+    usoCfdi: String!
+    usoCfdiNombre: String!
+    formaPago: String!
+    formaPagoNombre: String!
+    metodoPago: String!
+    conceptos: [ConceptoFacturado!]!
+    subtotal: Float!
+    iva: Float!
+    total: Float!
+    noCertificado: String
+    sello: String
+    cadenaOriginal: String!
+    "El CFDI en XML (UTF-8)."
+    xml: String!
+  }
+
+  type RegimenFiscal {
+    clave: String!
+    nombre: String!
+    "F persona fisica, M persona moral, FM ambas."
+    persona: String!
+  }
+
+  type UsoCfdi {
+    clave: String!
+    nombre: String!
+    "Regimenes con los que el SAT permite este uso."
+    regimenes: [String!]!
+  }
+
+  """Si la tienda factura en linea y los catalogos del formulario. motivo, noCertificado y venceCsd solo los ve el ADMIN."""
+  type ConfiguracionDeFacturacion {
+    disponible: Boolean!
+    emisor: DatosFiscales
+    sellado: Boolean!
+    motivo: String
+    noCertificado: String
+    venceCsd: String
+    regimenes: [RegimenFiscal!]!
+    usos: [UsoCfdi!]!
+  }
+
+  """Los datos fiscales del cliente, como en su Constancia de Situacion Fiscal."""
+  input DatosFiscalesInput {
+    rfc: String!
+    nombre: String!
+    codigoPostal: String!
+    regimenFiscal: String!
+    usoCfdi: String!
   }
 
   """Un punto de una grafica: una etiqueta (dia, estado, pieza...) y su valor."""
@@ -255,6 +359,10 @@ export const typeDefs = `#graphql
     pago: Pago
     "Como se entrega (null en pedidos anteriores a este dato)."
     entrega: Entrega
+    "Comprobante de compra: renglones con el IVA desglosado."
+    desglose: Desglose!
+    "Factura CFDI del pedido, si ya se pidio. Solo la ven el dueño del pedido y el personal."
+    factura: Factura
   }
 
   """Direccion de envio dentro de Mexico."""
@@ -542,6 +650,11 @@ export const typeDefs = `#graphql
     "Para el panel: los modelos de una marca con sus años y motores."
     catalogoDeMarca(marca: String!): [ModeloDelCatalogo!]!
 
+    "Si la tienda factura en linea y los catalogos del formulario de factura."
+    facturacion: ConfiguracionDeFacturacion!
+    "La factura de un pedido, con la referencia de su pago (la tiene quien compro)."
+    facturaPorReferencia(referencia: ID!): Factura
+
     "Solo ADMIN: numeros y graficas del panel de los ultimos dias (7, 30, 90...)."
     tablero(dias: Int = 30): Tablero!
 
@@ -611,6 +724,12 @@ export const typeDefs = `#graphql
 
     "Solo ADMIN: agrega un modelo al catalogo de vehiculos (o reemplaza sus motores) en un rango de años."
     guardarModeloDeVehiculo(datos: ModeloDeVehiculoInput!): [ModeloDeVehiculo!]!
+
+    "Genera (o corrige, si no esta timbrada) la factura CFDI 4.0 de un pedido pagado. Con la referencia de su pago."
+    solicitarFactura(referencia: ID!, datos: DatosFiscalesInput!): Factura!
+
+    "Solo ADMIN: clave de producto o servicio del SAT con la que se facturan las piezas de un sistema."
+    cambiarClaveSatDeCategoria(id: ID!, claveSat: String!): Categoria!
 
     "Anota que se abrio una pieza (VISTA_PRODUCTO) o que se agrego a la nota (AGREGAR_A_NOTA). Publico; lo demas lo anota el servidor."
     registrarActividad(tipo: TipoDeActividad!, productoId: ID!, cantidad: Int): Boolean!

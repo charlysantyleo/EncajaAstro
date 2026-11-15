@@ -6,6 +6,7 @@ import { useGraphQLQuery } from '../../hooks/useGraphQLQuery';
 import { pesos } from '../../lib/formato';
 import { Cargando, ErrorConReintento } from '../EstadoCarga';
 import { comoIsla } from '../ui/Isla';
+import FacturacionAjustes from './FacturacionAjustes';
 
 // Ajustes de la tienda (envio y precio de taller) y sistemas del catalogo. Solo ADMIN.
 function AjustesAdmin() {
@@ -136,6 +137,8 @@ function AjustesAdmin() {
           </p>
         )}
       </section>
+
+      {categorias.datos && <FacturacionAjustes categorias={categorias.datos?.categorias ?? []} onCategoria={() => categorias.recargar()} />}
     </>
   );
 }

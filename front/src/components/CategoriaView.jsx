@@ -1,14 +1,25 @@
 import { useTienda } from '../store/useTienda';
 import { leerParametros } from '../lib/rutas';
-import { useProductos } from '../hooks/useCatalogo';
+import { slug } from '../lib/slug';
+import { useCategorias, useProductos } from '../hooks/useCatalogo';
+import { useDelNavegador } from '../hooks/useEnNavegador';
 import CatalogoLayout from './CatalogoLayout';
 import ListaProductos from './ListaProductos';
 import { comoIsla } from './ui/Isla';
 
-function CategoriaView() {
-  const { id: categoriaId, nombre: categoriaNombre, q: texto } = leerParametros();
-  const vehiculoActivo = useTienda((estado) => estado.vehiculoActivo);
-  const soloDirectos = useTienda((estado) => estado.soloDirectos);
+// Dos usos:
+//  - /categoria/<sistema> (pages/categoria/[slug].astro): la categoria y sus piezas vienen del build, asi el HTML
+//    ya trae el titulo y la lista (client:load hidrata encima).
+//  - /categoria?q=texto (busqueda) y las URL viejas ?id= o ?slug=: todo se resuelve en el navegador (client:only).
+function CategoriaView({ categoria = null, categorias = [], productosIniciales = null }) {
+  const parametros = categoria ? {} : leerParametros();
+  const { categorias: delServidor } = useCategorias();
+  const porSlug = parametros.slug ? delServidor.find((c) => slug(c.nombre) === parametros.slug) : null;
+  const categoriaId = categoria?.id ?? porSlug?.id ?? parametros.id ?? null;
+  const categoriaNombre = categoria?.nombre ?? porSlug?.nombre ?? parametros.nombre;
+  const texto = parametros.q;
+  const vehiculoActivo = useDelNavegador(useTienda((estado) => estado.vehiculoActivo), null);
+  const soloDirectos = useDelNavegador(useTienda((estado) => estado.soloDirectos), false);
   const ir = useTienda((estado) => estado.ir);
 
   const { productos, cargando, error, recargar } = useProductos({
@@ -16,14 +27,20 @@ function CategoriaView() {
     vehiculoId: vehiculoActivo?.id,
     texto,
     soloDirectos,
+    iniciales: productosIniciales,
   });
 
   const titulo = texto ? `Resultados para “${texto}”` : (categoriaNombre ?? 'Catálogo');
 
   return (
-    <CatalogoLayout>
+    <CatalogoLayout categorias={categorias} activa={texto ? null : (categoriaId ?? 'todo')}>
       <div>
         <h1>{titulo}</h1>
+        {categoria?.descripcion && (
+          <p className="apagado" style={{ marginTop: 12, marginBottom: 0 }}>
+            {categoria.descripcion}.
+          </p>
+        )}
         {vehiculoActivo && (
           <p className="apagado" style={{ marginTop: 12, marginBottom: 0 }}>
             Filtrado por compatibilidad con tu {vehiculoActivo.marca} {vehiculoActivo.modelo} {vehiculoActivo.anio}.

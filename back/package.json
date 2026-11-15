@@ -15,6 +15,7 @@
     "db:entregas": "node scripts/migrar-entregas.js",
     "db:panel": "node scripts/migrar-panel.js",
     "db:vehiculos": "node scripts/migrar-vehiculos.js",
+    "db:facturas": "node scripts/migrar-facturas.js",
     "vehiculos:armar": "node scripts/vehiculos/armar-catalogo.js"
   },
   "dependencies": {
@@ -31,6 +32,7 @@
     "jsonwebtoken": "^9.0.3",
     "mongodb": "^6.21.0",
     "pg": "^8.23.0",
-    "ws": "^8.21.3"
+    "ws": "^8.21.3",
+    "xmlbuilder2": "^4.0.3"
   }
 }

@@ -4,7 +4,6 @@ import { useVehiculos } from '../hooks/useCatalogo';
 import { useEnNavegador } from '../hooks/useEnNavegador';
 import { kilometros } from '../lib/formato';
 import { Pintado } from './ui/Movimiento';
-import Skeleton from './Skeleton';
 
 // Lo primero que ve el visitante: contra que vehiculo se esta comprando, a escala de cartel.
 // Con vehiculo activo, su modelo y año ocupan el ancho; sin vehiculo, la pregunta y atajos a su garage.
@@ -16,17 +15,10 @@ export default function BandaVehiculo() {
   const { vehiculos } = useVehiculos(usuarioId);
   const enNavegador = useEnNavegador();
 
-  // En el HTML del build no se sabe si el visitante ya tiene vehiculo activo: se reserva el lugar
-  // en vez de preguntar "¿Qué auto tienes?" a quien ya lo dijo.
-  if (!enNavegador) {
-    return (
-      <section className="cartel" aria-busy="true" aria-label="Vehículo activo">
-        <Skeleton height={168} />
-      </section>
-    );
-  }
-
-  if (vehiculoActivo) {
+  // El HTML del build no sabe si el visitante ya eligio vehiculo: trae la pregunta, que es lo que ve quien llega
+  // por primera vez (y lo que lee un buscador). Su titulo es el elemento mas grande de la pagina (el LCP), asi
+  // que no se espera a React para pintarlo. Si ya habia vehiculo, al hidratar se cambia por su cartel.
+  if (enNavegador && vehiculoActivo) {
     return (
       <section className="cartel" aria-label="Vehículo activo">
         <p className="cartel-previo">Piezas que sí embonan en tu</p>
@@ -76,7 +68,7 @@ export default function BandaVehiculo() {
           Dinos marca, modelo y año una sola vez y te enseñamos lo que encaja. Sin adivinar números de parte.
         </p>
         <div className="cartel-acciones">
-          {vehiculos.slice(0, 4).map((vehiculo) => (
+          {(enNavegador ? vehiculos : []).slice(0, 4).map((vehiculo) => (
             <button key={vehiculo.id} className="btn btn-secundario" onClick={() => elegirVehiculoActivo(vehiculo)}>
               <Car size={18} />
               {vehiculo.marca} {vehiculo.modelo} {vehiculo.anio}

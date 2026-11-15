@@ -98,6 +98,10 @@ Cuatro funciones del dominio hacen cumplir las reglas, y los casos de uso (`back
 | `precioParaTi` de cada producto | Público: el precio de lista, o el de mayoreo si la sesión es de `TALLER` |
 | `pedidoPorCodigoDeMostrador`, `confirmarPagoEnMostrador`, `cambiarStatusDePedido`, suscripción `pedidoActualizado` | `EMPLEADO` o `ADMIN` |
 | `tablero` (ventas y actividad), suscripción `actividadRegistrada` | Solo `ADMIN` |
+| `facturacion` (si la tienda factura y los catálogos) | Público. El motivo de lo que falta y los datos del CSD solo los ve `ADMIN` |
+| `facturaPorReferencia`, `solicitarFactura`, `Pedido.desglose` | Quien tiene la referencia del pago (como `pedidoPorReferencia`): el comprador, aunque sea invitado, y el personal desde el panel |
+| `Pedido.factura` | El dueño del pedido y el personal |
+| `cambiarClaveSatDeCategoria` | Solo `ADMIN` |
 | `registrarActividad` (pieza vista o agregada a la nota) | Público. Con sesión, el evento queda ligado a tu cuenta (como las búsquedas, el garage y los pedidos) |
 | `vehiculo`, `mantenimientos`, editar o borrar vehículo, `registrarMantenimiento` | Solo el dueño o el admin |
 | `agregarVehiculo` | Con sesión. El dueño lo toma el servidor del token, no lo manda el cliente. El coche debe estar en el catálogo de vehículos |

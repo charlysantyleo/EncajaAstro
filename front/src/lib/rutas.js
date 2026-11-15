@@ -1,16 +1,20 @@
-// Rutas reales de la tienda. Los ids y la busqueda viajan como query params
-// para que el build estatico no dependa de que el backend este corriendo.
+// Rutas reales de la tienda. Las categorias y los productos tienen URL limpia (/categoria/frenos,
+// /producto/bc-4021-balatas-delanteras-ceramicas): sus paginas se generan en el build. La busqueda y lo
+// que depende de cada visitante (pedido, vehiculo) viaja como query param.
+import { slug, slugDeProducto } from './slug';
 
 export const rutas = {
   home: '/',
-  categoria: (id, nombre) =>
-    `/categoria?id=${encodeURIComponent(id)}${nombre ? `&nombre=${encodeURIComponent(nombre)}` : ''}`,
+  // Con "/" al final, igual que la canonical y el sitemap (Astro genera carpeta/index.html).
+  categoria: (_id, nombre) => `/categoria/${slug(nombre)}/`,
+  producto: (producto) => `/producto/${slugDeProducto(producto)}/`,
   busqueda: (texto) => `/categoria?q=${encodeURIComponent(texto)}`,
   garage: '/garage',
   vehiculo: (id) => `/vehiculo?id=${encodeURIComponent(id)}`,
   carrito: '/carrito',
   checkout: '/checkout',
   pago: (referencia) => `/pago?ref=${encodeURIComponent(referencia)}`,
+  comprobante: (referencia) => `/comprobante?ref=${encodeURIComponent(referencia)}`,
   admin: '/admin',
   adminPedidos: '/admin/pedidos',
   adminProductos: '/admin/productos',
@@ -35,9 +39,9 @@ export function volver(respaldo = rutas.home) {
 }
 
 export function leerParametros() {
-  if (typeof window === 'undefined') return { id: null, nombre: null, q: '', ref: null };
+  if (typeof window === 'undefined') return { id: null, nombre: null, q: '', ref: null, slug: null };
   const params = new URLSearchParams(window.location.search);
-  return { id: params.get('id'), nombre: params.get('nombre'), q: params.get('q') ?? '', ref: params.get('ref') };
+  return { id: params.get('id'), nombre: params.get('nombre'), q: params.get('q') ?? '', ref: params.get('ref'), slug: params.get('slug') };
 }
 
 export function rutaActual() {

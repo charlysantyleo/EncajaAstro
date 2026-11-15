@@ -25,6 +25,14 @@ export function urlDeImagen(ruta) {
   return ruta.startsWith('/imagenes/') ? `${ORIGEN_API}${ruta}` : ruta;
 }
 
+// Miniatura (192×144) para los renglones del catalogo, que muestran la foto a 96×72: la original pesa ~10 veces mas.
+// Las fotos subidas desde el panel no tienen miniatura (el backend guarda una sola, ya comprimida a WebP).
+export function miniaturaDe(producto) {
+  if (!producto) return null;
+  if (producto.imagen) return urlDeImagen(producto.imagen);
+  return IMAGENES[producto.numeroParte]?.replace('/img/placa/', '/img/mini/') ?? null;
+}
+
 // La foto subida desde el panel manda; si no hay, la del catalogo original por numero de parte.
 export function imagenDe(producto) {
   if (!producto) return null;

@@ -39,6 +39,16 @@ function TopBar({ ruta = '/' }) {
 
   const totalItems = carrito.reduce((suma, item) => suma + item.cantidad, 0);
 
+  // Lectores de pantalla: cuando cambia la nota (no al cargar la pagina) se anuncia cuantas piezas lleva.
+  const [anuncioNota, setAnuncioNota] = useState('');
+  const piezasAnteriores = useRef(null);
+  useEffect(() => {
+    if (piezasAnteriores.current !== null && piezasAnteriores.current !== totalItems) {
+      setAnuncioNota(`Tu nota lleva ${totalItems} ${totalItems === 1 ? 'pieza' : 'piezas'}`);
+    }
+    piezasAnteriores.current = totalItems;
+  }, [totalItems]);
+
   // "/" enfoca el buscador (atajo de mostrador para quien ya sabe el numero de parte).
   useEffect(() => {
     function tecla(evento) {
@@ -75,12 +85,14 @@ function TopBar({ ruta = '/' }) {
           <span className="marca-logo" aria-hidden="true" />
         </a>
 
-        <form className="buscador" role="search" onSubmit={manejarBusqueda}>
+        {/* action/name: antes de hidratar (client:idle) la busqueda funciona como formulario normal: /categoria?q=... */}
+        <form className="buscador" role="search" action="/categoria" method="get" onSubmit={manejarBusqueda}>
           <Search size={18} />
           <input
             ref={campo}
             className="input"
             type="search"
+            name="q"
             value={busqueda}
             aria-label="Buscar refacciones"
             placeholder="Pieza o número de parte"
@@ -137,6 +149,9 @@ function TopBar({ ruta = '/' }) {
             <ChevronsUpDown size={14} />
           </button>
 
+          <span className="solo-lectores" aria-live="polite">
+            {anuncioNota}
+          </span>
           <a className="cab-enlace" href={rutas.carrito} aria-label={`Nota, ${totalItems} piezas`}>
             <Receipt />
             <span>Nota</span>

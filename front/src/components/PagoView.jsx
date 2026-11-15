@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { ArrowLeft, Check, Copy, ExternalLink, Loader2, NotebookPen, RotateCw } from './ui/Iconos';
+import { ArrowLeft, Check, Copy, ExternalLink, Loader2, NotebookPen, Receipt, RotateCw } from './ui/Iconos';
 import { useTienda } from '../store/useTienda';
 import { graphqlRequest } from '../graphql/client';
 import { MUTATION_VERIFICAR_PAGO, QUERY_PEDIDO_POR_REFERENCIA } from '../graphql/queries';
@@ -237,6 +237,11 @@ function PagoView() {
 
           {(pendiente || pagado) && (
             <div className="pago-acciones">
+              {pagado && (
+                <a className="btn btn-secundario" href={rutas.comprobante(pago.referencia)}>
+                  <Receipt size={18} /> Comprobante y factura
+                </a>
+              )}
               {pendiente && pago.proveedor && (
                 <button type="button" className="btn btn-secundario" onClick={verificar} disabled={verificando}>
                   {verificando ? <Loader2 size={18} className="girar" /> : <RotateCw size={18} />}

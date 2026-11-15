@@ -9,7 +9,10 @@ CREATE TABLE usuario (
 CREATE TABLE categoria (
   id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   nombre TEXT NOT NULL,
-  descripcion TEXT
+  descripcion TEXT,
+  -- Clave de producto o servicio del SAT (c_ClaveProdServ) con la que se facturan sus piezas.
+  -- 01010101 = "No existe en el catalogo"; se cambia en Panel -> Ajustes.
+  clave_sat TEXT NOT NULL DEFAULT '01010101'
 );
 
 CREATE TABLE producto (
@@ -139,6 +142,23 @@ CREATE TABLE imagen (
   creada TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+-- Facturas (CFDI 4.0) de los pedidos: una por pedido. El folio sale de su propia secuencia.
+CREATE SEQUENCE factura_folio;
+CREATE TABLE factura (
+  id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  pedido_id INTEGER NOT NULL UNIQUE REFERENCES pedido(id),
+  serie TEXT NOT NULL,
+  folio INTEGER NOT NULL,
+  -- SIN_SELLO (la tienda no tiene CSD), SELLADA (con CSD, sin timbrar) o TIMBRADA (con el timbre de un PAC)
+  estado TEXT NOT NULL,
+  rfc_receptor TEXT NOT NULL,
+  -- El comprobante tal como se armo, la cadena original y el sello: con esto se imprime sin volver a leer el XML.
+  datos JSONB NOT NULL,
+  xml TEXT NOT NULL,
+  uuid TEXT,
+  creada TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
 CREATE TABLE mantenimiento (
   id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   vehiculo_id INTEGER NOT NULL REFERENCES vehiculo(id),
@@ -156,13 +176,13 @@ INSERT INTO usuario (nombre, email, password, rol) VALUES
   ('Administracion EnCaja', 'admin@encaja.mx', '$2b$10$lh53eU/s1eC3KuE02cy/hOzHahHAiXlFDba8vYu5VM1OVBMLxaIy2', 'ADMIN'),
   ('Mostrador EnCaja', 'mostrador@encaja.mx', '$2b$10$lh53eU/s1eC3KuE02cy/hOzHahHAiXlFDba8vYu5VM1OVBMLxaIy2', 'EMPLEADO');
 
-INSERT INTO categoria (nombre, descripcion) VALUES
-  ('Frenos', 'Balatas, discos y componentes del sistema de frenado'),
-  ('Filtros', 'Filtros de aceite, aire y cabina'),
-  ('Suspension', 'Amortiguadores, resortes y direccion'),
-  ('Motor', 'Bujias, bandas y componentes internos'),
-  ('Enfriamiento', 'Bombas de agua, termostatos y mangueras'),
-  ('Electrico', 'Baterias, alternadores e iluminacion');
+INSERT INTO categoria (nombre, descripcion, clave_sat) VALUES
+  ('Frenos', 'Balatas, discos y componentes del sistema de frenado', '25171700'),
+  ('Filtros', 'Filtros de aceite, aire y cabina', '01010101'),
+  ('Suspension', 'Amortiguadores, resortes y direccion', '01010101'),
+  ('Motor', 'Bujias, bandas y componentes internos', '01010101'),
+  ('Enfriamiento', 'Bombas de agua, termostatos y mangueras', '01010101'),
+  ('Electrico', 'Baterias, alternadores e iluminacion', '25173900');
 
 INSERT INTO producto (nombre, descripcion, numero_parte, marca, precio, imagen, stock, categoria_id) VALUES
   ('Balatas delanteras ceramicas', 'Juego de balatas delanteras de alto rendimiento, bajo ruido y poco polvo.', 'BC-4021', 'Brembo', 649.00, NULL, 20, 1),

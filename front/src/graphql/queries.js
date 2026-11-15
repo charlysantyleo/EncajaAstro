@@ -1,6 +1,6 @@
 export const QUERY_CATEGORIAS = `
   query Categorias {
-    categorias { id nombre descripcion }
+    categorias { id nombre descripcion claveSat }
   }
 `;
 
@@ -39,7 +39,7 @@ export const QUERY_PRODUCTO = `
       precioParaTi
       imagen
       stock
-      categoria { nombre }
+      categoria { id nombre }
       compatibilidades {
         tipo
         nota
@@ -278,7 +278,8 @@ const CAMPOS_PEDIDO_PANEL = `
     costo
     direccion { calle numeroExterior numeroInterior colonia codigoPostal ciudad estado referencias }
   }
-  pago { metodo proveedor status codigo }
+  pago { referencia metodo proveedor status codigo }
+  factura { serie folio estado }
   detalles { cantidad importe producto { id nombre numeroParte } }
 `;
 
@@ -473,5 +474,58 @@ export const SUSCRIPCION_STOCK_PANEL = `
 export const MUTATION_REGISTRAR_ACTIVIDAD = `
   mutation RegistrarActividad($tipo: TipoDeActividad!, $productoId: ID!, $cantidad: Int) {
     registrarActividad(tipo: $tipo, productoId: $productoId, cantidad: $cantidad)
+  }
+`;
+
+// ---------- comprobante y factura ----------
+
+const CAMPOS_FACTURA = `
+  id serie folio estado uuid fecha usoCfdi usoCfdiNombre formaPago formaPagoNombre metodoPago
+  subtotal iva total noCertificado sello cadenaOriginal xml
+  emisor { rfc nombre regimenFiscal regimenFiscalNombre codigoPostal }
+  receptor { rfc nombre regimenFiscal regimenFiscalNombre codigoPostal }
+  conceptos { descripcion numeroParte cantidad claveProdServ claveUnidad unidad valorUnitario importe iva }
+`;
+
+export const QUERY_COMPROBANTE = `
+  query Comprobante($referencia: ID!) {
+    pedidoPorReferencia(referencia: $referencia) {
+      id fecha total status
+      usuario { nombre }
+      pago { referencia metodo status }
+      entrega { tipo }
+      desglose {
+        subtotal iva total
+        conceptos { descripcion numeroParte cantidad claveProdServ claveUnidad unidad valorUnitario importe iva }
+      }
+    }
+    facturaPorReferencia(referencia: $referencia) {${CAMPOS_FACTURA}}
+    facturacion {
+      disponible sellado
+      emisor { rfc nombre regimenFiscal regimenFiscalNombre codigoPostal }
+      regimenes { clave nombre persona }
+      usos { clave nombre regimenes }
+    }
+  }
+`;
+
+export const MUTATION_SOLICITAR_FACTURA = `
+  mutation SolicitarFactura($referencia: ID!, $datos: DatosFiscalesInput!) {
+    solicitarFactura(referencia: $referencia, datos: $datos) {${CAMPOS_FACTURA}}
+  }
+`;
+
+export const QUERY_FACTURACION_PANEL = `
+  query FacturacionPanel {
+    facturacion {
+      disponible sellado motivo noCertificado venceCsd
+      emisor { rfc nombre regimenFiscal regimenFiscalNombre codigoPostal }
+    }
+  }
+`;
+
+export const MUTATION_CLAVE_SAT = `
+  mutation ClaveSat($id: ID!, $claveSat: String!) {
+    cambiarClaveSatDeCategoria(id: $id, claveSat: $claveSat) { id claveSat }
   }
 `;

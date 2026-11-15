@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { CircleCheck, CircleAlert, Plus } from './ui/Iconos';
+import { ArrowUpRight, CircleCheck, CircleAlert, Plus } from './ui/Iconos';
 import { enNota, useTienda } from '../store/useTienda';
 import { useProducto } from '../hooks/useCatalogo';
 import { imagenDe } from '../imagenes';
 import { ajusteDe, cubre, describir } from '../lib/compat';
+import { rutas } from '../lib/rutas';
 import Capa from './ui/Capa';
 import { Cantidad, NumeroGiro, Sello } from './ui/Movimiento';
 import Precio from './ui/Precio';
@@ -85,7 +86,10 @@ export default function ProductoModal() {
           )}
 
           <div>
-            <h5 style={{ marginBottom: 4, marginTop: 8 }}>Compatible con</h5>
+            <a className="btn btn-texto" href={rutas.producto(producto)} style={{ alignSelf: 'flex-start' }}>
+              Ver la ficha completa <ArrowUpRight size={16} />
+            </a>
+            <h4 style={{ marginBottom: 4, marginTop: 8, fontSize: 'var(--t-meta)' }}>Compatible con</h4>
             <ul className="ajustes">
               {producto.compatibilidades.map((compatibilidad, indice) => (
                 <li

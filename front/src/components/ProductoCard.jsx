@@ -1,9 +1,11 @@
 import { useState } from 'react';
-import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
-import { Plus } from './ui/Iconos';
+import { AnimatePresence, motion } from 'motion/react';
+import { ArrowUpRight, Plus } from './ui/Iconos';
 import { enNota, useTienda } from '../store/useTienda';
 import { useProducto } from '../hooks/useCatalogo';
-import { imagenDe } from '../imagenes';
+import { imagenDe, miniaturaDe } from '../imagenes';
+import { useAnimarEntrada, useDelNavegador } from '../hooks/useEnNavegador';
+import { rutas } from '../lib/rutas';
 import { ajusteDe, cubre, describir } from '../lib/compat';
 import { pesos } from '../lib/formato';
 import { Cantidad, NumeroGiro, Sello, useCambio } from './ui/Movimiento';
@@ -14,13 +16,14 @@ const SALIDA = [0.23, 1, 0.32, 1];
 // Un renglon del indice. Al abrirlo se despliega en su lugar como ficha tecnica de la pieza.
 export default function ProductoCard({ producto, indice = 0, abierta = false, onAlternar }) {
   const ir = useTienda((estado) => estado.ir);
-  const vehiculoActivo = useTienda((estado) => estado.vehiculoActivo);
-  const reducido = useReducedMotion();
+  // El vehiculo y la nota viven en localStorage: el renglon que viene del build se pinta sin ellos.
+  const vehiculoActivo = useDelNavegador(useTienda((estado) => estado.vehiculoActivo), null);
+  const animar = useAnimarEntrada();
   const imagen = imagenDe(producto);
   const ajuste = ajusteDe(producto, vehiculoActivo);
   const agotada = producto.stock <= 0;
   // Lo que todavia se puede agregar: existencias menos lo que ya esta en la nota.
-  const yaEnNota = useTienda(enNota(producto.id));
+  const yaEnNota = useDelNavegador(useTienda(enNota(producto.id)), 0);
   const sinMas = !agotada && yaEnNota >= producto.stock;
   const [cambio, visto] = useCambio(producto.stock);
   const idFicha = `ficha-${producto.id}`;
@@ -28,7 +31,7 @@ export default function ProductoCard({ producto, indice = 0, abierta = false, on
   return (
     <motion.li
       className={['renglon', agotada ? 'agotada' : '', abierta ? 'abierta' : ''].filter(Boolean).join(' ')}
-      initial={reducido ? false : { opacity: 0, y: 10 }}
+      initial={animar ? { opacity: 0, y: 10 } : false}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45, ease: SALIDA, delay: Math.min(indice, 12) * 0.03 }}
       onMouseEnter={cambio ? visto : undefined}
@@ -43,7 +46,8 @@ export default function ProductoCard({ producto, indice = 0, abierta = false, on
           onClick={onAlternar}
         >
           <span className="col-foto renglon-foto">
-            {imagen ? <img src={imagen} alt="" loading="lazy" width="96" height="72" /> : null}
+            {/* alt vacio: el nombre de la pieza esta a un lado, dentro del mismo boton; repetirlo seria ruido. */}
+            {imagen ? <img src={miniaturaDe(producto)} alt="" loading="lazy" decoding="async" width="96" height="72" /> : null}
           </span>
           <span className="col-np renglon-np">{producto.numeroParte}</span>
           <span className="col-nombre renglon-nombre">
@@ -111,7 +115,9 @@ function Ficha({ productoId, imagen }) {
 
   return (
     <div className="ficha">
-      <div className="ficha-foto">{imagen && <img src={imagen} alt={producto?.nombre ?? ''} />}</div>
+      <div className="ficha-foto">
+        {imagen && <img src={imagen} alt={producto ? `${producto.nombre} ${producto.marca ?? ''}`.trim() : ''} loading="lazy" width="960" height="720" />}
+      </div>
 
       <div className="ficha-cuerpo">
         {cargando && <p className="apagado">Cargando ficha…</p>}
@@ -140,7 +146,7 @@ function Ficha({ productoId, imagen }) {
             {producto.descripcion && <p className="ficha-descripcion">{producto.descripcion}</p>}
 
             <div className="ficha-compat">
-              <h5>Compatible con</h5>
+              <p className="titulo-chico">Compatible con</p>
               <ul>
                 {producto.compatibilidades.map((compatibilidad, i) => {
                   const mio = Boolean(vehiculoActivo && cubre(compatibilidad, vehiculoActivo));
@@ -172,6 +178,9 @@ function Ficha({ productoId, imagen }) {
                 </span>
               )}
             </form>
+            <a className="btn btn-texto ficha-enlace" href={rutas.producto(producto)}>
+              Ver la ficha completa <ArrowUpRight size={16} />
+            </a>
           </>
         )}
       </div>

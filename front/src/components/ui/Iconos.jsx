@@ -14,6 +14,7 @@ import {
   CircleNotchIcon,
   CopyIcon,
   CreditCardIcon,
+  DownloadSimpleIcon,
   EyeIcon,
   EyeSlashIcon,
   GarageIcon,
@@ -24,6 +25,7 @@ import {
   NotePencilIcon,
   PackageIcon,
   PlusIcon,
+  PrinterIcon,
   ReceiptIcon,
   ScrollIcon,
   SealCheckIcon,
@@ -60,6 +62,7 @@ export const CircleAlert = icono(WarningCircleIcon);
 export const CircleCheck = icono(CheckCircleIcon);
 export const Copy = icono(CopyIcon);
 export const CreditCard = icono(CreditCardIcon);
+export const Download = icono(DownloadSimpleIcon);
 export const ExternalLink = icono(ArrowSquareOutIcon);
 export const Eye = icono(EyeIcon);
 export const EyeOff = icono(EyeSlashIcon);
@@ -73,6 +76,7 @@ export const NotebookPen = icono(NotePencilIcon);
 export const Package = icono(PackageIcon);
 export const PartyPopper = icono(SealCheckIcon);
 export const Plus = icono(PlusIcon);
+export const Printer = icono(PrinterIcon);
 export const Receipt = icono(ReceiptIcon);
 export const RotateCw = icono(ArrowClockwiseIcon);
 export const ScrollText = icono(ScrollIcon);

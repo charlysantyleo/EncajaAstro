@@ -19,6 +19,30 @@ de datos.
 3. `cd front && npm install`, configurar `.env` (desde `.env.example`) con la URL del backend,
    `npm run dev`.
 
+## Práctica P3-1: auditoría de calidad (Lighthouse)
+
+Lighthouse se corre sobre el **build de producción**, no sobre `npm run dev`: el servidor de desarrollo no
+empaqueta ni minifica y agrega la barra de herramientas de Astro, que cambia los puntajes.
+
+1. Levanta el backend (`cd back && npm start`): el build del front lee de él las categorías y los productos
+   para generar sus páginas.
+2. Construye y sirve el front:
+   ```bash
+   cd front
+   npm run build
+   npm run preview
+   ```
+3. En Chrome abre cada página, `DevTools → Lighthouse → Mode: Navigation → Device: Mobile → Analyze page load`:
+
+| Página | URL (con `npm run preview`) |
+|---|---|
+| Home | `http://localhost:4321/` |
+| Categoría | `http://localhost:4321/categoria/electrico/` (o cualquier `/categoria/<sistema>/`) |
+| Producto | `http://localhost:4321/producto/bc-4021-balatas-delanteras-ceramicas/` (o cualquier `/producto/<número de parte>-<nombre>/`) |
+
+También se generan `sitemap-index.xml` y `robots.txt` (en `front/dist`). En Netlify la URL pública se toma
+sola (variable `URL`); para otro hosting, define `SITE_URL` al construir.
+
 ## Crear un Postgres gratis en Neon
 
 Neon (`neon.tech`) tiene un tier gratuito pensado justo para esto: da un

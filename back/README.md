@@ -36,7 +36,7 @@ npm run db:init
 
 Esto ejecuta `db.sql` contra `DATABASE_URL`: crea las tablas
 (`usuario`, `categoria`, `producto`, `vehiculo`, `compatibilidad`, `pedido`,
-`detalle_pedido`, `pago`, `entrega`, `direccion`, `mantenimiento`, `ajuste`, `imagen`, `catalogo_vehiculo`) y carga
+`detalle_pedido`, `pago`, `entrega`, `direccion`, `mantenimiento`, `ajuste`, `imagen`, `catalogo_vehiculo`, `factura`) y carga
 los datos semilla (usuarios demo, categorias, 16 productos, 5 vehiculos y sus compatibilidades) y el catalogo de
 vehiculos de `datos/vehiculos.json`.
 
@@ -46,7 +46,9 @@ las tablas `entrega` y `direccion` con `npm run db:entregas`; si se creo antes d
 panel, agrega las tablas `ajuste` (costo de envio y descuento de taller) e `imagen`
 (fotos de productos subidas desde el panel) con `npm run db:panel`; si se creo antes del
 catalogo de vehiculos, crealo y convierte las compatibilidades a rangos de años con
-`npm run db:vehiculos` (ninguno borra datos, y se pueden correr mas de una vez). Como configurar Mercado Pago y PayPal:
+`npm run db:vehiculos`; si se creo antes de la facturacion, agrega la tabla `factura` y la clave SAT
+de cada sistema con `npm run db:facturas` (ninguno borra datos, y se pueden correr mas de una vez).
+Facturas CFDI 4.0 y comprobantes: [`../FACTURACION.md`](../FACTURACION.md). Como configurar Mercado Pago y PayPal:
 [`../PAGOS.md`](../PAGOS.md).
 
 ## Catalogo de vehiculos
@@ -140,11 +142,11 @@ back/
 ├── index.js                  Arranque: arma la app y levanta el servidor
 ├── src/
 │   ├── dominio/              Reglas puras: permisos, validaciones, errores
-│   ├── aplicacion/           Casos de uso: catalogo, garage, vehiculos, pedidos, pagos, direcciones, cuentas, actividad, tablero
+│   ├── aplicacion/           Casos de uso: catalogo, garage, vehiculos, pedidos, pagos, direcciones, cuentas, actividad, tablero, facturacion
 │   ├── puertos/salida.js     Contratos que la aplicacion necesita (repos, tokens...)
 │   ├── adaptadores/
 │   │   ├── entrada/          GraphQL (schema + resolvers) y HTTP (servidor, rutas de Google, webhook de pagos)
-│   │   └── salida/           Postgres, MongoDB (actividad), JWT, bcrypt, Google, pasarelas de pago, correo, eventos en memoria
+│   │   └── salida/           Postgres, MongoDB (actividad), CFDI (XML con xmlbuilder2 y sello con el CSD), JWT, bcrypt, Google, pasarelas de pago, correo, eventos en memoria
 │   ├── contenedor.js         Conecta cada puerto con su adaptador
 │   └── config.js             Variables de entorno
 ├── db.sql                    Esquema + datos semilla, dialecto Postgres

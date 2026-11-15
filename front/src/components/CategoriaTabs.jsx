@@ -1,38 +1,30 @@
 import { motion } from 'motion/react';
-import { useTienda } from '../store/useTienda';
-import { leerParametros, rutaActual } from '../lib/rutas';
+import { rutas } from '../lib/rutas';
 import { useCategorias } from '../hooks/useCatalogo';
 
 // Indice de sistemas: columna izquierda fija en escritorio, fila deslizable en movil.
+// Son enlaces (<a href>), no botones: un buscador los sigue y llegan a las paginas /categoria/<sistema>.
+// La lista viene del build (iniciales) y se pone al dia en el navegador. activa: id del sistema, 'todo' o null.
 // El cuadro rojo marca el sistema activo y viaja entre renglones (layoutId).
-export default function CategoriaTabs() {
-  const ir = useTienda((estado) => estado.ir);
-  const { categorias, cargando } = useCategorias();
-
-  const { id: categoriaId, q } = leerParametros();
-  const enHome = rutaActual() === '/';
-  const activa = enHome ? 'todo' : q ? null : (categoriaId ?? 'todo');
-
+export default function CategoriaTabs({ iniciales = [], activa = null }) {
+  const { categorias: delServidor, cargando } = useCategorias();
+  const categorias = delServidor.length ? delServidor : iniciales;
   const opciones = [{ id: 'todo', nombre: 'Todo el catálogo' }, ...categorias];
 
-  function elegir(opcion) {
-    if (opcion.id === 'todo') return ir('irAHome');
-    return ir('elegirCategoria', { categoriaId: opcion.id, nombre: opcion.nombre });
-  }
-
   return (
-    <nav className="sistemas" aria-label="Sistemas del vehículo">
-      <h5 className="sistemas-titulo">Sistemas</h5>
+    <nav className="sistemas" aria-labelledby="sistemas-titulo">
+      <p className="titulo-chico sistemas-titulo" id="sistemas-titulo">
+        Sistemas
+      </p>
       <ul>
         {opciones.map((opcion) => {
           const esActiva = opcion.id === activa;
           return (
             <li key={opcion.id}>
-              <button
-                type="button"
+              <a
+                href={opcion.id === 'todo' ? rutas.home : rutas.categoria(opcion.id, opcion.nombre)}
                 className={esActiva ? 'sistema activo' : 'sistema'}
                 aria-current={esActiva ? 'page' : undefined}
-                onClick={() => elegir(opcion)}
               >
                 {esActiva && (
                   <motion.span
@@ -42,7 +34,7 @@ export default function CategoriaTabs() {
                   />
                 )}
                 {opcion.nombre}
-              </button>
+              </a>
             </li>
           );
         })}

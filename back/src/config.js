@@ -40,6 +40,24 @@ export const config = {
     publicKey: process.env.MP_PUBLIC_KEY,
     webhookSecret: process.env.MP_WEBHOOK_SECRET,
   },
+  // Facturacion CFDI 4.0 (opcional). Sin los datos fiscales de la tienda solo se ofrece el comprobante de compra;
+  // sin CSD las facturas se generan sin sello. Ver ../FACTURACION.md.
+  facturacion: {
+    emisor: {
+      rfc: process.env.CFDI_RFC?.trim().toUpperCase(),
+      nombre: process.env.CFDI_NOMBRE?.trim().replace(/\s+/g, ' ').toUpperCase(),
+      regimenFiscal: process.env.CFDI_REGIMEN?.trim(),
+      codigoPostal: process.env.CFDI_CP?.trim(),
+    },
+    serie: process.env.CFDI_SERIE?.trim() || 'A',
+    // Clave de producto o servicio del SAT para el renglon del envio a domicilio.
+    claveEnvio: process.env.CFDI_CLAVE_ENVIO?.trim() || '78102203',
+    csd: {
+      cer: process.env.CFDI_CSD_CER_BASE64?.replace(/\s+/g, ''),
+      key: process.env.CFDI_CSD_KEY_BASE64?.replace(/\s+/g, ''),
+      clave: process.env.CFDI_CSD_CLAVE,
+    },
+  },
   // Actividad de la tienda para las graficas del panel (opcional): sin MONGODB_URI no se guarda.
   mongo: {
     uri: process.env.MONGODB_URI,

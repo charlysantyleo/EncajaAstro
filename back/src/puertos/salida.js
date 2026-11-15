@@ -134,6 +134,14 @@
  */
 
 /**
+ * Facturacion CFDI: el XML (xmlbuilder2 en el adaptador actual) y el sello con el CSD de la tienda.
+ * @typedef {{ armar(comprobante: object, f?: { sello?: string|null, certificado?: string|null }): string,
+ *             leer(xml: string): object }} GeneradorCfdi
+ * @typedef {{ disponible: boolean, motivo: string|null, noCertificado?: string, certificado?: string, vence?: string,
+ *             sellar(cadenaOriginal: string): string|null }} SelladorCfdi
+ */
+
+/**
  * Actividad de la tienda (MongoDB en el adaptador actual; desactivada si no hay MONGODB_URI).
  * Un evento es { tipo, fecha: Date, ...datos } con datos segun el tipo (texto y resultados de una busqueda,
  * producto de una vista, marca/modelo/anio de un coche, pedidoId y total de un pedido).

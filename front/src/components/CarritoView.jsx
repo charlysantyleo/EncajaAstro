@@ -108,7 +108,7 @@ function CarritoView() {
 
         <aside className="nota" aria-label="Resumen">
           <div className="nota-cab">
-            <h4>Resumen</h4>
+            <h2 className="titulo-seccion">Resumen</h2>
             <span className="folio apagado">{piezas === 1 ? '1 pieza' : `${piezas} piezas`}</span>
           </div>
           <div className={falta > 0 ? 'envio' : 'envio lleno'}>
