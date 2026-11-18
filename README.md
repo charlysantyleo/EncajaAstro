@@ -43,6 +43,41 @@ empaqueta ni minifica y agrega la barra de herramientas de Astro, que cambia los
 También se generan `sitemap-index.xml` y `robots.txt` (en `front/dist`). En Netlify la URL pública se toma
 sola (variable `URL`); para otro hosting, define `SITE_URL` al construir.
 
+## Práctica P3-2: PWA instalable
+
+La tienda se puede instalar como aplicación (icono, nombre y ventana propia) gracias al manifiesto que genera
+[`@vite-pwa/astro`](https://github.com/vite-pwa/astro).
+
+| Qué | Dónde |
+|---|---|
+| Integración y manifiesto (`name`, `short_name`, `start_url`, `scope`, `display: standalone`, `theme_color`, `background_color`, `icons`) | `front/astro.config.mjs` |
+| Colores del manifiesto, leídos de los tokens de diseño (`--rojo` → `theme_color`, `--papel` → `background_color`) | `front/scripts/tokens.mjs` ← `front/src/styles/global.css` |
+| Iconos 192, 512 y maskable 512 (logo dentro del 80 % central), con los mismos tokens | `front/scripts/iconos-pwa.mjs` → `front/public/pwa-*.png`, `maskable-icon-512x512.png` |
+| `<link rel="manifest">`, color de la ventana instalada y registro del service worker | `front/src/layouts/Base.astro` |
+| Bono: botón propio "Instalar la app" con `beforeinstallprompt` | `front/src/components/Pie.astro` |
+
+El manifiesto y el service worker **solo existen en el build** (en `npm run dev` no hay nada que instalar):
+
+```bash
+cd front
+npm run build
+npm run preview
+```
+
+1. Abre `http://localhost:4321/` en Chrome o Edge → `DevTools → Application → Manifest`: nombre, colores e
+   iconos, sin errores en *Installability*.
+2. Instala con el icono de la barra de direcciones o con el botón **Instalar la app** del pie de página. En el
+   teléfono, abre el sitio publicado (HTTPS) → menú → *Instalar aplicación* / *Agregar a pantalla principal*.
+3. Lighthouse 12 (el de Chrome actual) ya no trae la categoría PWA. Para el reporte de instalabilidad se usa
+   Lighthouse 11, la última versión que la tiene:
+   ```bash
+   npx lighthouse@11.7.1 http://localhost:4321/ --only-categories=pwa --view
+   ```
+
+Para regenerar los iconos si cambia el logo o el color: `node scripts/iconos-pwa.mjs` (desde `front/`). El
+modo sin conexión es la práctica P3-3: por ahora el service worker solo guarda el JavaScript y los iconos, y
+las páginas siempre se piden a la red.
+
 ## Crear un Postgres gratis en Neon
 
 Neon (`neon.tech`) tiene un tier gratuito pensado justo para esto: da un

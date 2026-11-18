@@ -1,5 +1,6 @@
 ---
-// Pie de pagina: HTML puro generado en el build. No es una isla, no carga JavaScript.
+// Pie de pagina: HTML generado en el build. No es una isla de React; solo lleva el script corto del boton de
+// instalar la PWA.
 ---
 
 <footer class="pie">
@@ -9,5 +10,36 @@
     </p>
     <p class="pie-texto">Refacciones con compatibilidad verificada.</p>
     <p class="pie-texto">Guadalajara, Jalisco. Proyecto integrador PWII.</p>
+    <!-- Oculto hasta que el navegador avisa (beforeinstallprompt) que la tienda se puede instalar. -->
+    <div class="pie-instalar" data-instalar hidden>
+      <p class="pie-texto">Tenla a un toque: instala EnCaja en tu teléfono o computadora.</p>
+      <button type="button" class="btn btn-secundario btn-chico">Instalar la app</button>
+    </div>
   </div>
 </footer>
+
+<!-- is:inline: corre en cuanto se lee el pie, para no perder el evento si Chrome lo lanza pronto. -->
+<script is:inline>
+  (() => {
+    const caja = document.querySelector('[data-instalar]');
+    if (!caja) return;
+    let aviso = null;
+    window.addEventListener('beforeinstallprompt', (evento) => {
+      // Sin la mini barra de Chrome: la tienda ofrece su propio boton.
+      evento.preventDefault();
+      aviso = evento;
+      caja.hidden = false;
+    });
+    caja.querySelector('button').addEventListener('click', async () => {
+      if (!aviso) return;
+      caja.hidden = true;
+      aviso.prompt(); // el dialogo de instalacion del navegador
+      await aviso.userChoice; // el evento solo se puede usar una vez, instale o no
+      aviso = null;
+    });
+    window.addEventListener('appinstalled', () => {
+      caja.hidden = true;
+      aviso = null;
+    });
+  })();
+</script>

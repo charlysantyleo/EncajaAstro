@@ -391,6 +391,10 @@ textarea.input { padding: var(--e3); min-height: 88px; resize: vertical; }
 .pie-marca { grid-column: 1 / 5; display: flex; align-items: center; margin: 0; }
 .pie-marca .marca-logo { height: 30px; }
 .pie-texto { grid-column: span 4; margin: 0; color: var(--tinta-2); font-size: var(--t-meta); }
+/* Boton propio para instalar la PWA (beforeinstallprompt): una franja bajo el pie, solo si se puede instalar. */
+.pie-instalar { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: var(--e2) var(--e4); margin-top: var(--e4); padding-top: var(--e4); border-top: 1px solid var(--regla-suave); }
+.pie-instalar[hidden] { display: none; }
+.pie-instalar .pie-texto { grid-column: auto; }
 
 /* ---------- catalogo ---------- */
 

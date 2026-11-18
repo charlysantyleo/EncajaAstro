@@ -2,6 +2,7 @@
 import '@fontsource-variable/geist';
 import '@fontsource-variable/geist-mono';
 import geistLatin from '@fontsource-variable/geist/files/geist-latin-wght-normal.woff2?url';
+import { pwaInfo } from 'virtual:pwa-info';
 import '../styles/global.css';
 import TopBar from '../components/TopBar.jsx';
 import Capas from '../components/Capas.jsx';
@@ -55,6 +56,11 @@ const imagenAbsoluta = imagen ? new URL(imagen, Astro.site).href : null;
     {imagenAbsoluta && <meta property="og:image" content={imagenAbsoluta} />}
     <meta name="twitter:card" content={imagenAbsoluta ? 'summary_large_image' : 'summary'} />
     {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
+    <!-- PWA: el manifiesto (nombre, iconos, colores) lo genera @vite-pwa/astro en el build (no existe en `astro dev`). -->
+    {pwaInfo && <Fragment set:html={pwaInfo.webManifest.linkTag} />}
+    <!-- Ya instalada (ventana propia), la barra de titulo va en el rojo de la marca (--rojo, igual que theme_color del
+         manifiesto); en el navegador se funde con la barra superior. Gana la primera etiqueta cuyo media coincide. -->
+    <meta name="theme-color" content="#E10600" media="(display-mode: standalone)" />
     <meta name="theme-color" content="#F7F7F5" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#0D0D0D" media="(prefers-color-scheme: dark)" />
     <meta name="color-scheme" content="light dark" />
@@ -81,5 +87,10 @@ const imagenAbsoluta = imagen ? new URL(imagen, Astro.site).href : null;
       <Pie />
       <Capas client:idle />
     </div>
+    <script>
+      // Registra el service worker de la PWA. En `astro dev` el modulo no hace nada (solo existe en el build).
+      import { registerSW } from 'virtual:pwa-register';
+      registerSW({ immediate: true });
+    </script>
   </body>
 </html>
