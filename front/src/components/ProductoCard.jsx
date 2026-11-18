@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { ArrowUpRight, Plus } from './ui/Iconos';
 import { enNota, useTienda } from '../store/useTienda';
 import { useProducto } from '../hooks/useCatalogo';
@@ -19,6 +19,8 @@ export default function ProductoCard({ producto, indice = 0, abierta = false, on
   // El vehiculo y la nota viven en localStorage: el renglon que viene del build se pinta sin ellos.
   const vehiculoActivo = useDelNavegador(useTienda((estado) => estado.vehiculoActivo), null);
   const animar = useAnimarEntrada();
+  // La ficha que se despliega al abrir el renglon: sin cambio de altura si el usuario pidio menos movimiento.
+  const reducido = useReducedMotion();
   const imagen = imagenDe(producto);
   const ajuste = ajusteDe(producto, vehiculoActivo);
   const agotada = producto.stock <= 0;
