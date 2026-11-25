@@ -75,8 +75,42 @@ npm run preview
    ```
 
 Para regenerar los iconos si cambia el logo o el color: `node scripts/iconos-pwa.mjs` (desde `front/`). El
-modo sin conexión es la práctica P3-3: por ahora el service worker solo guarda el JavaScript y los iconos, y
-las páginas siempre se piden a la red.
+modo sin conexión se agregó en la práctica P3-3 (abajo).
+
+## Práctica P3-3: la tienda sin conexión (Service Worker)
+
+La tienda sigue funcionando sin red: el catálogo y las fichas que ya visitaste se ven, la nota funciona, y lo que
+no está guardado muestra un mensaje claro. Todo vive en un service worker propio, `front/src/sw.js`, que
+`@vite-pwa/astro` compila (estrategia `buildSW`) e inyecta con la lista del shell.
+
+| Pieza | Qué hace | Dónde |
+|---|---|---|
+| Registro | `registerSW` en todas las páginas; franja de estado: sin conexión, versión nueva, listo para usarse sin red | `front/src/layouts/Base.astro` |
+| `install` | Precache del shell: inicio, nota y `offline.html`; todo el JavaScript; la fuente del texto; logo, iconos y manifiesto (el CSS va dentro del HTML) | `front/src/sw.js`, lista en `front/astro.config.mjs` |
+| `activate` | Borra las caches de versiones anteriores y `clients.claim()` | `front/src/sw.js` |
+| `fetch` | **Network-first** para páginas y para el catálogo/ficha de la API GraphQL; **cache-first** para JS, imágenes y fuentes | `front/src/sw.js` |
+| Respaldo | `offline.html`: avisa qué página no está guardada y lista las que sí | `front/public/offline.html` |
+| Actualización | La versión nueva espera; la franja ofrece **Actualizar** → `skipWaiting` + `clients.claim` → una sola recarga | `front/src/sw.js`, `Base.astro` |
+| Bono | Un servicio de la bitácora anotado sin red se guarda en IndexedDB y se envía con **Background Sync**; al terminar, **notificación** | `front/src/sw.js`, `front/src/components/MantenimientoModal.jsx` |
+
+**Probarlo** (el service worker solo existe en el build, no en `npm run dev`):
+
+```bash
+cd front
+npm run build
+npm run preview
+```
+
+1. Abre `http://localhost:4321/` y navega con internet: una categoría, la ficha de una pieza, agrega algo a la nota.
+2. `DevTools → Application → Service workers`: `sw.js` *activated and is running*. En *Cache storage* aparecen
+   `encaja-shell-…`, `encaja-paginas-…`, `encaja-recursos-…` y `encaja-api-…`.
+3. `DevTools → Network → Offline` (o *Offline* en Application → Service workers) y recarga: lo visitado se ve con
+   la franja roja "Sin conexión"; una página nueva muestra `offline.html`; la nota sigue funcionando.
+4. Para ver la actualización limpia, cambia algo visible (un texto), vuelve a correr `npm run build` con el preview
+   abierto y recarga: aparece "Hay una versión nueva" con el botón **Actualizar**. Si el contenido no cambia,
+   `sw.js` sale igual y no hay versión nueva.
+
+Al cerrar sesión se borran las respuestas guardadas de la API (llevan precios y vehículos de la cuenta).
 
 ## Crear un Postgres gratis en Neon
 

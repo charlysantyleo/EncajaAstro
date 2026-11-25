@@ -7,6 +7,12 @@ import { graphqlRequest } from '../graphql/client';
 import { MUTATION_REGISTRAR_MANTENIMIENTO } from '../graphql/queries';
 import Capa from './ui/Capa';
 
+// Fecha local de hoy en formato del input date (AAAA-MM-DD).
+function hoy() {
+  const ahora = new Date();
+  return new Date(ahora.getTime() - ahora.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+}
+
 export default function MantenimientoModal() {
   const vehiculoId = rutaActual().startsWith('/vehiculo') ? leerParametros().id : null;
   const vehiculoActivo = useTienda((estado) => estado.vehiculoActivo);
@@ -29,6 +35,7 @@ export default function MantenimientoModal() {
   const [fecha, setFecha] = useState('');
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState(null);
+  const [enCola, setEnCola] = useState(false);
 
   async function manejarGuardar(evento) {
     evento.preventDefault();
@@ -40,7 +47,9 @@ export default function MantenimientoModal() {
           vehiculoId: objetivoId,
           productoId: productoId || null,
           pedidoId: pedidoLigado && productoId ? pedidoLigado.id : null,
-          fecha: fecha || null,
+          // La fecha de hoy se manda desde aqui: si no hay red, el servicio se envia despues y debe quedar con
+          // el dia en que se anoto, no con el dia en que volvio la red.
+          fecha: fecha || hoy(),
           kilometraje: kilometraje ? Number(kilometraje) : null,
           descripcion,
         },
@@ -48,9 +57,31 @@ export default function MantenimientoModal() {
       refrescar();
       ir('cerrarModal');
     } catch (err) {
+      // (bono) Sin red, el service worker guardo el servicio y lo enviara solo (Background Sync). Se pide permiso
+      // para avisar con una notificacion cuando quede guardado.
+      if (err.code === 'EN_COLA') {
+        setEnCola(true);
+        if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission().catch(() => {});
+        return;
+      }
       setError(err.message);
       setGuardando(false);
     }
+  }
+
+  if (enCola) {
+    return (
+      <Capa titulo="Registrar servicio" onCerrar={() => ir('cerrarModal')}>
+        <h3>Guardado en tu dispositivo</h3>
+        <p role="status">
+          No hay conexión, así que el servicio quedó guardado en este dispositivo. Se enviará solo en cuanto vuelva la red y
+          te avisaremos con una notificación.
+        </p>
+        <button className="btn btn-primario" onClick={() => ir('cerrarModal')}>
+          Entendido
+        </button>
+      </Capa>
+    );
   }
 
   if (!objetivoId) {

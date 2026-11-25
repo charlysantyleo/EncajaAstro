@@ -39,7 +39,8 @@ export function useProductos({ categoriaId, vehiculoId, texto, soloDirectos, lim
   const productos = (datos?.productos ?? (usarIniciales ? iniciales : [])).map((producto) =>
     stockEnVivo[producto.id] != null ? { ...producto, stock: stockEnVivo[producto.id] } : producto
   );
-  return { productos, cargando: usarIniciales ? false : cargando, error, recargar };
+  // Sin red, la lista del HTML (la que ya se ve) se queda: un error de la consulta no la reemplaza.
+  return { productos, cargando: usarIniciales ? false : cargando, error: usarIniciales ? null : error, recargar };
 }
 
 export function useProducto(productoId) {

@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { rutas, navegar, volver, rutaActual } from '../lib/rutas';
 import { imagenDe } from '../imagenes';
+import { borrarDatosGuardados } from '../lib/offline';
 
 // La actividad para el panel se carga aparte (import dinamico): no pesa en la primera carga ni crea un ciclo
 // store -> cliente GraphQL -> store.
@@ -49,6 +50,8 @@ export const useTienda = create(
       cerrarSesion() {
         // El garage es de la cuenta: al salir tambien se olvida el vehiculo activo.
         set({ sesion: null, usuarioId: null, vehiculoActivo: null, modal: null });
+        // Y las respuestas de la API guardadas para usarse sin red (precios y vehiculos de esa cuenta).
+        borrarDatosGuardados().catch(() => {});
       },
 
       refrescar() {

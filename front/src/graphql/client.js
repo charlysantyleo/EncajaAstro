@@ -1,4 +1,5 @@
 import { useTienda } from '../store/useTienda';
+import { SIN_CONEXION } from '../lib/offline';
 
 export const API_URL = import.meta.env.PUBLIC_API_URL || 'http://localhost:4000/graphql';
 
@@ -7,14 +8,21 @@ export const API_URL = import.meta.env.PUBLIC_API_URL || 'http://localhost:4000/
 // (el tablero muestra las ventas aunque la parte de MongoDB falle).
 export async function graphqlRequest(query, variables = {}, { token, parcial = false } = {}) {
   const jwt = token ?? useTienda.getState().sesion?.token;
-  const respuesta = await fetch(API_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(jwt ? { Authorization: `Bearer ${jwt}` } : {}),
-    },
-    body: JSON.stringify({ query, variables }),
-  });
+  let respuesta;
+  try {
+    respuesta = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(jwt ? { Authorization: `Bearer ${jwt}` } : {}),
+      },
+      body: JSON.stringify({ query, variables }),
+    });
+  } catch {
+    // Sin red y sin service worker que responda (primera visita, o el navegador no lo soporta): mensaje claro
+    // en lugar del "Failed to fetch" del navegador.
+    throw Object.assign(new Error(SIN_CONEXION), { code: 'SIN_CONEXION' });
+  }
 
   if (!respuesta.ok) {
     throw new Error(`El servidor respondio con estado ${respuesta.status}`);
@@ -29,7 +37,8 @@ export async function graphqlRequest(query, variables = {}, { token, parcial = f
     if (jwt && resultado.errors[0].extensions?.code === 'UNAUTHENTICATED') {
       useTienda.getState().cerrarSesion();
     }
-    throw new Error(resultado.errors[0].message);
+    // code: SIN_CONEXION o EN_COLA cuando responde el service worker (ver src/sw.js).
+    throw Object.assign(new Error(resultado.errors[0].message), { code: resultado.errors[0].extensions?.code });
   }
 
   return resultado.data;

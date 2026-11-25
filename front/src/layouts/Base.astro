@@ -81,6 +81,11 @@ const imagenAbsoluta = imagen ? new URL(imagen, Astro.site).href : null;
   <body>
     <div class="app">
       <TopBar client:idle ruta={Astro.url.pathname} />
+      <!-- Estado de la red y de la app (service worker): sin conexion, version nueva, lista para usarse sin red. -->
+      <div class="red-estado" data-red hidden role="status" aria-live="polite">
+        <p class="red-estado-texto" data-red-texto></p>
+        <button type="button" class="btn btn-chico red-estado-boton" data-red-boton hidden></button>
+      </div>
       <main class="app-main">
         <slot />
       </main>
@@ -88,9 +93,78 @@ const imagenAbsoluta = imagen ? new URL(imagen, Astro.site).href : null;
       <Capas client:idle />
     </div>
     <script>
-      // Registra el service worker de la PWA. En `astro dev` el modulo no hace nada (solo existe en el build).
+      // Registra el service worker (src/sw.js) y avisa en la franja de estado lo que pasa con la red y la app.
+      // En `astro dev` el modulo no registra nada (el service worker solo existe en el build).
       import { registerSW } from 'virtual:pwa-register';
-      registerSW({ immediate: true });
+      import { useTienda } from '../store/useTienda';
+
+      const franja = document.querySelector('[data-red]');
+      const texto = franja.querySelector('[data-red-texto]');
+      const boton = franja.querySelector('[data-red-boton]');
+      const SIN_RED = 'Sin conexión. Ves lo que ya habías abierto; precios y existencias pueden haber cambiado.';
+      let temporizador;
+
+      // segundos > 0: el aviso se va solo (y si sigue sin red, vuelve el de "sin conexion").
+      function mostrar(mensaje, { sinRed = false, accion = null, segundos = 0 } = {}) {
+        clearTimeout(temporizador);
+        texto.textContent = mensaje;
+        franja.classList.toggle('sin-red', sinRed);
+        boton.hidden = !accion;
+        boton.textContent = accion?.texto ?? '';
+        boton.onclick = accion?.alPulsar ?? null;
+        franja.hidden = false;
+        if (segundos) temporizador = setTimeout(() => (navigator.onLine ? (franja.hidden = true) : mostrar(SIN_RED, { sinRed: true })), segundos * 1000);
+      }
+
+      if (!navigator.onLine) mostrar(SIN_RED, { sinRed: true });
+      window.addEventListener('offline', () => mostrar(SIN_RED, { sinRed: true }));
+      window.addEventListener('online', () => {
+        mostrar('Volvió la conexión.', { segundos: 3 });
+        // Respaldo de Background Sync: envia lo que se guardo sin red (bitacora).
+        navigator.serviceWorker?.controller?.postMessage({ type: 'REINTENTAR_COLA' });
+      });
+
+      // Actualizacion limpia: la version nueva espera hasta que el usuario la pide; entonces el service worker
+      // hace skipWaiting + clients.claim y, cuando ya controla esta pestana (controllerchange), se recarga una vez.
+      let actualizando = false;
+      navigator.serviceWorker?.addEventListener('controllerchange', () => {
+        if (!actualizando) return;
+        actualizando = false;
+        location.reload();
+      });
+      const actualizar = registerSW({
+        immediate: true,
+        onNeedRefresh() {
+          mostrar('Hay una versión nueva de EnCaja.', {
+            accion: {
+              texto: 'Actualizar',
+              alPulsar: () => {
+                actualizando = true;
+                mostrar('Actualizando…');
+                actualizar(); // manda SKIP_WAITING al service worker que espera
+              },
+            },
+          });
+        },
+        onOfflineReady() {
+          mostrar('Listo: lo que abras desde ahora también se podrá ver sin conexión.', { segundos: 6 });
+        },
+      });
+
+      // (bono) El service worker envio los servicios guardados sin red: se refrescan los datos y se avisa.
+      navigator.serviceWorker?.addEventListener('message', (evento) => {
+        if (evento.data?.type !== 'COLA_ENVIADA') return;
+        const { enviados, rechazados } = evento.data;
+        useTienda.getState().refrescar();
+        mostrar(
+          rechazados.length
+            ? `No se pudo guardar un servicio de la bitácora: ${rechazados[0]}`
+            : enviados === 1
+              ? 'Se guardó el servicio que anotaste sin conexión.'
+              : `Se guardaron los ${enviados} servicios que anotaste sin conexión.`,
+          { segundos: 6 }
+        );
+      });
     </script>
   </body>
 </html>

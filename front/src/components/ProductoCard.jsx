@@ -6,6 +6,7 @@ import { useProducto } from '../hooks/useCatalogo';
 import { imagenDe, miniaturaDe } from '../imagenes';
 import { useAnimarEntrada, useDelNavegador } from '../hooks/useEnNavegador';
 import { rutas } from '../lib/rutas';
+import { esSinConexion } from '../lib/offline';
 import { ajusteDe, cubre, describir } from '../lib/compat';
 import { pesos } from '../lib/formato';
 import { Cantidad, NumeroGiro, Sello, useCambio } from './ui/Movimiento';
@@ -123,7 +124,11 @@ function Ficha({ productoId, imagen }) {
 
       <div className="ficha-cuerpo">
         {cargando && <p className="apagado">Cargando ficha…</p>}
-        {error && <p className="error">No se pudo cargar la ficha.</p>}
+        {error && (
+          <p className="error">
+            {esSinConexion(error) ? 'Sin conexión: esta ficha no está guardada. Ábrela una vez con internet y quedará disponible.' : 'No se pudo cargar la ficha.'}
+          </p>
+        )}
         {producto && (
           <>
             <dl className="ficha-datos">

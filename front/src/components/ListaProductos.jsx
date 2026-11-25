@@ -6,6 +6,7 @@ import { Cargando, ErrorConReintento } from './EstadoCarga';
 import { ChevronsUpDown } from './ui/Iconos';
 import { anotarActividad } from '../lib/actividad';
 import { useDelNavegador } from '../hooks/useEnNavegador';
+import { esSinConexion } from '../lib/offline';
 
 // Columnas ordenables del indice. "relevancia" es el orden que manda el servidor.
 const ORDENES = {
@@ -78,7 +79,7 @@ export default function ListaProductos({ productos, cargando, error, recargar, v
       </div>
 
       {cargando && <Cargando filas={esqueletos} alto={88} />}
-      {error && <ErrorConReintento mensaje="No se pudo cargar el catálogo." onReintentar={recargar} />}
+      {error && <ErrorConReintento mensaje={esSinConexion(error) ? error : 'No se pudo cargar el catálogo.'} onReintentar={recargar} />}
 
       {!cargando && !error && visibles.length === 0 && <div className="vacio">{vacio}</div>}
 

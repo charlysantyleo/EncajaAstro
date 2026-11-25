@@ -8,7 +8,8 @@ import { token } from './scripts/tokens.mjs';
 // (/categoria/) y el respaldo de piezas nuevas (/producto/), que llevan noindex.
 const PRIVADAS = /^\/((admin|carrito|checkout|pago|comprobante|entrar|restablecer|garage|vehiculo)(\/|$)|(categoria|producto)\/?$)/;
 
-// PWA instalable (practica P3-2). El manifiesto le da a la tienda nombre, icono y ventana propia al instalarla.
+// PWA instalable (practica P3-2) y sin conexion (P3-3). El manifiesto le da a la tienda nombre, icono y ventana
+// propia al instalarla.
 // Los colores salen de los tokens de src/styles/global.css. Los iconos se generan con `node scripts/iconos-pwa.mjs`.
 const pwa = AstroPWAIntegration({
   manifest: {
@@ -30,17 +31,39 @@ const pwa = AstroPWAIntegration({
       { src: '/maskable-icon-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
     ],
   },
-  // El service worker se registra a mano en Base.astro (virtual:pwa-register).
+  // Sin conexion (practica P3-3): service worker propio (src/sw.js) con el ciclo install -> activate -> fetch
+  // escrito a mano. El plugin lo compila y le inyecta la lista del shell (self.__WB_MANIFEST).
+  strategies: 'buildSW',
+  // Se registra a mano en Base.astro (virtual:pwa-register).
   injectRegister: false,
-  // Sin recargas sorpresa: una version nueva espera a que se cierren las pestanas (no corta un pago a la mitad).
+  // Una version nueva espera a que el usuario pulse "Actualizar" (no se recarga sola a mitad de un pago).
   registerType: 'prompt',
-  generateSW: {
-    // Aqui el foco es que se pueda instalar; el modo sin conexion es la practica P3-3. Por eso solo se guardan
-    // el JavaScript (con hash, nunca cambia de contenido) y el logo; las paginas siempre se piden a la red, para
-    // que nunca se muestre un catalogo, una nota o un panel viejos.
-    globPatterns: ['_astro/**/*.{js,css}', 'marca/logo*.webp'],
-    navigateFallback: null,
-    cleanupOutdatedCaches: true,
+  buildSW: {
+    swSrc: 'src/sw.js',
+    // El shell que se guarda al instalar: inicio, la nota (funciona sin red) y offline.html; todo el JavaScript;
+    // la fuente del texto (solo latin); el logo. El CSS va dentro del HTML (build.inlineStylesheets) y los
+    // iconos y el manifiesto los agrega el plugin.
+    globPatterns: [
+      'index.html',
+      'carrito/index.html',
+      'offline.html',
+      '_astro/**/*.{js,css}',
+      '_astro/geist-latin-wght-normal.*.woff2',
+      '_astro/geist-mono-latin-wght-normal.*.woff2',
+      'marca/logo*.webp',
+      'favicon.ico',
+      'apple-touch-icon.png',
+    ],
+    // carrito/index.html se pide como /carrito/ (con diagonal final, como los enlaces de la tienda).
+    manifestTransforms: [
+      (entradas) => ({
+        manifest: entradas.map((e) => ({
+          ...e,
+          url: e.url === 'index.html' ? '/' : e.url.endsWith('/index.html') ? `/${e.url.slice(0, -'index.html'.length)}` : e.url.endsWith('.html') ? `/${e.url}` : e.url,
+        })),
+        warnings: [],
+      }),
+    ],
   },
 });
 
