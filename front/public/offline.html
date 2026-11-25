@@ -46,23 +46,34 @@
       <div><a href="/" aria-label="EnCaja Autopartes, inicio"><img class="logo" src="/marca/logo.webp" alt="EnCaja Autopartes" width="148" height="34" /></a></div>
     </header>
     <main>
-      <p class="etiqueta">Sin conexión</p>
-      <h1>Esta página no está guardada</h1>
-      <p>No hay internet y <code id="ruta">esta página</code> todavía no se guarda en tu dispositivo. Las páginas que ya abriste con internet sí funcionan sin conexión.</p>
-      <p>Tu nota está a salvo: se guarda en este dispositivo y la puedes revisar sin red. Para pagar sí necesitas conexión.</p>
+      <!-- data-en: el mismo texto en ingles, para las rutas /en/... (el service worker sirve este archivo en los dos idiomas). -->
+      <p class="etiqueta" data-en="Offline">Sin conexión</p>
+      <h1 data-en="This page isn’t saved">Esta página no está guardada</h1>
+      <p><span data-en="There’s no internet and">No hay internet y</span> <code id="ruta" data-en="this page">esta página</code> <span data-en="isn’t saved on your device yet. Pages you already opened with internet do work offline.">todavía no se guarda en tu dispositivo. Las páginas que ya abriste con internet sí funcionan sin conexión.</span></p>
+      <p data-en="Your note is safe: it’s stored on this device and you can review it offline. You do need a connection to pay.">Tu nota está a salvo: se guarda en este dispositivo y la puedes revisar sin red. Para pagar sí necesitas conexión.</p>
       <div class="acciones">
-        <button class="btn btn-primario" type="button" id="reintentar">Reintentar</button>
-        <a class="btn" href="/carrito/">Ver mi nota</a>
+        <button class="btn btn-primario" type="button" id="reintentar" data-en="Try again">Reintentar</button>
+        <a class="btn" href="/carrito/" data-en="View my note" data-en-href="/en/cart/">Ver mi nota</a>
       </div>
 
       <section aria-labelledby="guardadas-titulo" id="guardadas" hidden>
-        <h2 id="guardadas-titulo">Disponibles sin conexión</h2>
-        <p>Páginas que ya visitaste y están guardadas en este dispositivo:</p>
+        <h2 id="guardadas-titulo" data-en="Available offline">Disponibles sin conexión</h2>
+        <p data-en="Pages you already visited that are saved on this device:">Páginas que ya visitaste y están guardadas en este dispositivo:</p>
         <ul id="lista"></ul>
       </section>
     </main>
 
     <script>
+      // Idioma: el de la ruta que se pidio (/en/... es ingles).
+      const ingles = /^\/en(\/|$)/.test(location.pathname);
+      if (ingles) {
+        document.documentElement.lang = 'en';
+        document.title = 'Offline | EnCaja Auto Parts';
+        document.querySelectorAll('[data-en]').forEach((el) => (el.textContent = el.dataset.en));
+        document.querySelectorAll('[data-en-href]').forEach((el) => el.setAttribute('href', el.dataset.enHref));
+        document.querySelector('.logo').alt = 'EnCaja Auto Parts';
+      }
+
       // La URL que se ve es la que se pidio (el service worker responde con este archivo en su lugar).
       const ruta = location.pathname === '/offline.html' ? null : location.pathname;
       if (ruta) document.getElementById('ruta').textContent = ruta;
@@ -89,6 +100,8 @@
           for (const peticion of await cache.keys()) {
             const url = new URL(peticion.url);
             if (url.origin !== location.origin || !url.pathname.endsWith('/') || vistas.has(url.pathname)) continue;
+            // Solo las paginas del mismo idioma.
+            if (/^\/en(\/|$)/.test(url.pathname) !== ingles) continue;
             const respuesta = await cache.match(peticion);
             const html = await respuesta.text();
             const titulo = (html.match(/<title>([^<]*)<\/title>/i)?.[1] ?? url.pathname).replace(/&amp;/g, '&');
@@ -99,7 +112,7 @@
         const lista = document.getElementById('lista');
         for (const [camino, titulo] of [...vistas].sort((a, b) => a[0].localeCompare(b[0]))) {
           const enlace = Object.assign(document.createElement('a'), { href: camino });
-          const nombre = camino === '/' ? 'Inicio' : titulo.replace(/\s*\|\s*(Refacciones\s+)?EnCaja.*$/i, '') || titulo;
+          const nombre = camino === '/' ? 'Inicio' : camino === '/en/' ? 'Home' : titulo.replace(/\s*\|\s*(Refacciones\s+)?EnCaja.*$/i, '') || titulo;
           enlace.append(nombre, Object.assign(document.createElement('span'), { textContent: camino }));
           const fila = document.createElement('li');
           fila.append(enlace);

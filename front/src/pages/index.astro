@@ -1,24 +1,5 @@
 ---
-import Base from '../layouts/Base.astro';
-import HomeView from '../components/HomeView.jsx';
-import Nota from '../components/Nota.jsx';
-import StockEnVivo from '../components/StockEnVivo.jsx';
-import { catalogoDeBuild } from '../lib/datosDeBuild';
-import { paraLista } from '../lib/paraLista';
-
-// El indice de sistemas y las primeras piezas se leen en el build: el HTML ya los trae (sin esqueletos),
-// y los enlaces a cada sistema quedan a la vista de un buscador.
-const { categorias, productos } = await catalogoDeBuild();
+import Inicio from '../vistas/Inicio.astro';
 ---
 
-<Base
-  titulo="EnCaja Autopartes | Refacciones con compatibilidad verificada"
-  descripcion="Refacciones para tu auto en Guadalajara: balatas, filtros, suspensión y más, con compatibilidad verificada por marca, modelo y año."
->
-  <!-- client:idle: el HTML ya trae el titulo, los sistemas y las piezas; React se activa al quedar libre el navegador
-       (sus ~150 KB de JavaScript ya no compiten con el primer pintado). -->
-  <HomeView client:idle categorias={categorias} productosIniciales={productos.slice(0, 12).map(paraLista)} />
-  <!-- En pantallas anchas la nota se ve a la derecha del catalogo (NotaLateral, dentro de HomeView). -->
-  <Nota client:idle conLateral />
-  <StockEnVivo client:idle />
-</Base>
+<Inicio idioma="es" />

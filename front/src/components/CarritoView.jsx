@@ -7,6 +7,8 @@ import { ENVIO_GRATIS } from '../lib/formato';
 import { useReglasDeEnvio } from '../hooks/useCatalogo';
 import { Cantidad, Importe } from './ui/Movimiento';
 import { comoIsla } from './ui/Isla';
+import { useIdioma, useRutas, useT } from '../i18n/react';
+import { nombreDeLinea } from '../i18n/catalogo';
 
 function CarritoView() {
   const carrito = useTienda((estado) => estado.carrito);
@@ -14,6 +16,9 @@ function CarritoView() {
   const cambiarCantidad = useTienda((estado) => estado.cambiarCantidad);
   const quitarDelCarrito = useTienda((estado) => estado.quitarDelCarrito);
   const ir = useTienda((estado) => estado.ir);
+  const t = useT();
+  const idioma = useIdioma();
+  const rutas = useRutas();
 
   const { stockReal, revisando, excesos } = useStockDeNota(carrito);
 
@@ -28,10 +33,10 @@ function CarritoView() {
     return (
       <div className="contenedor-medio">
         <motion.div className="vacio" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-          <h2>Tu nota está vacía</h2>
-          <p className="apagado">Agrega piezas desde el catálogo o desde la ficha de tu vehículo.</p>
+          <h2>{t('Tu nota está vacía')}</h2>
+          <p className="apagado">{t('Agrega piezas desde el catálogo o desde la ficha de tu vehículo.')}</p>
           <button className="btn btn-primario" onClick={() => ir('irAHome')}>
-            Ver catálogo
+            {t('Ver catálogo')}
           </button>
         </motion.div>
       </div>
@@ -40,21 +45,20 @@ function CarritoView() {
 
   return (
     <div className="contenedor" style={{ maxWidth: 1180 }}>
-      <button className="enlace-volver" onClick={() => ir('volver', { respaldo: '/' })}>
-        <ArrowLeft size={18} /> Seguir comprando
+      <button className="enlace-volver" onClick={() => ir('volver', { respaldo: rutas.home })}>
+        <ArrowLeft size={18} /> {t('Seguir comprando')}
       </button>
 
       <div className="encabezado-pagina">
-        <h1>Tu nota</h1>
-        {revisando && <span className="apagado">Revisando existencias…</span>}
+        <h1>{t('Tu nota')}</h1>
+        {revisando && <span className="apagado">{t('Revisando existencias…')}</span>}
       </div>
 
       <div className="carrito">
-        <section className="hoja" aria-label="Piezas en tu nota">
+        <section className="hoja" aria-label={t('Piezas en tu nota')}>
           {vehiculoActivo && (
             <p className="apagado" style={{ marginBottom: 8 }}>
-              Se validará la compatibilidad con tu {vehiculoActivo.marca} {vehiculoActivo.modelo} {vehiculoActivo.anio} al
-              confirmar.
+              {t('Se validará la compatibilidad con tu {auto} al confirmar.', { auto: `${vehiculoActivo.marca} ${vehiculoActivo.modelo} ${vehiculoActivo.anio}` })}
             </p>
           )}
           <ul className="lineas">
@@ -77,11 +81,11 @@ function CarritoView() {
                       {imagen ? <img src={imagen} alt="" width="72" height="72" style={{ objectFit: 'cover', width: '100%', height: '100%' }} /> : item.nombre.slice(0, 2).toUpperCase()}
                     </span>
                     <div>
-                      <div className="linea-nombre">{item.nombre}</div>
+                      <div className="linea-nombre">{nombreDeLinea(item, idioma)}</div>
                       {item.numeroParte && <div className="folio apagado">{item.numeroParte}</div>}
                       {excede && (
                         <p className="error" style={{ marginTop: 4 }}>
-                          {disponible === 0 ? 'Se agotó: quítala de tu nota.' : `Solo quedan ${disponible} en existencia.`}
+                          {disponible === 0 ? t('Se agotó: quítala de tu nota.') : t('Solo quedan {n} en existencia.', { n: disponible })}
                         </p>
                       )}
                     </div>
@@ -95,7 +99,7 @@ function CarritoView() {
                     <button
                       className="btn-icono"
                       onClick={() => quitarDelCarrito(item.productoId)}
-                      aria-label={`Quitar ${item.nombre}`}
+                      aria-label={t('Quitar {nombre}', { nombre: nombreDeLinea(item, idioma) })}
                     >
                       <Trash2 size={18} />
                     </button>
@@ -106,10 +110,10 @@ function CarritoView() {
           </ul>
         </section>
 
-        <aside className="nota" aria-label="Resumen">
+        <aside className="nota" aria-label={t('Resumen')}>
           <div className="nota-cab">
-            <h2 className="titulo-seccion">Resumen</h2>
-            <span className="folio apagado">{piezas === 1 ? '1 pieza' : `${piezas} piezas`}</span>
+            <h2 className="titulo-seccion">{t('Resumen')}</h2>
+            <span className="folio apagado">{piezas === 1 ? t('1 pieza') : t('{n} piezas', { n: piezas })}</span>
           </div>
           <div className={falta > 0 ? 'envio' : 'envio lleno'}>
             <div className="envio-riel" aria-hidden="true">
@@ -122,23 +126,23 @@ function CarritoView() {
             </div>
             <p className="envio-texto">
               {falta > 0 ? <Truck size={16} /> : <PartyPopper size={16} />}
-              {falta > 0 ? <span>Te faltan <Importe valor={falta} /> para el envío gratis.</span> : 'Tu pedido ya lleva envío gratis.'}
+              {falta > 0 ? <span>{t('Te faltan')} <Importe valor={falta} /> {t('para el envío gratis.')}</span> : t('Tu pedido ya lleva envío gratis.')}
             </p>
           </div>
           <div className="nota-total">
-            <span>Total</span>
+            <span>{t('Total')}</span>
             <strong>
               <Importe valor={total} />
             </strong>
           </div>
           <div className="nota-pie">
             <button className="btn btn-primario btn-bloque btn-isla" disabled={hayExcesos} onClick={() => ir('finalizarCompra')}>
-              Ir a pagar
+              {t('Ir a pagar')}
               <span className="btn-isla-icono" aria-hidden="true">
                 <ArrowRight size={16} />
               </span>
             </button>
-            {hayExcesos && <p className="error">Ajusta las cantidades que superan las existencias.</p>}
+            {hayExcesos && <p className="error">{t('Ajusta las cantidades que superan las existencias.')}</p>}
           </div>
         </aside>
       </div>

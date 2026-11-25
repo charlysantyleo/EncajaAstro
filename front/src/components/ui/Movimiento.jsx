@@ -1,3 +1,4 @@
+import { useT } from '../../i18n/react';
 import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, animate, motion, useMotionValue, useReducedMotion, useTransform } from 'motion/react';
 import { Minus, Plus } from './Iconos';
@@ -62,14 +63,15 @@ export function Interruptor({ activo, onCambio, children }) {
   );
 }
 
-export function Cantidad({ valor, min = 1, max = 999, onCambio, etiqueta = 'Cantidad' }) {
+export function Cantidad({ valor, min = 1, max = 999, onCambio, etiqueta }) {
+  const t = useT();
   return (
-    <div className="cantidad" role="group" aria-label={etiqueta}>
+    <div className="cantidad" role="group" aria-label={etiqueta ?? t('Cantidad')}>
       <motion.button
         type="button"
         whileTap={{ scale: 0.88 }}
         disabled={valor <= min}
-        aria-label="Quitar una pieza"
+        aria-label={t('Quitar una pieza')}
         onClick={() => onCambio(valor - 1)}
       >
         <Minus size={16} />
@@ -81,7 +83,7 @@ export function Cantidad({ valor, min = 1, max = 999, onCambio, etiqueta = 'Cant
         type="button"
         whileTap={{ scale: 0.88 }}
         disabled={valor >= max}
-        aria-label="Agregar una pieza"
+        aria-label={t('Agregar una pieza')}
         onClick={() => onCambio(valor + 1)}
       >
         <Plus size={16} />

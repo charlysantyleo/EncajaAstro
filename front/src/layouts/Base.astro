@@ -7,6 +7,8 @@ import '../styles/global.css';
 import TopBar from '../components/TopBar.jsx';
 import Capas from '../components/Capas.jsx';
 import Pie from '../components/Pie.astro';
+import { traducir } from '../i18n/textos';
+import { idiomaDeRuta } from '../i18n/idiomas';
 
 // Marco comun de todas las paginas. Cada pieza carga solo lo que necesita y cuando lo necesita:
 //   TopBar  client:idle   su HTML viene completo del build (enlaces y buscador funcionan sin JS); el menu de
@@ -17,6 +19,10 @@ import Pie from '../components/Pie.astro';
 //
 // SEO: cada pagina manda su titulo (<= 60 caracteres) y su descripcion (<= 160). La canonical y Open Graph
 // salen de aqui; las paginas privadas (sesion, pedidos, panel) van con noindex.
+//
+// Idiomas (practica P3-4): el idioma sale de la URL (Astro.currentLocale: /en/... es ingles). `alternos` trae la
+// misma pagina en cada idioma ({ es, en }): con ella se escriben los hreflang y el selector de idioma apunta ahi.
+// Las paginas que solo existen en espanol (cuenta, pago, panel) no la mandan.
 interface Props {
   titulo?: string;
   descripcion?: string;
@@ -24,31 +30,43 @@ interface Props {
   tipo?: 'website' | 'product';
   noindex?: boolean;
   jsonLd?: object | null;
+  alternos?: { es: string; en: string } | null;
 }
+const idioma = Astro.currentLocale === 'en' || idiomaDeRuta(Astro.url.pathname) === 'en' ? 'en' : 'es';
+const t = (texto: string) => traducir(idioma, texto);
 const {
   titulo = 'EnCaja Autopartes',
-  descripcion = 'Refacciones para tu auto con compatibilidad verificada por marca, modelo y año. Envío en Guadalajara o recoge en mostrador.',
+  descripcion = t('Refacciones para tu auto con compatibilidad verificada por marca, modelo y año. Envío en Guadalajara o recoge en mostrador.'),
   imagen = '/marca/icono-512.png',
   tipo = 'website',
   noindex = false,
   jsonLd = null,
+  alternos = null,
 } = Astro.props;
 // Sin query params: /categoria?q=balatas y /categoria son la misma pagina para un buscador.
 const canonical = new URL(Astro.url.pathname, Astro.site).href;
 const imagenAbsoluta = imagen ? new URL(imagen, Astro.site).href : null;
+const absoluta = (ruta: string) => new URL(ruta, Astro.site).href;
 ---
 
 <!doctype html>
-<html lang="es">
+<html lang={idioma}>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- viewport-fit=cover: la pagina usa toda la pantalla (notch y esquinas incluidas); el CSS se aparta de las
+         zonas del sistema con env(safe-area-inset-*). -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>{titulo}</title>
     <meta name="description" content={descripcion} />
     <link rel="canonical" href={canonical} />
     {noindex && <meta name="robots" content="noindex, follow" />}
+    <!-- Versiones por idioma para los buscadores (solo en las paginas indexables que existen en los dos). -->
+    {alternos && !noindex && <link rel="alternate" hreflang="es" href={absoluta(alternos.es)} />}
+    {alternos && !noindex && <link rel="alternate" hreflang="en" href={absoluta(alternos.en)} />}
+    {alternos && !noindex && <link rel="alternate" hreflang="x-default" href={absoluta(alternos.es)} />}
     <meta property="og:site_name" content="EnCaja Autopartes" />
-    <meta property="og:locale" content="es_MX" />
+    <meta property="og:locale" content={idioma === 'en' ? 'en_US' : 'es_MX'} />
+    {alternos && <meta property="og:locale:alternate" content={idioma === 'en' ? 'es_MX' : 'en_US'} />}
     <meta property="og:type" content={tipo} />
     <meta property="og:title" content={titulo} />
     <meta property="og:description" content={descripcion} />
@@ -56,8 +74,9 @@ const imagenAbsoluta = imagen ? new URL(imagen, Astro.site).href : null;
     {imagenAbsoluta && <meta property="og:image" content={imagenAbsoluta} />}
     <meta name="twitter:card" content={imagenAbsoluta ? 'summary_large_image' : 'summary'} />
     {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
-    <!-- PWA: el manifiesto (nombre, iconos, colores) lo genera @vite-pwa/astro en el build (no existe en `astro dev`). -->
-    {pwaInfo && <Fragment set:html={pwaInfo.webManifest.linkTag} />}
+    <!-- PWA: el manifiesto (nombre, iconos, colores) lo genera @vite-pwa/astro en el build (no existe en `astro dev`).
+         En ingles, el manifiesto traducido (src/pages/en/manifest.webmanifest.js). -->
+    {idioma === 'en' ? <link rel="manifest" href="/en/manifest.webmanifest" /> : pwaInfo && <Fragment set:html={pwaInfo.webManifest.linkTag} />}
     <!-- Ya instalada (ventana propia), la barra de titulo va en el rojo de la marca (--rojo, igual que theme_color del
          manifiesto); en el navegador se funde con la barra superior. Gana la primera etiqueta cuyo media coincide. -->
     <meta name="theme-color" content="#E10600" media="(display-mode: standalone)" />
@@ -80,7 +99,7 @@ const imagenAbsoluta = imagen ? new URL(imagen, Astro.site).href : null;
   </head>
   <body>
     <div class="app">
-      <TopBar client:idle ruta={Astro.url.pathname} />
+      <TopBar client:idle ruta={Astro.url.pathname} idioma={idioma} alternos={alternos} />
       <!-- Estado de la red y de la app (service worker): sin conexion, version nueva, lista para usarse sin red. -->
       <div class="red-estado" data-red hidden role="status" aria-live="polite">
         <p class="red-estado-texto" data-red-texto></p>
@@ -89,19 +108,23 @@ const imagenAbsoluta = imagen ? new URL(imagen, Astro.site).href : null;
       <main class="app-main">
         <slot />
       </main>
-      <Pie />
-      <Capas client:idle />
+      <Pie idioma={idioma} />
+      <Capas client:idle idioma={idioma} />
     </div>
     <script>
       // Registra el service worker (src/sw.js) y avisa en la franja de estado lo que pasa con la red y la app.
       // En `astro dev` el modulo no registra nada (el service worker solo existe en el build).
       import { registerSW } from 'virtual:pwa-register';
       import { useTienda } from '../store/useTienda';
+      import { traducir } from '../i18n/textos';
+      import { idiomaDelDocumento } from '../i18n/idiomas';
 
+      // Los avisos van en el idioma de la pagina (lang de <html>).
+      const t = (mensaje, variables) => traducir(idiomaDelDocumento(), mensaje, variables);
       const franja = document.querySelector('[data-red]');
       const texto = franja.querySelector('[data-red-texto]');
       const boton = franja.querySelector('[data-red-boton]');
-      const SIN_RED = 'Sin conexión. Ves lo que ya habías abierto; precios y existencias pueden haber cambiado.';
+      const SIN_RED = t('Sin conexión. Ves lo que ya habías abierto; precios y existencias pueden haber cambiado.');
       let temporizador;
 
       // segundos > 0: el aviso se va solo (y si sigue sin red, vuelve el de "sin conexion").
@@ -119,7 +142,7 @@ const imagenAbsoluta = imagen ? new URL(imagen, Astro.site).href : null;
       if (!navigator.onLine) mostrar(SIN_RED, { sinRed: true });
       window.addEventListener('offline', () => mostrar(SIN_RED, { sinRed: true }));
       window.addEventListener('online', () => {
-        mostrar('Volvió la conexión.', { segundos: 3 });
+        mostrar(t('Volvió la conexión.'), { segundos: 3 });
         // Respaldo de Background Sync: envia lo que se guardo sin red (bitacora).
         navigator.serviceWorker?.controller?.postMessage({ type: 'REINTENTAR_COLA' });
       });
@@ -135,19 +158,19 @@ const imagenAbsoluta = imagen ? new URL(imagen, Astro.site).href : null;
       const actualizar = registerSW({
         immediate: true,
         onNeedRefresh() {
-          mostrar('Hay una versión nueva de EnCaja.', {
+          mostrar(t('Hay una versión nueva de EnCaja.'), {
             accion: {
-              texto: 'Actualizar',
+              texto: t('Actualizar'),
               alPulsar: () => {
                 actualizando = true;
-                mostrar('Actualizando…');
+                mostrar(t('Actualizando…'));
                 actualizar(); // manda SKIP_WAITING al service worker que espera
               },
             },
           });
         },
         onOfflineReady() {
-          mostrar('Listo: lo que abras desde ahora también se podrá ver sin conexión.', { segundos: 6 });
+          mostrar(t('Listo: lo que abras desde ahora también se podrá ver sin conexión.'), { segundos: 6 });
         },
       });
 
@@ -158,10 +181,10 @@ const imagenAbsoluta = imagen ? new URL(imagen, Astro.site).href : null;
         useTienda.getState().refrescar();
         mostrar(
           rechazados.length
-            ? `No se pudo guardar un servicio de la bitácora: ${rechazados[0]}`
+            ? t('No se pudo guardar un servicio de la bitácora: {motivo}', { motivo: rechazados[0] })
             : enviados === 1
-              ? 'Se guardó el servicio que anotaste sin conexión.'
-              : `Se guardaron los ${enviados} servicios que anotaste sin conexión.`,
+              ? t('Se guardó el servicio que anotaste sin conexión.')
+              : t('Se guardaron los {n} servicios que anotaste sin conexión.', { n: enviados }),
           { segundos: 6 }
         );
       });

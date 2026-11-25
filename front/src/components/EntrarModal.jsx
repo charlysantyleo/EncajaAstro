@@ -5,6 +5,7 @@ import { API_URL, graphqlRequest } from '../graphql/client';
 import { MUTATION_CREAR_CUENTA, MUTATION_INICIAR_SESION, MUTATION_SOLICITAR_RECUPERACION } from '../graphql/queries';
 import Capa from './ui/Capa';
 import CampoPassword from './ui/CampoPassword';
+import { useT } from '../i18n/react';
 
 // La ruta de OAuth vive en el mismo servidor que GraphQL: http://localhost:4000/auth/google
 const URL_GOOGLE = API_URL.replace(/\/graphql$/, '/auth/google');
@@ -12,6 +13,7 @@ const URL_GOOGLE = API_URL.replace(/\/graphql$/, '/auth/google');
 // Entrar o crear cuenta. Ambos caminos terminan igual: el backend regresa un JWT y se guarda en el store.
 // Un tercer modo, "recuperar", pide un enlace por correo para elegir contraseña nueva (pagina /restablecer).
 export default function EntrarModal() {
+  const t = useT();
   const ir = useTienda((estado) => estado.ir);
   const iniciarSesion = useTienda((estado) => estado.iniciarSesion);
   const refrescar = useTienda((estado) => estado.refrescar);
@@ -61,39 +63,38 @@ export default function EntrarModal() {
 
   if (modo === 'recuperar') {
     return (
-      <Capa titulo="Recuperar contraseña" onCerrar={() => ir('cerrarModal')}>
-        <h3>Recuperar contraseña</h3>
+      <Capa titulo={t('Recuperar contraseña')} onCerrar={() => ir('cerrarModal')}>
+        <h3>{t('Recuperar contraseña')}</h3>
         {enlaceEnviado ? (
           <>
             <p style={{ margin: 0 }} role="status">
-              Si hay una cuenta con <strong>{email}</strong>, te mandamos un enlace para elegir una contraseña nueva.
+              {t('Si hay una cuenta con')} <strong>{email}</strong>{t(', te mandamos un enlace para elegir una contraseña nueva.')}
             </p>
             <p className="apagado" style={{ margin: 0 }}>
-              Revisa tu bandeja de entrada y la de spam. El enlace dura una hora y sirve una sola vez.
+              {t('Revisa tu bandeja de entrada y la de spam. El enlace dura una hora y sirve una sola vez.')}
             </p>
             <button className="btn btn-primario btn-bloque" type="button" onClick={() => irA('entrar')}>
-              Volver a entrar
+              {t('Volver a entrar')}
             </button>
           </>
         ) : (
           <>
             <p className="apagado" style={{ margin: 0 }}>
-              Escribe el correo de tu cuenta y te mandamos un enlace para elegir una contraseña nueva. También sirve si
-              compraste como invitado y quieres ponerle contraseña a tu cuenta.
+              {t('Escribe el correo de tu cuenta y te mandamos un enlace para elegir una contraseña nueva. También sirve si compraste como invitado y quieres ponerle contraseña a tu cuenta.')}
             </p>
             <form className="formulario" onSubmit={pedirEnlace}>
               <div className="campo">
-                <label htmlFor="recuperar-email">Correo</label>
+                <label htmlFor="recuperar-email">{t('Correo')}</label>
                 <input id="recuperar-email" className="input" type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
               </div>
               {error && <p className="error" role="alert">{error}</p>}
               <button className="btn btn-primario btn-bloque" type="submit" disabled={enviando}>
                 {enviando && <Loader2 size={18} className="girar" />}
-                Mandarme el enlace
+                {t('Mandarme el enlace')}
               </button>
             </form>
             <button className="btn btn-texto" type="button" onClick={() => irA('entrar')}>
-              Ya me acordé, quiero entrar
+              {t('Ya me acordé, quiero entrar')}
             </button>
           </>
         )}
@@ -119,10 +120,10 @@ export default function EntrarModal() {
   }
 
   return (
-    <Capa titulo={creando ? 'Crear cuenta' : 'Entrar'} onCerrar={() => ir('cerrarModal')}>
-      <h3>{creando ? 'Crear cuenta' : 'Entrar'}</h3>
+    <Capa titulo={creando ? t('Crear cuenta') : t('Entrar')} onCerrar={() => ir('cerrarModal')}>
+      <h3>{creando ? t('Crear cuenta') : t('Entrar')}</h3>
       <p className="apagado" style={{ margin: 0 }}>
-        Tu cuenta guarda tu garage y la bitácora de cada vehículo. Para comprar no necesitas cuenta.
+        {t('Tu cuenta guarda tu garage y la bitácora de cada vehículo. Para comprar no necesitas cuenta.')}
       </p>
 
       <a className="btn btn-secundario btn-bloque btn-google" href={URL_GOOGLE}>
@@ -132,28 +133,28 @@ export default function EntrarModal() {
           <path fill="#FBBC05" d="M10.5 28.6c-.5-1.4-.8-3-.8-4.6s.3-3.2.8-4.6l-7.9-6.2C1 16.5 0 20.1 0 24s1 7.5 2.7 10.8l7.8-6.2z" />
           <path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.4-5.7c-2.1 1.4-4.8 2.3-8.5 2.3-6.2 0-11.5-4.1-13.4-9.9l-7.9 6.2C6.6 42.6 14.6 48 24 48z" />
         </svg>
-        Continuar con Google
+        {t('Continuar con Google')}
       </a>
 
       <div className="separador" role="presentation">
-        <span>o con tu correo</span>
+        <span>{t('o con tu correo')}</span>
       </div>
 
       <form className="formulario" onSubmit={manejarEnviar}>
         {creando && (
           <div className="campo">
-            <label htmlFor="entrar-nombre">Nombre</label>
+            <label htmlFor="entrar-nombre">{t('Nombre')}</label>
             <input id="entrar-nombre" className="input" required autoComplete="name" value={nombre} onChange={(e) => setNombre(e.target.value)} />
           </div>
         )}
         <div className="campo">
-          <label htmlFor="entrar-email">Correo</label>
+          <label htmlFor="entrar-email">{t('Correo')}</label>
           <input id="entrar-email" className="input" type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
         </div>
         <CampoPassword
           id="entrar-password"
-          etiqueta="Contraseña"
-          ayuda={creando ? 'Mínimo 8 caracteres.' : null}
+          etiqueta={t('Contraseña')}
+          ayuda={creando ? t('Mínimo 8 caracteres.') : null}
           required
           minLength={creando ? 8 : undefined}
           autoComplete={creando ? 'new-password' : 'current-password'}
@@ -165,8 +166,8 @@ export default function EntrarModal() {
         {creando && (
           <CampoPassword
             id="entrar-confirmacion"
-            etiqueta="Confirmar contraseña"
-            error={noCoinciden ? 'Las contraseñas no coinciden.' : null}
+            etiqueta={t('Confirmar contraseña')}
+            error={noCoinciden ? t('Las contraseñas no coinciden.') : null}
             required
             autoComplete="new-password"
             value={confirmacion}
@@ -178,7 +179,7 @@ export default function EntrarModal() {
 
         {!creando && (
           <button className="btn btn-texto" type="button" style={{ alignSelf: 'flex-start', marginTop: -12 }} onClick={() => irA('recuperar')}>
-            ¿Olvidaste tu contraseña?
+            {t('¿Olvidaste tu contraseña?')}
           </button>
         )}
 
@@ -186,12 +187,12 @@ export default function EntrarModal() {
 
         <button className="btn btn-primario btn-bloque" type="submit" disabled={enviando || noCoinciden}>
           {enviando && <Loader2 size={18} className="girar" />}
-          {creando ? 'Crear cuenta' : 'Entrar'}
+          {creando ? t('Crear cuenta') : t('Entrar')}
         </button>
       </form>
 
       <button className="btn btn-texto" type="button" onClick={cambiarModo}>
-        {creando ? '¿Ya tienes cuenta? Entra' : '¿No tienes cuenta? Créala'}
+        {creando ? t('¿Ya tienes cuenta? Entra') : t('¿No tienes cuenta? Créala')}
       </button>
     </Capa>
   );

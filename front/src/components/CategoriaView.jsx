@@ -6,12 +6,14 @@ import { useDelNavegador } from '../hooks/useEnNavegador';
 import CatalogoLayout from './CatalogoLayout';
 import ListaProductos from './ListaProductos';
 import { comoIsla } from './ui/Isla';
+import { useT } from '../i18n/react';
 
 // Dos usos:
 //  - /categoria/<sistema> (pages/categoria/[slug].astro): la categoria y sus piezas vienen del build, asi el HTML
 //    ya trae el titulo y la lista (client:load hidrata encima).
 //  - /categoria?q=texto (busqueda) y las URL viejas ?id= o ?slug=: todo se resuelve en el navegador (client:only).
 function CategoriaView({ categoria = null, categorias = [], productosIniciales = null }) {
+  const t = useT();
   const parametros = categoria ? {} : leerParametros();
   const { categorias: delServidor } = useCategorias();
   const porSlug = parametros.slug ? delServidor.find((c) => slug(c.nombre) === parametros.slug) : null;
@@ -30,7 +32,7 @@ function CategoriaView({ categoria = null, categorias = [], productosIniciales =
     iniciales: productosIniciales,
   });
 
-  const titulo = texto ? `Resultados para “${texto}”` : (categoriaNombre ?? 'Catálogo');
+  const titulo = texto ? t('Resultados para “{texto}”', { texto }) : (categoriaNombre ?? t('Catálogo'));
 
   return (
     <CatalogoLayout categorias={categorias} activa={texto ? null : (categoriaId ?? 'todo')}>
@@ -43,7 +45,7 @@ function CategoriaView({ categoria = null, categorias = [], productosIniciales =
         )}
         {vehiculoActivo && (
           <p className="apagado" style={{ marginTop: 12, marginBottom: 0 }}>
-            Filtrado por compatibilidad con tu {vehiculoActivo.marca} {vehiculoActivo.modelo} {vehiculoActivo.anio}.
+            {t('Filtrado por compatibilidad con tu {auto}.', { auto: `${vehiculoActivo.marca} ${vehiculoActivo.modelo} ${vehiculoActivo.anio}` })}
           </p>
         )}
       </div>
@@ -55,10 +57,10 @@ function CategoriaView({ categoria = null, categorias = [], productosIniciales =
         recargar={recargar}
         vacio={
           <>
-            <p>No hay piezas que coincidan con este filtro.</p>
+            <p>{t('No hay piezas que coincidan con este filtro.')}</p>
             {vehiculoActivo && (
               <button className="btn btn-secundario" onClick={() => ir('abrirSelectorVehiculo')}>
-                Cambiar vehículo activo
+                {t('Cambiar vehículo activo')}
               </button>
             )}
           </>

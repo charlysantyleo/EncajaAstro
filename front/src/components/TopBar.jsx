@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Car, ChartBar, ChevronsUpDown, LogIn, LogOut, Moon, Receipt, Search, Sun, Warehouse } from './ui/Iconos';
+import { Car, ChartBar, ChevronsUpDown, Globe, LogIn, LogOut, Moon, Receipt, Search, Sun, Warehouse } from './ui/Iconos';
 import { useTienda } from '../store/useTienda';
-import { leerParametros, rutas } from '../lib/rutas';
+import { esBusqueda, leerParametros, rutas, rutasPara } from '../lib/rutas';
+import { useIdioma, useRutas, useT } from '../i18n/react';
+import { NOMBRE_IDIOMA } from '../i18n/idiomas';
 import { cambiarTema, temaActual } from '../lib/tema';
 import { graphqlRequest } from '../graphql/client';
 import { QUERY_YO } from '../graphql/queries';
@@ -11,7 +13,11 @@ import { comoIsla } from './ui/Isla';
 // Isla client:load con HTML generado en el build: la barra se ve antes de que cargue React.
 // `ruta` la pasa Astro (la conoce al construir la pagina). Lo que solo sabe el navegador
 // (busqueda en la URL, tema, sesion y nota guardadas) se completa al hidratar.
-function TopBar({ ruta = '/' }) {
+// `alternos`: { es, en } con la misma pagina en cada idioma (selector de idioma); sin ella, el inicio del otro.
+function TopBar({ ruta = '/', alternos = null }) {
+  const idioma = useIdioma();
+  const t = useT();
+  const r = useRutas();
   const vehiculoActivo = useTienda((estado) => estado.vehiculoActivo);
   const carrito = useTienda((estado) => estado.carrito);
   const ir = useTienda((estado) => estado.ir);
@@ -21,12 +27,15 @@ function TopBar({ ruta = '/' }) {
 
   const [busqueda, setBusqueda] = useState('');
   const [tema, setTema] = useState('claro');
+  const [consulta, setConsulta] = useState('');
   const campo = useRef(null);
 
   useEffect(() => {
     setBusqueda(leerParametros().q);
     setTema(temaActual());
-  }, []);
+    // En la busqueda, el selector de idioma conserva lo buscado (?q=).
+    if (esBusqueda(ruta)) setConsulta(window.location.search);
+  }, [ruta]);
 
   // El rol vive en el servidor: si el admin lo cambio (o la cuenta ya no existe), la sesion local se pone al dia.
   const hayToken = Boolean(sesion?.token);
@@ -44,10 +53,10 @@ function TopBar({ ruta = '/' }) {
   const piezasAnteriores = useRef(null);
   useEffect(() => {
     if (piezasAnteriores.current !== null && piezasAnteriores.current !== totalItems) {
-      setAnuncioNota(`Tu nota lleva ${totalItems} ${totalItems === 1 ? 'pieza' : 'piezas'}`);
+      setAnuncioNota(totalItems === 1 ? t('Tu nota lleva 1 pieza') : t('Tu nota lleva {n} piezas', { n: totalItems }));
     }
     piezasAnteriores.current = totalItems;
-  }, [totalItems]);
+  }, [totalItems, t]);
 
   // "/" enfoca el buscador (atajo de mostrador para quien ya sabe el numero de parte).
   useEffect(() => {
@@ -77,16 +86,18 @@ function TopBar({ ruta = '/' }) {
   const enPanel = ruta.startsWith('/admin');
   // El panel es para el personal: EMPLEADO ve mostrador y pedidos; ADMIN, todo.
   const esPersonal = sesion?.usuario.rol === 'ADMIN' || sesion?.usuario.rol === 'EMPLEADO';
+  const otroIdioma = idioma === 'en' ? 'es' : 'en';
+  const enOtroIdioma = (alternos?.[otroIdioma] ?? rutasPara(otroIdioma).home) + consulta;
 
   return (
     <header className="cabecera">
       <div className="rejilla cabecera-fila">
-        <a className="marca" href={rutas.home} aria-label="EnCaja Autopartes, inicio">
+        <a className="marca" href={r.home} aria-label={t('EnCaja Autopartes, inicio')}>
           <span className="marca-logo" aria-hidden="true" />
         </a>
 
         {/* action/name: antes de hidratar (client:idle) la busqueda funciona como formulario normal: /categoria?q=... */}
-        <form className="buscador" role="search" action="/categoria" method="get" onSubmit={manejarBusqueda}>
+        <form className="buscador" role="search" action={r.busqueda('').split('?')[0]} method="get" onSubmit={manejarBusqueda}>
           <Search size={18} />
           <input
             ref={campo}
@@ -94,8 +105,8 @@ function TopBar({ ruta = '/' }) {
             type="search"
             name="q"
             value={busqueda}
-            aria-label="Buscar refacciones"
-            placeholder="Pieza o número de parte"
+            aria-label={t('Buscar refacciones')}
+            placeholder={t('Pieza o número de parte')}
             onChange={(evento) => setBusqueda(evento.target.value)}
           />
           <AnimatePresence>
@@ -107,16 +118,16 @@ function TopBar({ ruta = '/' }) {
           </AnimatePresence>
         </form>
 
-        <nav className="cab-acciones" aria-label="Cuenta y navegación">
+        <nav className="cab-acciones" aria-label={t('Cuenta y navegación')}>
           {esPersonal && (
             <a
               className={enPanel ? 'cab-enlace activo' : 'cab-enlace'}
               aria-current={enPanel ? 'page' : undefined}
-              aria-label="Panel de administración"
+              aria-label={t('Panel de administración')}
               href={rutas.admin}
             >
               <ChartBar />
-              <span>Panel</span>
+              <span>{t('Panel')}</span>
             </a>
           )}
 
@@ -133,7 +144,7 @@ function TopBar({ ruta = '/' }) {
           <button
             className={vehiculoActivo ? 'cab-enlace placa' : 'cab-enlace placa placa-vacia'}
             onClick={() => ir('abrirSelectorVehiculo')}
-            aria-label={vehiculoActivo ? `Vehículo activo: ${vehiculoActivo.marca} ${vehiculoActivo.modelo} ${vehiculoActivo.anio}. Cambiar` : 'Elegir vehículo'}
+            aria-label={vehiculoActivo ? t('Vehículo activo: {auto}. Cambiar', { auto: `${vehiculoActivo.marca} ${vehiculoActivo.modelo} ${vehiculoActivo.anio}` }) : t('Elegir vehículo')}
           >
             <Car />
             <span>
@@ -143,7 +154,7 @@ function TopBar({ ruta = '/' }) {
                   <span className="placa-anio mono"> {vehiculoActivo.anio}</span>
                 </>
               ) : (
-                'Elegir vehículo'
+                t('Elegir vehículo')
               )}
             </span>
             <ChevronsUpDown size={14} />
@@ -152,9 +163,9 @@ function TopBar({ ruta = '/' }) {
           <span className="solo-lectores" aria-live="polite">
             {anuncioNota}
           </span>
-          <a className="cab-enlace" href={rutas.carrito} aria-label={`Nota, ${totalItems} piezas`}>
+          <a className="cab-enlace" href={r.carrito} aria-label={t('Nota, {n} piezas', { n: totalItems })}>
             <Receipt />
-            <span>Nota</span>
+            <span>{t('Nota')}</span>
             <AnimatePresence initial={false} mode="popLayout">
               {totalItems > 0 && (
                 <motion.span
@@ -176,25 +187,39 @@ function TopBar({ ruta = '/' }) {
               <span className="cuenta-nombre" title={sesion.usuario.email}>
                 {sesion.usuario.nombre.split(' ')[0]}
               </span>
-              <button className="btn-icono" onClick={cerrarSesion} aria-label="Cerrar sesión" title="Cerrar sesión">
+              <button className="btn-icono" onClick={cerrarSesion} aria-label={t('Cerrar sesión')} title={t('Cerrar sesión')}>
                 <LogOut />
               </button>
             </span>
           ) : (
-            <button className="cab-enlace" onClick={() => ir('abrirEntrar')} aria-label="Entrar">
+            <button className="cab-enlace" onClick={() => ir('abrirEntrar')} aria-label={t('Entrar')}>
               <LogIn />
-              <span>Entrar</span>
+              <span>{t('Entrar')}</span>
             </button>
           )}
 
           <button
             className="btn-icono"
             onClick={alternarTema}
-            aria-label={tema === 'oscuro' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
-            title={tema === 'oscuro' ? 'Modo claro' : 'Modo oscuro'}
+            aria-label={tema === 'oscuro' ? t('Cambiar a modo claro') : t('Cambiar a modo oscuro')}
+            title={tema === 'oscuro' ? t('Modo claro') : t('Modo oscuro')}
           >
             {tema === 'oscuro' ? <Sun /> : <Moon />}
           </button>
+
+          {/* Selector de idioma: la misma pagina en el otro idioma (hreflang/lang para lectores y buscadores). */}
+          <a
+            className="cab-enlace idioma"
+            href={enOtroIdioma}
+            hrefLang={otroIdioma}
+            lang={otroIdioma}
+            // El nombre accesible incluye el codigo visible (WCAG 2.5.3): "English (EN)" / "Español (ES)".
+            aria-label={`${NOMBRE_IDIOMA[otroIdioma]} (${otroIdioma.toUpperCase()})`}
+            title={otroIdioma === 'en' ? 'Read this page in English' : 'Ver esta página en español'}
+          >
+            <Globe />
+            <span className="idioma-codigo">{otroIdioma.toUpperCase()}</span>
+          </a>
         </nav>
       </div>
     </header>

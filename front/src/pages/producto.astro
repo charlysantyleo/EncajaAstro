@@ -1,11 +1,5 @@
 ---
-import Base from '../layouts/Base.astro';
-import FichaProducto from '../components/FichaProducto.jsx';
-import Nota from '../components/Nota.jsx';
+import ProductoRespaldo from '../vistas/ProductoRespaldo.astro';
 ---
 
-<!-- Respaldo para piezas agregadas despues del build: /producto/<slug> llega aqui como /producto?slug= (public/_redirects). -->
-<Base titulo="Pieza | EnCaja Autopartes" noindex>
-  <FichaProducto client:only="react" />
-  <Nota client:idle />
-</Base>
+<ProductoRespaldo idioma="es" />

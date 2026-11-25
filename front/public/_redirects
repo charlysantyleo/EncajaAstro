@@ -1,3 +1,5 @@
 # Netlify: si no existe la pagina generada en el build (una categoria o pieza agregada despues), la resuelve el navegador.
 /categoria/*  /categoria?slug=:splat  302
 /producto/*   /producto?slug=:splat   302
+/en/category/*  /en/search?slug=:splat  302
+/en/product/*   /en/product?slug=:splat 302

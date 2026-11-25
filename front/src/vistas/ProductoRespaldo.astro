@@ -1,0 +1,15 @@
+---
+// Respaldo para piezas agregadas despues del build: /producto/<slug> llega aqui como /producto?slug= y
+// /en/product/<slug> como /en/product?slug= (public/_redirects).
+import Base from '../layouts/Base.astro';
+import FichaProducto from '../components/FichaProducto.jsx';
+import Nota from '../components/Nota.jsx';
+import { traducir } from '../i18n/textos';
+
+const { idioma } = Astro.props;
+---
+
+<Base titulo={traducir(idioma, 'Pieza | EnCaja Autopartes')} noindex>
+  <FichaProducto client:only="react" idioma={idioma} />
+  <Nota client:idle idioma={idioma} />
+</Base>

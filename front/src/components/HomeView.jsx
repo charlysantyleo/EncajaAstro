@@ -7,12 +7,14 @@ import PedidoConfirmado from './PedidoConfirmado';
 import ListaProductos from './ListaProductos';
 import NotaLateral from './NotaLateral';
 import { comoIsla } from './ui/Isla';
+import { useT } from '../i18n/react';
 
 // categorias y productosIniciales vienen del build (pages/index.astro): el HTML ya trae el indice de sistemas y
 // las primeras piezas, sin esqueletos. Con vehiculo activo, el navegador pide la lista filtrada.
 function HomeView({ categorias = [], productosIniciales = null }) {
   const vehiculoActivo = useDelNavegador(useTienda((estado) => estado.vehiculoActivo), null);
   const soloDirectos = useDelNavegador(useTienda((estado) => estado.soloDirectos), false);
+  const t = useT();
 
   const { productos, cargando, error, recargar } = useProductos({
     vehiculoId: vehiculoActivo?.id,
@@ -30,7 +32,7 @@ function HomeView({ categorias = [], productosIniciales = null }) {
         cargando={cargando}
         error={error}
         recargar={recargar}
-        vacio={<p>No hay piezas registradas para este filtro.</p>}
+        vacio={<p>{t('No hay piezas registradas para este filtro.')}</p>}
       />
     </CatalogoLayout>
   );

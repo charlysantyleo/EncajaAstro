@@ -2,11 +2,13 @@ import { useEffect } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { Check } from './ui/Iconos';
 import { useTienda } from '../store/useTienda';
+import { useT } from '../i18n/react';
 
 // Aviso transitorio (patron Toast de beUI): sube con resorte y se va solo.
 export default function Avisos() {
   const aviso = useTienda((estado) => estado.aviso);
   const ir = useTienda((estado) => estado.ir);
+  const t = useT();
 
   useEffect(() => {
     if (!aviso) return undefined;
@@ -29,7 +31,7 @@ export default function Avisos() {
             <Check size={18} strokeWidth={2.6} />
             <span>{aviso.texto}</span>
             <button className="btn btn-texto btn-chico" onClick={() => ir('irACarrito')}>
-              Ver nota
+              {t('Ver nota')}
             </button>
           </motion.div>
         )}

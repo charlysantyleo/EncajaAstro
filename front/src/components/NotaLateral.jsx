@@ -7,6 +7,8 @@ import { useEnNavegador } from '../hooks/useEnNavegador';
 import { ENVIO_GRATIS, pesos } from '../lib/formato';
 import { Cantidad, Importe } from './ui/Movimiento';
 import Skeleton from './Skeleton';
+import { useIdioma, useT } from '../i18n/react';
+import { nombreDeLinea } from '../i18n/catalogo';
 
 // La nota a la derecha del catalogo (pantallas anchas de la pagina de inicio): lo que lleva el cliente,
 // con cantidades que se pueden ajustar sin pasar del stock, el avance al envio gratis y el boton para pagar.
@@ -20,11 +22,13 @@ export default function NotaLateral() {
   const stockEnVivo = useStockEnVivo((estado) => estado.stock);
   const gratisDesde = useReglasDeEnvio().reglas?.gratisDesde ?? ENVIO_GRATIS;
   const reducido = useReducedMotion();
+  const t = useT();
+  const idioma = useIdioma();
 
   // La nota vive en localStorage: el HTML del build no la conoce, asi que reserva el lugar.
   if (!enNavegador) {
     return (
-      <section className="nota-lateral" aria-label="Tu nota" aria-busy="true">
+      <section className="nota-lateral" aria-label={t('Tu nota')} aria-busy="true">
         <Skeleton height={220} />
       </section>
     );
@@ -38,15 +42,15 @@ export default function NotaLateral() {
   return (
     <section className="nota-lateral" aria-labelledby="nota-lateral-titulo">
       <header className="nota-lateral-cabeza">
-        <h2 id="nota-lateral-titulo">Tu nota</h2>
+        <h2 id="nota-lateral-titulo">{t('Tu nota')}</h2>
         <span className="mono apagado">
-          {piezas} {piezas === 1 ? 'pieza' : 'piezas'}
+          {piezas} {piezas === 1 ? t('pieza') : t('piezas')}
         </span>
       </header>
 
       {carrito.length === 0 ? (
         <p className="nota-lateral-vacia">
-          Todavía no llevas nada. Agrega piezas con el <strong>+</strong> de cada renglón y aquí verás tu cuenta.
+          {t('Todavía no llevas nada. Agrega piezas con el')} <strong>+</strong> {t('de cada renglón y aquí verás tu cuenta.')}
         </p>
       ) : (
         <ul className="nota-lateral-lineas">
@@ -67,17 +71,17 @@ export default function NotaLateral() {
                     {item.imagen ? <img src={item.imagen} alt="" width="44" height="44" /> : item.nombre.slice(0, 2).toUpperCase()}
                   </span>
                   <span className="nota-lateral-nombre">
-                    {item.nombre}
+                    {nombreDeLinea(item, idioma)}
                     {item.numeroParte && <span className="mono apagado">{item.numeroParte}</span>}
                   </span>
-                  <button className="btn-icono" onClick={() => quitarDelCarrito(item.productoId)} aria-label={`Quitar ${item.nombre}`}>
+                  <button className="btn-icono" onClick={() => quitarDelCarrito(item.productoId)} aria-label={t('Quitar {nombre}', { nombre: nombreDeLinea(item, idioma) })}>
                     <X size={16} />
                   </button>
                   <Cantidad
                     valor={item.cantidad}
                     min={1}
                     max={Math.max(1, tope)}
-                    etiqueta={`Cantidad de ${item.nombre}`}
+                    etiqueta={t('Cantidad de {nombre}', { nombre: nombreDeLinea(item, idioma) })}
                     onCambio={(n) => cambiarCantidad(item.productoId, n)}
                   />
                   <Importe className="nota-lateral-importe" valor={item.precio * item.cantidad} />
@@ -95,20 +99,20 @@ export default function NotaLateral() {
           </span>
           <span className="apagado">
             {carrito.length === 0
-              ? `Envío gratis desde ${pesos(gratisDesde)} en la zona metropolitana de Guadalajara.`
+              ? t('Envío gratis desde {monto} en la zona metropolitana de Guadalajara.', { monto: pesos(gratisDesde) })
               : falta > 0
-                ? `Te faltan ${pesos(falta)} para el envío gratis.`
-                : 'Tu pedido ya lleva envío gratis.'}
+                ? t('Te faltan {monto} para el envío gratis.', { monto: pesos(falta) })
+                : t('Tu pedido ya lleva envío gratis.')}
           </span>
         </div>
         <div className="nota-lateral-total">
-          <span>Total</span>
+          <span>{t('Total')}</span>
           <strong className="mono">
             <Importe valor={total} />
           </strong>
         </div>
         <button className="btn btn-primario btn-bloque" disabled={carrito.length === 0} onClick={() => ir('finalizarCompra')}>
-          Ir a pagar
+          {t('Ir a pagar')}
           <ArrowRight size={18} />
         </button>
       </footer>

@@ -5,7 +5,7 @@ import { enNota, useTienda } from '../store/useTienda';
 import { useProducto } from '../hooks/useCatalogo';
 import { imagenDe, miniaturaDe } from '../imagenes';
 import { useAnimarEntrada, useDelNavegador } from '../hooks/useEnNavegador';
-import { rutas } from '../lib/rutas';
+import { useRutas, useT } from '../i18n/react';
 import { esSinConexion } from '../lib/offline';
 import { ajusteDe, cubre, describir } from '../lib/compat';
 import { pesos } from '../lib/formato';
@@ -30,6 +30,7 @@ export default function ProductoCard({ producto, indice = 0, abierta = false, on
   const sinMas = !agotada && yaEnNota >= producto.stock;
   const [cambio, visto] = useCambio(producto.stock);
   const idFicha = `ficha-${producto.id}`;
+  const t = useT();
 
   return (
     <motion.li
@@ -59,20 +60,20 @@ export default function ProductoCard({ producto, indice = 0, abierta = false, on
           </span>
           <span className="col-ajuste">
             {agotada ? (
-              <Sello texto="Agotado" tono="rojo" />
+              <Sello texto={t('Agotado')} tono="rojo" />
             ) : ajuste ? (
               <Sello
-                texto={ajuste.tipo === 'DIRECTO' ? 'Embona' : 'Equivalente'}
+                texto={ajuste.tipo === 'DIRECTO' ? t('Embona') : t('Equivalente')}
                 tono={ajuste.tipo === 'DIRECTO' ? 'amarillo' : 'azul'}
                 retraso={0.15 + Math.min(indice, 12) * 0.03}
               />
             ) : vehiculoActivo ? (
-              <span className="renglon-sin-ajuste">Sin registro</span>
+              <span className="renglon-sin-ajuste">{t('Sin registro')}</span>
             ) : null}
           </span>
           <span className={['col-stock', 'renglon-stock', agotada ? 'cero' : '', cambio ? 'cambio' : ''].filter(Boolean).join(' ')}>
             <NumeroGiro valor={producto.stock} />
-            <span className="renglon-stock-txt"> {agotada ? 'sin existencias' : 'en stock'}</span>
+            <span className="renglon-stock-txt"> {agotada ? t('sin existencias') : t('en stock')}</span>
           </span>
           <Precio producto={producto} className="col-precio renglon-precio" />
         </button>
@@ -80,8 +81,8 @@ export default function ProductoCard({ producto, indice = 0, abierta = false, on
           type="button"
           className="col-accion renglon-agregar"
           disabled={agotada || sinMas}
-          aria-label={sinMas ? `Tu nota ya lleva todas las existencias de ${producto.nombre}` : `Agregar ${producto.nombre} a la nota`}
-          title={sinMas ? 'Tu nota ya lleva todas las existencias' : 'Agregar a la nota'}
+          aria-label={sinMas ? t('Tu nota ya lleva todas las existencias de {nombre}', { nombre: producto.nombre }) : t('Agregar {nombre} a la nota', { nombre: producto.nombre })}
+          title={sinMas ? t('Tu nota ya lleva todas las existencias') : t('Agregar a la nota')}
           onClick={() => ir('agregarAlCarrito', { producto, cantidad: 1 })}
         >
           <Plus size={20} />
@@ -115,6 +116,8 @@ function Ficha({ productoId, imagen }) {
   const yaEnNota = useTienda(enNota(productoId));
   const caben = Math.max(0, (producto?.stock ?? 0) - yaEnNota);
   const cantidad = Math.min(elegida, Math.max(1, caben));
+  const t = useT();
+  const rutas = useRutas();
 
   return (
     <div className="ficha">
@@ -123,28 +126,28 @@ function Ficha({ productoId, imagen }) {
       </div>
 
       <div className="ficha-cuerpo">
-        {cargando && <p className="apagado">Cargando ficha…</p>}
+        {cargando && <p className="apagado">{t('Cargando ficha…')}</p>}
         {error && (
           <p className="error">
-            {esSinConexion(error) ? 'Sin conexión: esta ficha no está guardada. Ábrela una vez con internet y quedará disponible.' : 'No se pudo cargar la ficha.'}
+            {esSinConexion(error) ? t('Sin conexión: esta ficha no está guardada. Ábrela una vez con internet y quedará disponible.') : t('No se pudo cargar la ficha.')}
           </p>
         )}
         {producto && (
           <>
             <dl className="ficha-datos">
               <div>
-                <dt>N.º de parte</dt>
+                <dt>{t('N.º de parte')}</dt>
                 <dd className="mono">{producto.numeroParte}</dd>
               </div>
               {producto.marca && (
                 <div>
-                  <dt>Marca</dt>
+                  <dt>{t('Marca')}</dt>
                   <dd>{producto.marca}</dd>
                 </div>
               )}
               {producto.categoria?.nombre && (
                 <div>
-                  <dt>Sistema</dt>
+                  <dt>{t('Sistema')}</dt>
                   <dd>{producto.categoria.nombre}</dd>
                 </div>
               )}
@@ -153,14 +156,14 @@ function Ficha({ productoId, imagen }) {
             {producto.descripcion && <p className="ficha-descripcion">{producto.descripcion}</p>}
 
             <div className="ficha-compat">
-              <p className="titulo-chico">Compatible con</p>
+              <p className="titulo-chico">{t('Compatible con')}</p>
               <ul>
                 {producto.compatibilidades.map((compatibilidad, i) => {
                   const mio = Boolean(vehiculoActivo && cubre(compatibilidad, vehiculoActivo));
                   return (
                     <li key={i} className={mio ? 'mio' : undefined}>
                       <span>{describir(compatibilidad)}</span>
-                      <span className="ficha-tipo">{compatibilidad.tipo === 'DIRECTO' ? 'Directo' : 'Equivalencia'}</span>
+                      <span className="ficha-tipo">{compatibilidad.tipo === 'DIRECTO' ? t('Directo') : t('Equivalencia')}</span>
                       {compatibilidad.nota && <span className="ficha-nota">{compatibilidad.nota}</span>}
                     </li>
                   );
@@ -177,16 +180,16 @@ function Ficha({ productoId, imagen }) {
             >
               <Cantidad valor={cantidad} min={1} max={Math.max(1, caben)} onCambio={setCantidad} />
               <button className="btn btn-primario" type="submit" disabled={caben === 0}>
-                Agregar a la nota · {pesos((producto.precioParaTi ?? producto.precio) * cantidad)}
+                {t('Agregar a la nota')} · {pesos((producto.precioParaTi ?? producto.precio) * cantidad)}
               </button>
               {yaEnNota > 0 && (
                 <span className="apagado" style={{ alignSelf: 'center' }}>
-                  {caben === 0 ? 'Tu nota ya lleva todas las existencias.' : `Ya llevas ${yaEnNota} en tu nota.`}
+                  {caben === 0 ? t('Tu nota ya lleva todas las existencias.') : t('Ya llevas {n} en tu nota.', { n: yaEnNota })}
                 </span>
               )}
             </form>
             <a className="btn btn-texto ficha-enlace" href={rutas.producto(producto)}>
-              Ver la ficha completa <ArrowUpRight size={16} />
+              {t('Ver la ficha completa')} <ArrowUpRight size={16} />
             </a>
           </>
         )}

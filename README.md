@@ -112,6 +112,42 @@ npm run preview
 
 Al cerrar sesión se borran las respuestas guardadas de la API (llevan precios y vehículos de la cuenta).
 
+## Práctica P3-4: cualquier pantalla y dos idiomas
+
+La tienda se adapta a teléfono, tableta, escritorio y a la ventana de la PWA instalada, y se ve en español o en
+inglés.
+
+**Multi-plataforma** (`front/src/styles/global.css` y `front/src/layouts/Base.astro`)
+
+| Norma | Cómo se aplica |
+|---|---|
+| Viewport | `<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">` |
+| Mobile-first | Las reglas base son las del teléfono (desde 320 px); al final del CSS solo hay `@media (min-width: 360px / 768px / 1200px)` que agregan lo que cabe |
+| Sin scroll horizontal | Revisado en 320, 360, 390, 768, 1024, 1200 y 1440 px, y acostado en 740×360 y 844×390, en las 8 páginas públicas |
+| Orientación y `dvh` | `@media (orientation: landscape) and (max-height: 500px)`: la cabecera deja de estar fija y los títulos se limitan con `dvh`. La app usa `min-height: 100dvh`; los diálogos, `92dvh` |
+| Áreas seguras | `env(safe-area-inset-*)` en la cabecera (arriba), los márgenes laterales (`--lado-izq`/`--lado-der`), la nota fija y los diálogos (abajo) |
+| PWA instalada | `@media (display-mode: standalone)`; la ventana es redimensionable y usa los mismos cortes |
+
+**Multi-idioma** (i18n nativo de Astro en `front/astro.config.mjs`: `defaultLocale: 'es'`, `locales: ['es', 'en']`,
+`prefixDefaultLocale: false`)
+
+| Página | Español | Inglés |
+|---|---|---|
+| Inicio | `/` | `/en/` |
+| Sistema | `/categoria/frenos/` | `/en/category/brakes/` |
+| Pieza | `/producto/bc-4021-balatas-delanteras-ceramicas/` | `/en/product/bc-4021-front-ceramic-brake-pads/` |
+| Nota | `/carrito` | `/en/cart` |
+| Búsqueda | `/categoria?q=` | `/en/search?q=` |
+
+- Cada página lleva `<html lang>`, `hreflang` (es, en y `x-default`) y un selector de idioma en la barra que lleva a la misma página en el otro idioma.
+- Las páginas de `src/pages/` y `src/pages/en/` son envoltorios: el contenido está en `src/vistas/` y recibe el idioma.
+- Textos de la interfaz: `src/i18n/textos.js` (la clave es el texto en español: `t('Agregar a la nota')`). Nombres y descripciones del catálogo: `src/i18n/catalogo.js` (por número de parte y por sistema).
+- El manifiesto de la PWA también se traduce: `/en/manifest.webmanifest` (nombre, descripción, `lang` y `start_url: /en/`).
+- Cuenta, garage, pago, comprobante y panel siguen solo en español. Una pieza agregada desde el panel sin traducción se ve con su nombre en español, y la búsqueda compara contra los nombres en español de la base.
+
+Para revisarlo: `npm run build` y `npm run preview`, y en Chrome `DevTools → Toggle device toolbar` para los
+anchos y la orientación. Para probarlo instalada, instala la app y cambia el idioma desde la barra (`ES`/`EN`).
+
 ## Crear un Postgres gratis en Neon
 
 Neon (`neon.tech`) tiene un tier gratuito pensado justo para esto: da un

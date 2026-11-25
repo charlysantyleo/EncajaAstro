@@ -1,9 +1,5 @@
 ---
-import Base from '../layouts/Base.astro';
-import CarritoView from '../components/CarritoView.jsx';
+import Carrito from '../vistas/Carrito.astro';
 ---
 
-<Base titulo="Carrito | EnCaja Autopartes">
-  <!-- client:only: la nota vive en localStorage; pintarla en el build mostraria "vacia" por un instante. -->
-  <CarritoView client:only="react" />
-</Base>
+<Carrito idioma="es" />

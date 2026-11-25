@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { Eye, EyeOff } from './Iconos';
+import { useT } from '../../i18n/react';
 
 // Campo de contraseña con boton para verla. Por defecto cada campo lleva su propio estado;
 // con `visible` y `onAlternar` varios campos se muestran u ocultan juntos (contraseña y su confirmacion).
 export default function CampoPassword({ id, etiqueta, ayuda, error, visible, onAlternar, ...input }) {
+  const t = useT();
   const [propia, setPropia] = useState(false);
   const seVe = visible ?? propia;
   const alternar = onAlternar ?? (() => setPropia((valor) => !valor));
@@ -29,8 +31,8 @@ export default function CampoPassword({ id, etiqueta, ayuda, error, visible, onA
           type="button"
           className="btn-icono"
           aria-pressed={seVe}
-          aria-label={seVe ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-          title={seVe ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+          aria-label={seVe ? t('Ocultar contraseña') : t('Mostrar contraseña')}
+          title={seVe ? t('Ocultar contraseña') : t('Mostrar contraseña')}
           onClick={alternar}
         >
           {seVe ? <EyeOff /> : <Eye />}

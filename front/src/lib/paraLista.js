@@ -3,6 +3,8 @@
 export const paraLista = (p) => ({
   id: p.id,
   nombre: p.nombre,
+  // En ingles, el nombre original (espanol) es el que se guarda en la nota.
+  ...(p.nombreOriginal ? { nombreOriginal: p.nombreOriginal } : {}),
   numeroParte: p.numeroParte,
   marca: p.marca,
   precio: p.precio,

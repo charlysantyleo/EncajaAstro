@@ -2,6 +2,8 @@
 // /producto/bc-4021-balatas-delanteras-ceramicas): sus paginas se generan en el build. La busqueda y lo
 // que depende de cada visitante (pedido, vehiculo) viaja como query param.
 import { slug, slugDeProducto } from './slug';
+import { nombreCategoriaEn, traducirProducto } from '../i18n/catalogo';
+import { idiomaDelDocumento } from '../i18n/idiomas';
 
 export const rutas = {
   home: '/',
@@ -22,6 +24,34 @@ export const rutas = {
   adminUsuarios: '/admin/usuarios',
   adminAjustes: '/admin/ajustes',
 };
+
+// Las paginas publicas tambien existen en ingles, con URL traducida (practica P3-4):
+//   /                      ->  /en/
+//   /categoria/frenos/     ->  /en/category/brakes/
+//   /producto/bc-4021-...  ->  /en/product/bc-4021-front-ceramic-brake-pads/
+//   /categoria?q=          ->  /en/search?q=
+//   /carrito               ->  /en/cart
+// Cuenta, pago y panel solo existen en espanol: en ingles se usan las mismas rutas.
+const RUTAS_EN = {
+  ...rutas,
+  home: '/en/',
+  categoria: (_id, nombre) => `/en/category/${slug(nombreCategoriaEn(nombre))}/`,
+  producto: (producto) => `/en/product/${slugDeProducto(traducirProducto(producto, 'en'))}/`,
+  busqueda: (texto) => `/en/search?q=${encodeURIComponent(texto)}`,
+  carrito: '/en/cart',
+};
+
+export function rutasPara(idioma) {
+  return idioma === 'en' ? RUTAS_EN : rutas;
+}
+
+// Para las acciones del store (siempre en el navegador): las rutas del idioma de la pagina abierta.
+export function rutasDeLaPagina() {
+  return rutasPara(idiomaDelDocumento());
+}
+
+// La pagina de busqueda en cualquier idioma.
+export const esBusqueda = (ruta) => /^\/(categoria|en\/search)\/?$/.test(ruta);
 
 export function navegar(url) {
   window.location.assign(url);

@@ -2,12 +2,14 @@ import { useEffect, useId, useState } from 'react';
 import { Search } from '../ui/Iconos';
 import { graphqlRequest } from '../../graphql/client';
 import { QUERY_BUSCAR_VEHICULOS } from '../../graphql/queries';
+import { useT } from '../../i18n/react';
 
 const ESPERA_MS = 250;
 
 // Buscador del catalogo de vehiculos: "versa" o "nissan versa 2018". Al elegir un resultado avisa con
 // { marca, modelo, anio } (anio es null si no se escribio un año).
-export default function BuscadorDeVehiculo({ onElegir, etiqueta = 'Busca tu vehículo', placeholder = 'Ej. versa 2018' }) {
+export default function BuscadorDeVehiculo({ onElegir, etiqueta, placeholder }) {
+  const t = useT();
   const id = useId();
   const [texto, setTexto] = useState('');
   const [resultados, setResultados] = useState([]);
@@ -53,7 +55,7 @@ export default function BuscadorDeVehiculo({ onElegir, etiqueta = 'Busca tu veh�
 
   return (
     <div className="campo buscador-vehiculo">
-      <label htmlFor={id}>{etiqueta}</label>
+      <label htmlFor={id}>{etiqueta ?? t('Busca tu vehículo')}</label>
       <div className="buscador">
         <Search size={18} />
         <input
@@ -61,14 +63,14 @@ export default function BuscadorDeVehiculo({ onElegir, etiqueta = 'Busca tu veh�
           className="input"
           type="search"
           autoComplete="off"
-          placeholder={placeholder}
+          placeholder={placeholder ?? t('Ej. versa 2018')}
           value={texto}
           aria-describedby={`${id}-estado`}
           onChange={(evento) => setTexto(evento.target.value)}
         />
       </div>
       <p id={`${id}-estado`} className="solo-lectores" aria-live="polite">
-        {buscando ? 'Buscando…' : texto.trim().length >= 2 ? `${resultados.length} resultados` : ''}
+        {buscando ? t('Buscando…') : texto.trim().length >= 2 ? t('{n} resultados', { n: resultados.length }) : ''}
       </p>
       {resultados.length > 0 && (
         <ul className="resultados-vehiculo">
@@ -89,7 +91,7 @@ export default function BuscadorDeVehiculo({ onElegir, etiqueta = 'Busca tu veh�
           ))}
         </ul>
       )}
-      {sinResultados && <p className="apagado" style={{ margin: 0 }}>No lo encontramos. Prueba solo con el modelo, por ejemplo “tsuru”.</p>}
+      {sinResultados && <p className="apagado" style={{ margin: 0 }}>{t('No lo encontramos. Prueba solo con el modelo, por ejemplo “tsuru”.')}</p>}
       {error && <p className="error" style={{ margin: 0 }}>{error}</p>}
     </div>
   );

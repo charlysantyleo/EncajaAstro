@@ -6,6 +6,8 @@ import { ENVIO_GRATIS, pesos } from '../lib/formato';
 import { useReglasDeEnvio } from '../hooks/useCatalogo';
 import { Importe } from './ui/Movimiento';
 import { comoIsla } from './ui/Isla';
+import { useIdioma, useT } from '../i18n/react';
+import { nombreDeLinea } from '../i18n/catalogo';
 
 // La nota: franja fija al pie con piezas, total y avance al envio gratis.
 // Se despliega hacia arriba para ver y quitar renglones sin salir del catalogo.
@@ -16,6 +18,8 @@ function Nota({ conLateral = false }) {
   const ir = useTienda((estado) => estado.ir);
   const reducido = useReducedMotion();
   const [abierta, setAbierta] = useState(false);
+  const t = useT();
+  const idioma = useIdioma();
 
   const piezas = carrito.reduce((suma, item) => suma + item.cantidad, 0);
   const total = carrito.reduce((suma, item) => suma + item.precio * item.cantidad, 0);
@@ -36,7 +40,7 @@ function Nota({ conLateral = false }) {
   }, [abierta]);
 
   return (
-    <aside className={['nota-franja', abierta && 'abierta', conLateral && 'con-lateral'].filter(Boolean).join(' ')} aria-label="Tu nota">
+    <aside className={['nota-franja', abierta && 'abierta', conLateral && 'con-lateral'].filter(Boolean).join(' ')} aria-label={t('Tu nota')}>
       <AnimatePresence initial={false}>
         {abierta && (
           <motion.div
@@ -59,14 +63,14 @@ function Nota({ conLateral = false }) {
                   >
                     <span className="nota-linea-cant">{item.cantidad}×</span>
                     <span className="nota-linea-nombre">
-                      {item.nombre}
+                      {nombreDeLinea(item, idioma)}
                       {item.numeroParte && <span className="mono"> {item.numeroParte}</span>}
                     </span>
                     <span className="nota-linea-importe">{pesos(item.precio * item.cantidad)}</span>
                     <button
                       className="btn-icono"
                       onClick={() => quitarDelCarrito(item.productoId)}
-                      aria-label={`Quitar ${item.nombre}`}
+                      aria-label={t('Quitar {nombre}', { nombre: nombreDeLinea(item, idioma) })}
                     >
                       <X size={16} />
                     </button>
@@ -96,14 +100,14 @@ function Nota({ conLateral = false }) {
           aria-controls="nota-detalle"
           onClick={() => setAbierta((valor) => !valor)}
         >
-          <span className="nota-titulo">Nota</span>
+          <span className="nota-titulo">{t('Nota')}</span>
           <span className="nota-piezas mono">{piezas}</span>
           <span className="nota-estado">
             {carrito.length === 0
-              ? `Vacía. Envío gratis desde ${pesos(gratisDesde)} en la zona metropolitana de Guadalajara.`
+              ? t('Vacía. Envío gratis desde {monto} en la zona metropolitana de Guadalajara.', { monto: pesos(gratisDesde) })
               : falta > 0
-                ? `Te faltan ${pesos(falta)} para el envío gratis.`
-                : 'Tu pedido ya lleva envío gratis.'}
+                ? t('Te faltan {monto} para el envío gratis.', { monto: pesos(falta) })
+                : t('Tu pedido ya lleva envío gratis.')}
           </span>
           {carrito.length > 0 && <ChevronsUpDown size={16} />}
         </button>
@@ -113,7 +117,7 @@ function Nota({ conLateral = false }) {
         </strong>
 
         <button className="btn btn-primario nota-pagar" disabled={carrito.length === 0} onClick={() => ir('finalizarCompra')}>
-          Ir a pagar
+          {t('Ir a pagar')}
           <ArrowRight size={18} />
         </button>
       </div>

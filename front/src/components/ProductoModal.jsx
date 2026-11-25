@@ -4,7 +4,7 @@ import { enNota, useTienda } from '../store/useTienda';
 import { useProducto } from '../hooks/useCatalogo';
 import { imagenDe } from '../imagenes';
 import { ajusteDe, cubre, describir } from '../lib/compat';
-import { rutas } from '../lib/rutas';
+import { useRutas, useT } from '../i18n/react';
 import Capa from './ui/Capa';
 import { Cantidad, NumeroGiro, Sello } from './ui/Movimiento';
 import Precio from './ui/Precio';
@@ -15,6 +15,8 @@ export default function ProductoModal() {
   const productoId = useTienda((estado) => estado.productoId);
   const vehiculoActivo = useTienda((estado) => estado.vehiculoActivo);
   const ir = useTienda((estado) => estado.ir);
+  const t = useT();
+  const rutas = useRutas();
 
   const { producto, cargando, error, recargar } = useProducto(productoId);
   const imagen = imagenDe(producto);
@@ -32,9 +34,9 @@ export default function ProductoModal() {
   }
 
   return (
-    <Capa lado="derecha" titulo={producto?.nombre ?? 'Detalle de la pieza'} onCerrar={() => ir('cerrarModal')}>
+    <Capa lado="derecha" titulo={producto?.nombre ?? t('Detalle de la pieza')} onCerrar={() => ir('cerrarModal')}>
       {cargando && <Cargando filas={3} alto={56} />}
-      {error && <ErrorConReintento mensaje="No se pudo cargar la pieza." onReintentar={recargar} />}
+      {error && <ErrorConReintento mensaje={t('No se pudo cargar la pieza.')} onReintentar={recargar} />}
 
       {producto && (
         <>
@@ -42,7 +44,7 @@ export default function ProductoModal() {
             {imagen ? <img src={imagen} alt={producto.nombre} /> : producto.nombre.slice(0, 2).toUpperCase()}
             {ajusteActivo && (
               <Sello
-                texto={ajusteActivo.tipo === 'DIRECTO' ? 'Embona' : 'Equivalente'}
+                texto={ajusteActivo.tipo === 'DIRECTO' ? t('Embona') : t('Equivalente')}
                 tono={ajusteActivo.tipo === 'DIRECTO' ? 'amarillo' : 'azul'}
                 retraso={0.3}
               />
@@ -52,7 +54,7 @@ export default function ProductoModal() {
           <h3>{producto.nombre}</h3>
           <p className="folio apagado" style={{ margin: 0 }}>
             {producto.categoria?.nombre ? `${producto.categoria.nombre} · ` : ''}
-            {producto.marca ? `${producto.marca} · ` : ''}N.P. {producto.numeroParte}
+            {producto.marca ? `${producto.marca} · ` : ''}{t('N.P.')} {producto.numeroParte}
           </p>
 
           {producto.descripcion && <p style={{ margin: 0 }}>{producto.descripcion}</p>}
@@ -63,10 +65,10 @@ export default function ProductoModal() {
               <span className="punto" aria-hidden="true" />
               {producto.stock > 0 ? (
                 <>
-                  <NumeroGiro valor={producto.stock} /> disponibles
+                  <NumeroGiro valor={producto.stock} /> {t('disponibles')}
                 </>
               ) : (
-                'Agotado'
+                t('Agotado')
               )}
             </span>
           </div>
@@ -79,17 +81,17 @@ export default function ProductoModal() {
               {ajusteActivo ? <CircleCheck size={18} color="var(--rojo)" style={{ flex: 'none', marginTop: 2 }} /> : <CircleAlert size={18} style={{ flex: 'none', marginTop: 2 }} />}
               <span>
                 {ajusteActivo
-                  ? `Embona en tu ${vehiculoActivo.modelo} ${vehiculoActivo.anio} (${ajusteActivo.tipo === 'DIRECTO' ? 'ajuste directo' : 'equivalencia'})`
-                  : `No está registrada como compatible con tu ${vehiculoActivo.modelo} ${vehiculoActivo.anio}.`}
+                  ? t('Embona en tu {auto} ({tipo})', { auto: `${vehiculoActivo.modelo} ${vehiculoActivo.anio}`, tipo: ajusteActivo.tipo === 'DIRECTO' ? t('ajuste directo') : t('equivalencia') })
+                  : t('No está registrada como compatible con tu {auto}.', { auto: `${vehiculoActivo.modelo} ${vehiculoActivo.anio}` })}
               </span>
             </p>
           )}
 
           <div>
             <a className="btn btn-texto" href={rutas.producto(producto)} style={{ alignSelf: 'flex-start' }}>
-              Ver la ficha completa <ArrowUpRight size={16} />
+              {t('Ver la ficha completa')} <ArrowUpRight size={16} />
             </a>
-            <h4 style={{ marginBottom: 4, marginTop: 8, fontSize: 'var(--t-meta)' }}>Compatible con</h4>
+            <h4 style={{ marginBottom: 4, marginTop: 8, fontSize: 'var(--t-meta)' }}>{t('Compatible con')}</h4>
             <ul className="ajustes">
               {producto.compatibilidades.map((compatibilidad, indice) => (
                 <li
@@ -98,7 +100,7 @@ export default function ProductoModal() {
                 >
                   <span>{describir(compatibilidad)}</span>
                   <span className={compatibilidad.tipo === 'DIRECTO' ? 'etiqueta sello-azul' : 'etiqueta rojo'}>
-                    {compatibilidad.tipo === 'DIRECTO' ? 'Directo' : 'Equivalencia'}
+                    {compatibilidad.tipo === 'DIRECTO' ? t('Directo') : t('Equivalencia')}
                   </span>
                   {compatibilidad.nota && <span className="ajuste-nota">{compatibilidad.nota}</span>}
                 </li>
@@ -108,13 +110,13 @@ export default function ProductoModal() {
 
           {yaEnNota > 0 && (
             <p className="apagado" style={{ margin: 'auto 0 0' }}>
-              {caben === 0 ? 'Tu nota ya lleva todas las existencias de esta pieza.' : `Ya llevas ${yaEnNota} en tu nota.`}
+              {caben === 0 ? t('Tu nota ya lleva todas las existencias de esta pieza.') : t('Ya llevas {n} en tu nota.', { n: yaEnNota })}
             </p>
           )}
           <form className="agregar-fila" onSubmit={manejarAgregar} style={{ marginTop: yaEnNota > 0 ? 0 : 'auto', paddingTop: 12 }}>
             <Cantidad valor={cantidad} min={1} max={Math.max(1, caben)} onCambio={setCantidad} />
             <button className="btn btn-primario btn-isla" type="submit" disabled={caben === 0}>
-              Agregar a la nota
+              {t('Agregar a la nota')}
               <span className="btn-isla-icono" aria-hidden="true">
                 <Plus size={16} />
               </span>

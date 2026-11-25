@@ -1,6 +1,11 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { rutas, navegar, volver, rutaActual } from '../lib/rutas';
+import { rutas, rutasDeLaPagina, esBusqueda, navegar, volver, rutaActual } from '../lib/rutas';
+import { traducir } from '../i18n/textos';
+import { idiomaDelDocumento } from '../i18n/idiomas';
+
+// Avisos en el idioma de la pagina abierta (las acciones del store solo corren en el navegador).
+const t = (texto, vars) => traducir(idiomaDelDocumento(), texto, vars);
 import { imagenDe } from '../imagenes';
 import { borrarDatosGuardados } from '../lib/offline';
 
@@ -68,11 +73,11 @@ export const useTienda = create(
           // --- navegacion ---
           case 'irAHome':
             set({ modal: null });
-            return navegar(rutas.home);
+            return navegar(rutasDeLaPagina().home);
 
           case 'elegirCategoria':
             set({ modal: null });
-            return navegar(rutas.categoria(payload.categoriaId, payload.nombre));
+            return navegar(rutasDeLaPagina().categoria(payload.categoriaId, payload.nombre));
 
           case 'irAGarage':
             set({ modal: null });
@@ -84,15 +89,15 @@ export const useTienda = create(
 
           case 'irACarrito':
             set({ modal: null });
-            return navegar(rutas.carrito);
+            return navegar(rutasDeLaPagina().carrito);
 
           case 'finalizarCompra':
             set({ modal: null });
             return navegar(rutas.checkout);
 
           case 'buscar':
-            if (payload.texto) return navegar(rutas.busqueda(payload.texto));
-            if (rutaActual() === '/categoria') return navegar('/categoria');
+            if (payload.texto) return navegar(rutasDeLaPagina().busqueda(payload.texto));
+            if (esBusqueda(rutaActual())) return navegar(rutaActual());
             return undefined;
 
           case 'volver':
@@ -114,7 +119,7 @@ export const useTienda = create(
             const cantidad = Math.min(payload.cantidad, caben);
             if (cantidad === 0) {
               return set({
-                aviso: { id: Date.now(), texto: `Tu nota ya lleva todas las existencias de ${producto.nombre} (${producto.stock})` },
+                aviso: { id: Date.now(), texto: t('Tu nota ya lleva todas las existencias de {nombre} ({stock})', { nombre: producto.nombre, stock: producto.stock }) },
               });
             }
             const nuevo = existente
@@ -123,7 +128,8 @@ export const useTienda = create(
                 )
               : [...carrito, {
                   productoId: producto.id,
-                  nombre: producto.nombre,
+                  // Siempre el nombre en espanol (el de la base): cada pagina lo muestra en su idioma (nombreDeLinea).
+                  nombre: producto.nombreOriginal ?? producto.nombre,
                   numeroParte: producto.numeroParte,
                   imagen: imagenDe(producto),
                   // Lo que paga esta cuenta (de mayoreo si es taller); el servidor lo vuelve a calcular al cobrar.
@@ -142,8 +148,8 @@ export const useTienda = create(
                 id: Date.now(),
                 texto:
                   cantidad < payload.cantidad
-                    ? `Solo quedaban ${cantidad} de ${producto.nombre}; se agregaron a tu nota`
-                    : `${producto.nombre} agregado a tu nota`,
+                    ? t('Solo quedaban {cantidad} de {nombre}; se agregaron a tu nota', { cantidad, nombre: producto.nombre })
+                    : t('{nombre} agregado a tu nota', { nombre: producto.nombre }),
               },
             });
           }

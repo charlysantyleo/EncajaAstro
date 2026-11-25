@@ -1,0 +1,9 @@
+---
+// /en/category/<system>/ (ingles), con el slug traducido: /en/category/brakes/.
+import Categoria from '../../../vistas/Categoria.astro';
+import { rutasDeCategorias } from '../../../lib/paginas';
+
+export const getStaticPaths = () => rutasDeCategorias('en');
+---
+
+<Categoria {...Astro.props} idioma="en" />

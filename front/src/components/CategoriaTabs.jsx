@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { rutas } from '../lib/rutas';
+import { useRutas, useT } from '../i18n/react';
 import { useCategorias } from '../hooks/useCatalogo';
 
 // Indice de sistemas: columna izquierda fija en escritorio, fila deslizable en movil.
@@ -7,14 +7,16 @@ import { useCategorias } from '../hooks/useCatalogo';
 // La lista viene del build (iniciales) y se pone al dia en el navegador. activa: id del sistema, 'todo' o null.
 // El cuadro rojo marca el sistema activo y viaja entre renglones (layoutId).
 export default function CategoriaTabs({ iniciales = [], activa = null }) {
+  const t = useT();
+  const rutas = useRutas();
   const { categorias: delServidor, cargando } = useCategorias();
   const categorias = delServidor.length ? delServidor : iniciales;
-  const opciones = [{ id: 'todo', nombre: 'Todo el catálogo' }, ...categorias];
+  const opciones = [{ id: 'todo', nombre: t('Todo el catálogo') }, ...categorias];
 
   return (
     <nav className="sistemas" aria-labelledby="sistemas-titulo">
       <p className="titulo-chico sistemas-titulo" id="sistemas-titulo">
-        Sistemas
+        {t('Sistemas')}
       </p>
       <ul>
         {opciones.map((opcion) => {
@@ -38,7 +40,7 @@ export default function CategoriaTabs({ iniciales = [], activa = null }) {
             </li>
           );
         })}
-        {cargando && categorias.length === 0 && <li className="apagado">Cargando…</li>}
+        {cargando && categorias.length === 0 && <li className="apagado">{t('Cargando…')}</li>}
       </ul>
     </nav>
   );

@@ -4,6 +4,7 @@ import { useVehiculos } from '../hooks/useCatalogo';
 import Capa from './ui/Capa';
 import { Sello } from './ui/Movimiento';
 import { Cargando, ErrorConReintento } from './EstadoCarga';
+import { useT } from '../i18n/react';
 
 export default function SelectorVehiculoModal() {
   const usuarioId = useTienda((estado) => estado.usuarioId);
@@ -13,25 +14,26 @@ export default function SelectorVehiculoModal() {
   const quitarVehiculoActivo = useTienda((estado) => estado.quitarVehiculoActivo);
 
   const { vehiculos, cargando, error, recargar } = useVehiculos(usuarioId);
+  const t = useT();
 
   return (
-    <Capa titulo="Elige tu vehículo" onCerrar={() => ir('cerrarModal')}>
-      <h3>Elige tu vehículo</h3>
+    <Capa titulo={t('Elige tu vehículo')} onCerrar={() => ir('cerrarModal')}>
+      <h3>{t('Elige tu vehículo')}</h3>
       <p className="apagado" style={{ margin: 0 }}>
-        El vehículo activo filtra el catálogo y valida cada pedido.
+        {t('El vehículo activo filtra el catálogo y valida cada pedido.')}
       </p>
 
       {cargando && <Cargando filas={3} alto={56} />}
-      {error && <ErrorConReintento mensaje="No se pudo cargar tu garage." onReintentar={recargar} />}
+      {error && <ErrorConReintento mensaje={t('No se pudo cargar tu garage.')} onReintentar={recargar} />}
 
       {!usuarioId && (
         <p className="apagado" style={{ margin: 0 }}>
-          Entra a tu cuenta para usar los vehículos de tu garage.
+          {t('Entra a tu cuenta para usar los vehículos de tu garage.')}
         </p>
       )}
 
       {usuarioId && !cargando && !error && vehiculos.length === 0 && (
-        <p className="apagado">Aún no tienes vehículos registrados.</p>
+        <p className="apagado">{t('Aún no tienes vehículos registrados.')}</p>
       )}
 
       {vehiculos.map((vehiculo) => {
@@ -44,11 +46,11 @@ export default function SelectorVehiculoModal() {
           >
             <span style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center', fontWeight: 700 }}>
               {vehiculo.marca} {vehiculo.modelo} {vehiculo.anio}
-              {activo && <Sello texto="Activo" enLinea />}
+              {activo && <Sello texto={t('Activo')} enLinea />}
             </span>
             <span className="apagado">
               {vehiculo.apodo ? `${vehiculo.apodo} · ` : ''}
-              {vehiculo.motor ?? 'motor no especificado'}
+              {vehiculo.motor ?? t('motor no especificado')}
             </span>
           </button>
         );
@@ -57,16 +59,16 @@ export default function SelectorVehiculoModal() {
       <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 4 }}>
         {usuarioId ? (
           <button className="btn btn-primario" onClick={() => ir('abrirAgregarVehiculo')}>
-            <Plus size={18} /> Agregar vehículo
+            <Plus size={18} /> {t('Agregar vehículo')}
           </button>
         ) : (
           <button className="btn btn-primario" onClick={() => ir('abrirEntrar')}>
-            Entrar o crear cuenta
+            {t('Entrar o crear cuenta')}
           </button>
         )}
         {vehiculoActivo && (
           <button className="btn btn-secundario" onClick={quitarVehiculoActivo}>
-            Ver catálogo completo
+            {t('Ver catálogo completo')}
           </button>
         )}
       </div>

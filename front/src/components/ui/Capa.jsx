@@ -1,3 +1,4 @@
+import { useT } from '../../i18n/react';
 import { createPortal } from 'react-dom';
 import { useEffect, useRef } from 'react';
 import { motion } from 'motion/react';
@@ -11,6 +12,7 @@ let overflowPrevio = '';
 // Dialogo centrado o cajon lateral (patrones Modal / Drawer de beUI):
 // entra y sale con resorte (AnimatePresence en Shell), Esc cierra, el foco queda dentro.
 export default function Capa({ lado = 'centro', titulo, onCerrar, children }) {
+  const t = useT();
   const panel = useRef(null);
   const cerrar = useRef(onCerrar);
   cerrar.current = onCerrar;
@@ -73,7 +75,7 @@ export default function Capa({ lado = 'centro', titulo, onCerrar, children }) {
         exit={lateral ? { x: '100%' } : { opacity: 0, y: 16, scale: 0.97 }}
         transition={{ type: 'spring', stiffness: 380, damping: 36 }}
       >
-        <button className="btn-icono capa-cerrar" onClick={onCerrar} aria-label="Cerrar">
+        <button className="btn-icono capa-cerrar" onClick={onCerrar} aria-label={t('Cerrar')}>
           <X size={20} strokeWidth={2.2} />
         </button>
         {children}

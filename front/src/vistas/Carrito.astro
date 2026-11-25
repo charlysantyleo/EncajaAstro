@@ -1,0 +1,13 @@
+---
+// La nota (/carrito y /en/cart).
+import Base from '../layouts/Base.astro';
+import CarritoView from '../components/CarritoView.jsx';
+import { traducir } from '../i18n/textos';
+
+const { idioma } = Astro.props;
+---
+
+<Base titulo={traducir(idioma, 'Carrito | EnCaja Autopartes')} alternos={{ es: '/carrito/', en: '/en/cart/' }} noindex>
+  <!-- client:only: la nota vive en localStorage; pintarla en el build mostraria "vacia" por un instante. -->
+  <CarritoView client:only="react" idioma={idioma} />
+</Base>

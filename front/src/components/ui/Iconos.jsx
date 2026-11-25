@@ -18,6 +18,7 @@ import {
   EyeIcon,
   EyeSlashIcon,
   GarageIcon,
+  GlobeSimpleIcon,
   LinkIcon,
   MagnifyingGlassIcon,
   MinusIcon,
@@ -55,6 +56,7 @@ export const ArrowLeft = icono(ArrowLeftIcon);
 export const ArrowRight = icono(ArrowRightIcon);
 export const ArrowUpRight = icono(ArrowUpRightIcon);
 export const Car = icono(CarIcon);
+export const Globe = icono(GlobeSimpleIcon);
 export const ChartBar = icono(ChartBarIcon);
 export const Check = icono(CheckIcon);
 export const ChevronsUpDown = icono(CaretUpDownIcon);

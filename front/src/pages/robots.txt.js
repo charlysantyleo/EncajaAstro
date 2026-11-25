@@ -1,5 +1,5 @@
 // robots.txt generado en el build: la linea Sitemap debe ser una URL absoluta, y depende de donde se publica.
-const PRIVADAS = ['/admin', '/carrito', '/checkout', '/pago', '/comprobante', '/entrar', '/restablecer', '/garage', '/vehiculo', '/offline.html'];
+const PRIVADAS = ['/admin', '/carrito', '/checkout', '/pago', '/comprobante', '/entrar', '/restablecer', '/garage', '/vehiculo', '/offline.html', '/en/cart'];
 
 export function GET({ site }) {
   const texto = [

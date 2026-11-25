@@ -1,74 +1,9 @@
 ---
-import Base from '../../layouts/Base.astro';
-import FichaProducto from '../../components/FichaProducto.jsx';
-import Nota from '../../components/Nota.jsx';
-import StockEnVivo from '../../components/StockEnVivo.jsx';
-import { catalogoDeBuild } from '../../lib/datosDeBuild';
-import { slugDeCategoria, slugDeProducto } from '../../lib/slug';
-import { imagenDe } from '../../imagenes';
-import { describir } from '../../lib/compat';
+// /producto/<numero-de-parte>-<nombre>/ (espanol). La version en ingles: src/pages/en/product/[slug].astro.
+import Producto from '../../vistas/Producto.astro';
+import { rutasDeProductos } from '../../lib/paginas';
 
-// Una pagina por pieza (/producto/bc-4021-balatas-delanteras-ceramicas), generada en el build: el HTML ya trae
-// nombre, foto, precio y compatibilidades, y los datos estructurados (JSON-LD Product) para los buscadores.
-// Una pieza agregada despues del build la atiende /producto?slug= (public/_redirects) hasta el siguiente deploy.
-export async function getStaticPaths() {
-  const { productos } = await catalogoDeBuild();
-  return productos.map((producto) => ({ params: { slug: slugDeProducto(producto) }, props: { producto } }));
-}
-
-const { producto } = Astro.props;
-const url = new URL(Astro.url.pathname, Astro.site).href;
-const imagen = imagenDe(producto);
-const imagenAbsoluta = imagen ? new URL(imagen, Astro.site).href : null;
-const precio = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(producto.precio);
-
-const titulo = `${producto.nombre} ${producto.marca ?? ''} ${producto.numeroParte}`.replace(/\s+/g, ' ').trim();
-const tituloPagina = titulo.length > 46 ? `${titulo.slice(0, 45).trim()}… | EnCaja` : `${titulo} | EnCaja`;
-const descripcion = `${producto.descripcion ?? producto.nombre} ${precio} con IVA. N.º de parte ${producto.numeroParte}. Envío en Guadalajara.`;
-
-// schema.org: el producto con su oferta y la ruta de navegacion. isAccessoryOrSparePartFor lista los vehiculos.
-const jsonLd = [
-  {
-    '@context': 'https://schema.org',
-    '@type': 'Product',
-    name: producto.nombre,
-    description: producto.descripcion ?? producto.nombre,
-    sku: producto.numeroParte,
-    mpn: producto.numeroParte,
-    ...(producto.marca ? { brand: { '@type': 'Brand', name: producto.marca } } : {}),
-    ...(producto.categoria ? { category: producto.categoria.nombre } : {}),
-    ...(imagenAbsoluta ? { image: [imagenAbsoluta] } : {}),
-    url,
-    offers: {
-      '@type': 'Offer',
-      url,
-      priceCurrency: 'MXN',
-      price: producto.precio.toFixed(2),
-      availability: producto.stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
-      itemCondition: 'https://schema.org/NewCondition',
-      seller: { '@type': 'Organization', name: 'EnCaja Autopartes' },
-    },
-    ...(producto.compatibilidades?.length
-      ? { isAccessoryOrSparePartFor: producto.compatibilidades.map((c) => ({ '@type': 'Car', name: describir(c) })) }
-      : {}),
-  },
-  {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Inicio', item: new URL('/', Astro.site).href },
-      ...(producto.categoria
-        ? [{ '@type': 'ListItem', position: 2, name: producto.categoria.nombre, item: new URL(`/categoria/${slugDeCategoria(producto.categoria)}`, Astro.site).href }]
-        : []),
-      { '@type': 'ListItem', position: producto.categoria ? 3 : 2, name: producto.nombre, item: url },
-    ],
-  },
-];
+export const getStaticPaths = () => rutasDeProductos('es');
 ---
 
-<Base titulo={tituloPagina} descripcion={descripcion.slice(0, 160)} imagen={imagen} tipo="product" jsonLd={jsonLd}>
-  <!-- client:idle: el HTML ya esta completo; el boton de la nota y las existencias se activan al quedar libre el navegador. -->
-  <FichaProducto client:idle producto={producto} />
-  <Nota client:idle />
-  <StockEnVivo client:idle />
-</Base>
+<Producto {...Astro.props} idioma="es" />

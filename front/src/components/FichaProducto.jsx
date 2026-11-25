@@ -6,7 +6,8 @@ import { useDelNavegador } from '../hooks/useEnNavegador';
 import { imagenDe } from '../imagenes';
 import { ajusteDe, cubre, describir } from '../lib/compat';
 import { pesos } from '../lib/formato';
-import { leerParametros, rutas } from '../lib/rutas';
+import { leerParametros } from '../lib/rutas';
+import { useRutas, useT } from '../i18n/react';
 import { slugDeProducto } from '../lib/slug';
 import { Cargando } from './EstadoCarga';
 import { Cantidad } from './ui/Movimiento';
@@ -17,6 +18,8 @@ import { comoIsla } from './ui/Isla';
 // del build ya trae todo y aqui solo se ponen al dia las existencias, el precio de taller y el boton de la nota.
 // Sin `producto` (pages/producto.astro, una pieza agregada despues del build) se busca por el ?slug= de la URL.
 function FichaProducto({ producto: delBuild = null }) {
+  const t = useT();
+  const rutas = useRutas();
   const slugBuscado = delBuild ? null : leerParametros().slug;
   // Solo la pagina de respaldo necesita la lista para encontrar la pieza por su slug.
   const { productos: todos } = useProductos({ omitir: !slugBuscado });
@@ -35,9 +38,9 @@ function FichaProducto({ producto: delBuild = null }) {
       <div className="contenedor">
         {slugBuscado && !cargando && todos.length > 0 && !encontrado ? (
           <div className="vacio">
-            <h1>No encontramos esa pieza</h1>
+            <h1>{t('No encontramos esa pieza')}</h1>
             <a className="btn btn-primario" href={rutas.home}>
-              Ver el catálogo
+              {t('Ver el catálogo')}
             </a>
           </div>
         ) : (
@@ -55,10 +58,10 @@ function FichaProducto({ producto: delBuild = null }) {
 
   return (
     <div className="contenedor ficha-pagina">
-      <nav aria-label="Ruta de navegación" className="migas">
+      <nav aria-label={t('Ruta de navegación')} className="migas">
         <ol>
           <li>
-            <a href={rutas.home}>Inicio</a>
+            <a href={rutas.home}>{t('Inicio')}</a>
           </li>
           {producto.categoria && (
             <li>
@@ -81,23 +84,23 @@ function FichaProducto({ producto: delBuild = null }) {
 
         <div className="ficha-producto-info">
           <p className="titulo-chico">
-            {[producto.marca, `N.º de parte ${producto.numeroParte}`].filter(Boolean).join(' · ')}
+            {[producto.marca, t('N.º de parte {np}', { np: producto.numeroParte })].filter(Boolean).join(' · ')}
           </p>
           <h1>{producto.nombre}</h1>
           <p className="ficha-producto-precio">
             <Precio producto={producto} />
-            <span className="apagado"> IVA incluido</span>
+            <span className="apagado"> {t('IVA incluido')}</span>
           </p>
           <p className={agotada ? 'error' : 'apagado'} aria-live="polite">
-            {agotada ? 'Agotado por ahora' : `${producto.stock} en existencia`}
+            {agotada ? t('Agotado por ahora') : t('{n} en existencia', { n: producto.stock })}
           </p>
 
           {vehiculoActivo && (
             <p className={ajuste ? 'ficha-ajuste' : 'ficha-ajuste error'}>
               {ajuste ? <CircleCheck size={18} /> : <CircleAlert size={18} />}
               {ajuste
-                ? `Embona en tu ${vehiculoActivo.modelo} ${vehiculoActivo.anio} (${ajuste.tipo === 'DIRECTO' ? 'ajuste directo' : 'equivalencia'})`
-                : `No está registrada como compatible con tu ${vehiculoActivo.modelo} ${vehiculoActivo.anio}.`}
+                ? t('Embona en tu {auto} ({tipo})', { auto: `${vehiculoActivo.modelo} ${vehiculoActivo.anio}`, tipo: ajuste.tipo === 'DIRECTO' ? t('ajuste directo') : t('equivalencia') })
+                : t('No está registrada como compatible con tu {auto}.', { auto: `${vehiculoActivo.modelo} ${vehiculoActivo.anio}` })}
             </p>
           )}
 
@@ -108,13 +111,13 @@ function FichaProducto({ producto: delBuild = null }) {
               ir('agregarAlCarrito', { producto, cantidad });
             }}
           >
-            <Cantidad valor={cantidad} min={1} max={Math.max(1, caben)} onCambio={setCantidad} etiqueta={`Cantidad de ${producto.nombre}`} />
+            <Cantidad valor={cantidad} min={1} max={Math.max(1, caben)} onCambio={setCantidad} etiqueta={t('Cantidad de {nombre}', { nombre: producto.nombre })} />
             <button className="btn btn-primario" type="submit" disabled={agotada || caben === 0}>
-              Agregar a la nota · {pesos((producto.precioParaTi ?? producto.precio) * cantidad)}
+              {t('Agregar a la nota')} · {pesos((producto.precioParaTi ?? producto.precio) * cantidad)}
             </button>
           </form>
           {yaEnNota > 0 && (
-            <p className="apagado">{caben === 0 ? 'Tu nota ya lleva todas las existencias.' : `Ya llevas ${yaEnNota} en tu nota.`}</p>
+            <p className="apagado">{caben === 0 ? t('Tu nota ya lleva todas las existencias.') : t('Ya llevas {n} en tu nota.', { n: yaEnNota })}</p>
           )}
         </div>
       </div>
@@ -122,7 +125,7 @@ function FichaProducto({ producto: delBuild = null }) {
       {producto.descripcion && (
         <section className="ficha-seccion" aria-labelledby="ficha-descripcion">
           <h2 id="ficha-descripcion" className="titulo-seccion">
-            Descripción
+            {t('Descripción')}
           </h2>
           <p>{producto.descripcion}</p>
         </section>
@@ -130,20 +133,20 @@ function FichaProducto({ producto: delBuild = null }) {
 
       <section className="ficha-seccion" aria-labelledby="ficha-compatible">
         <h2 id="ficha-compatible" className="titulo-seccion">
-          Compatible con
+          {t('Compatible con')}
         </h2>
         {producto.compatibilidades?.length ? (
           <ul className="ajustes">
             {producto.compatibilidades.map((c, i) => (
               <li key={i} className={vehiculoActivo && cubre(c, vehiculoActivo) ? 'ajuste mio' : 'ajuste'}>
                 <span>{describir(c)}</span>
-                <span className={c.tipo === 'DIRECTO' ? 'etiqueta sello-azul' : 'etiqueta rojo'}>{c.tipo === 'DIRECTO' ? 'Directo' : 'Equivalencia'}</span>
+                <span className={c.tipo === 'DIRECTO' ? 'etiqueta sello-azul' : 'etiqueta rojo'}>{c.tipo === 'DIRECTO' ? t('Directo') : t('Equivalencia')}</span>
                 {c.nota && <span className="ajuste-nota">{c.nota}</span>}
               </li>
             ))}
           </ul>
         ) : (
-          <p className="apagado">Todavía no registramos en qué vehículos embona. Pregúntanos por tu modelo.</p>
+          <p className="apagado">{t('Todavía no registramos en qué vehículos embona. Pregúntanos por tu modelo.')}</p>
         )}
       </section>
     </div>

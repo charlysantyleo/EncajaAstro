@@ -1,6 +1,8 @@
 import { useGraphQLQuery } from './useGraphQLQuery';
 import { useTienda } from '../store/useTienda';
 import { useStockEnVivo } from '../store/useStockEnVivo';
+import { useIdioma } from '../i18n/react';
+import { traducirCategoria, traducirProducto } from '../i18n/catalogo';
 import {
   QUERY_CATEGORIAS,
   QUERY_PRODUCTOS,
@@ -15,8 +17,10 @@ import {
 
 export function useCategorias() {
   const version = useTienda((estado) => estado.version);
+  const idioma = useIdioma();
   const { datos, cargando, error, recargar } = useGraphQLQuery(QUERY_CATEGORIAS, {}, { version });
-  return { categorias: datos?.categorias ?? [], cargando, error, recargar };
+  // Los nombres vienen de la base en espanol: en /en se traducen (i18n/catalogo.js).
+  return { categorias: (datos?.categorias ?? []).map((c) => traducirCategoria(c, idioma)), cargando, error, recargar };
 }
 
 // iniciales: la lista que ya trae el HTML del build para esta misma consulta (sin vehiculo ni texto). Se muestra
@@ -35,10 +39,12 @@ export function useProductos({ categoriaId, vehiculoId, texto, soloDirectos, lim
     },
     { version, skip: omitir }
   );
+  const idioma = useIdioma();
   const usarIniciales = Boolean(iniciales) && !vehiculoId && !texto && !datos;
-  const productos = (datos?.productos ?? (usarIniciales ? iniciales : [])).map((producto) =>
-    stockEnVivo[producto.id] != null ? { ...producto, stock: stockEnVivo[producto.id] } : producto
-  );
+  const productos = (datos?.productos ?? (usarIniciales ? iniciales : [])).map((original) => {
+    const producto = traducirProducto(original, idioma);
+    return stockEnVivo[producto.id] != null ? { ...producto, stock: stockEnVivo[producto.id] } : producto;
+  });
   // Sin red, la lista del HTML (la que ya se ve) se queda: un error de la consulta no la reemplaza.
   return { productos, cargando: usarIniciales ? false : cargando, error: usarIniciales ? null : error, recargar };
 }
@@ -51,10 +57,12 @@ export function useProducto(productoId) {
     { id: productoId },
     { skip: !productoId, version }
   );
-  const producto = datos?.producto
-    ? stockEnVivo[datos.producto.id] != null
-      ? { ...datos.producto, stock: stockEnVivo[datos.producto.id] }
-      : datos.producto
+  const idioma = useIdioma();
+  const traducido = traducirProducto(datos?.producto ?? null, idioma);
+  const producto = traducido
+    ? stockEnVivo[traducido.id] != null
+      ? { ...traducido, stock: stockEnVivo[traducido.id] }
+      : traducido
     : null;
   return { producto, cargando, error, recargar };
 }
