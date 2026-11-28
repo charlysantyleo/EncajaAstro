@@ -1,0 +1,10 @@
+---
+// Inicio en cada idioma de astro.config.mjs: / (idioma base) y /en/, /fr/... (los demas).
+import Inicio from '../../vistas/Inicio.astro';
+import { rutasDeInicio } from '../../lib/paginas';
+
+export const getStaticPaths = rutasDeInicio;
+const { idioma } = Astro.props;
+---
+
+<Inicio idioma={idioma} />

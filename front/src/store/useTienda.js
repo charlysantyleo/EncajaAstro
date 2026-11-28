@@ -1,8 +1,8 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { rutas, rutasDeLaPagina, esBusqueda, navegar, volver, rutaActual } from '../lib/rutas';
-import { traducir } from '../i18n/textos';
-import { idiomaDelDocumento } from '../i18n/idiomas';
+import { traducir } from '../i18n';
+import { idiomaDelDocumento } from '../i18n';
 
 // Avisos en el idioma de la pagina abierta (las acciones del store solo corren en el navegador).
 const t = (texto, vars) => traducir(idiomaDelDocumento(), texto, vars);
@@ -119,7 +119,7 @@ export const useTienda = create(
             const cantidad = Math.min(payload.cantidad, caben);
             if (cantidad === 0) {
               return set({
-                aviso: { id: Date.now(), texto: t('Tu nota ya lleva todas las existencias de {nombre} ({stock})', { nombre: producto.nombre, stock: producto.stock }) },
+                aviso: { id: Date.now(), texto: t('nota.yaTodasExistencias', { nombre: producto.nombre, stock: producto.stock }) },
               });
             }
             const nuevo = existente
@@ -148,8 +148,8 @@ export const useTienda = create(
                 id: Date.now(),
                 texto:
                   cantidad < payload.cantidad
-                    ? t('Solo quedaban {cantidad} de {nombre}; se agregaron a tu nota', { cantidad, nombre: producto.nombre })
-                    : t('{nombre} agregado a tu nota', { nombre: producto.nombre }),
+                    ? t('nota.soloQuedaban', { cantidad, nombre: producto.nombre })
+                    : t('nota.agregado', { nombre: producto.nombre }),
               },
             });
           }

@@ -66,12 +66,12 @@ export function Interruptor({ activo, onCambio, children }) {
 export function Cantidad({ valor, min = 1, max = 999, onCambio, etiqueta }) {
   const t = useT();
   return (
-    <div className="cantidad" role="group" aria-label={etiqueta ?? t('Cantidad')}>
+    <div className="cantidad" role="group" aria-label={etiqueta ?? t('comun.cantidad')}>
       <motion.button
         type="button"
         whileTap={{ scale: 0.88 }}
         disabled={valor <= min}
-        aria-label={t('Quitar una pieza')}
+        aria-label={t('comun.quitarPieza')}
         onClick={() => onCambio(valor - 1)}
       >
         <Minus size={16} />
@@ -83,7 +83,7 @@ export function Cantidad({ valor, min = 1, max = 999, onCambio, etiqueta }) {
         type="button"
         whileTap={{ scale: 0.88 }}
         disabled={valor >= max}
-        aria-label={t('Agregar una pieza')}
+        aria-label={t('comun.agregarPieza')}
         onClick={() => onCambio(valor + 1)}
       >
         <Plus size={16} />

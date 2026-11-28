@@ -8,7 +8,7 @@ import { anotarActividad } from '../lib/actividad';
 import { useDelNavegador } from '../hooks/useEnNavegador';
 import { esSinConexion } from '../lib/offline';
 import { useIdioma, useT } from '../i18n/react';
-import { LOCALE } from '../i18n/idiomas';
+import { locale } from '../i18n';
 
 // Columnas ordenables del indice. "relevancia" es el orden que manda el servidor. El nombre se ordena con las
 // reglas del idioma de la pagina.
@@ -22,14 +22,14 @@ const ordenes = (locale) => ({
 function Encabezado({ campo, orden, onOrden, children, className }) {
   const t = useT();
   const activo = orden.campo === campo;
-  const sentido = activo ? (orden.dir === 'asc' ? t(', de menor a mayor') : t(', de mayor a menor')) : '';
+  const sentido = activo ? (orden.dir === 'asc' ? t('catalogo.ordenAsc') : t('catalogo.ordenDesc')) : '';
   return (
     <button
       type="button"
       className={['indice-col', className, activo ? 'activo' : ''].filter(Boolean).join(' ')}
       onClick={() => onOrden(campo)}
       aria-pressed={activo}
-      aria-label={`${t('Ordenar por {columna}', { columna: children })}${sentido}`}
+      aria-label={`${t('catalogo.ordenarPor', { columna: children })}${sentido}`}
     >
       {children}
       <ChevronsUpDown size={13} />
@@ -62,7 +62,7 @@ export default function ListaProductos({ productos, cargando, error, recargar, v
 
   const visibles = useMemo(() => {
     const lista = soloStock ? productos.filter((p) => p.stock > 0) : [...productos];
-    return orden.campo ? lista.sort(ordenes(LOCALE[idioma])[orden.campo][orden.dir]) : lista;
+    return orden.campo ? lista.sort(ordenes(locale(idioma))[orden.campo][orden.dir]) : lista;
   }, [productos, orden, soloStock, idioma]);
 
   return (
@@ -70,22 +70,22 @@ export default function ListaProductos({ productos, cargando, error, recargar, v
       <div className="herramientas">
         <span className="conteo">
           {cargando ? '…' : visibles.length}
-          <span> {visibles.length === 1 ? t('pieza') : t('piezas')}</span>
+          <span> {visibles.length === 1 ? t('comun.pieza') : t('comun.piezas')}</span>
         </span>
         <div className="herramientas-grupo">
           {vehiculoActivo && (
             <Interruptor activo={soloDirectos} onCambio={() => ir('alternarDirectos')}>
-              {t('Solo ajuste directo')}
+              {t('catalogo.soloAjusteDirecto')}
             </Interruptor>
           )}
           <Interruptor activo={soloStock} onCambio={setSoloStock}>
-            {t('Solo con existencias')}
+            {t('catalogo.soloExistencias')}
           </Interruptor>
         </div>
       </div>
 
       {cargando && <Cargando filas={esqueletos} alto={88} />}
-      {error && <ErrorConReintento mensaje={esSinConexion(error) ? t(error) : t('No se pudo cargar el catálogo.')} onReintentar={recargar} />}
+      {error && <ErrorConReintento mensaje={esSinConexion(error) ? t.mensaje(error) : t('catalogo.errorCatalogo')} onReintentar={recargar} />}
 
       {!cargando && !error && visibles.length === 0 && <div className="vacio">{vacio}</div>}
 
@@ -94,21 +94,21 @@ export default function ListaProductos({ productos, cargando, error, recargar, v
           <div className="indice-cabeza">
             <span className="indice-col col-foto" aria-hidden="true" />
             <Encabezado campo="numeroParte" orden={orden} onOrden={ordenarPor} className="col-np">
-              {t('N.º de parte')}
+              {t('catalogo.numeroParte')}
             </Encabezado>
             <Encabezado campo="nombre" orden={orden} onOrden={ordenarPor} className="col-nombre">
-              {t('Pieza')}
+              {t('catalogo.pieza')}
             </Encabezado>
-            <span className="indice-col col-ajuste">{t('Ajuste')}</span>
+            <span className="indice-col col-ajuste">{t('catalogo.ajuste')}</span>
             <Encabezado campo="stock" orden={orden} onOrden={ordenarPor} className="col-stock">
-              {t('Existencias')}
+              {t('catalogo.existencias')}
             </Encabezado>
             <Encabezado campo="precio" orden={orden} onOrden={ordenarPor} className="col-precio">
-              {t('Precio')}
+              {t('catalogo.precio')}
             </Encabezado>
             <span className="indice-col col-accion" aria-hidden="true" />
           </div>
-          <ul className="indice-filas" aria-label={t('Piezas')}>
+          <ul className="indice-filas" aria-label={t('catalogo.piezas')}>
             {visibles.map((producto, indice) => (
               <ProductoCard
                 key={producto.id}

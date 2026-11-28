@@ -8,7 +8,7 @@ export function Cargando({ filas = 3, alto = 60, columnas = false }) {
   return (
     <div
       role="status"
-      aria-label={t('Cargando')}
+      aria-label={t('comun.cargando')}
       style={{
         display: 'grid',
         gap: 12,
@@ -30,7 +30,7 @@ export function ErrorConReintento({ mensaje, onReintentar }) {
         <TriangleAlert size={18} /> {mensaje}
       </p>
       <button className="btn btn-secundario btn-chico" onClick={onReintentar}>
-        <RotateCw size={16} /> {t('Reintentar')}
+        <RotateCw size={16} /> {t('comun.reintentar')}
       </button>
     </motion.div>
   );

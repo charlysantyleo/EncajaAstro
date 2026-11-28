@@ -10,7 +10,7 @@ export default function Precio({ producto, cantidad = 1, className }) {
   return (
     <span className={['precio-taller', className].filter(Boolean).join(' ')}>
       <span>{pesos(paraTi * cantidad)}</span>
-      <s className="precio-lista" aria-label={t('Precio de lista {precio}', { precio: pesos(producto.precio * cantidad) })}>
+      <s className="precio-lista" aria-label={t('comun.precioLista', { precio: pesos(producto.precio * cantidad) })}>
         {pesos(producto.precio * cantidad)}
       </s>
     </span>

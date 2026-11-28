@@ -1,9 +1,0 @@
----
-// /categoria/<sistema>/ (espanol). La version en ingles: src/pages/en/category/[slug].astro.
-import Categoria from '../../vistas/Categoria.astro';
-import { rutasDeCategorias } from '../../lib/paginas';
-
-export const getStaticPaths = () => rutasDeCategorias('es');
----
-
-<Categoria {...Astro.props} idioma="es" />

@@ -2,8 +2,8 @@
 // /producto/bc-4021-balatas-delanteras-ceramicas): sus paginas se generan en el build. La busqueda y lo
 // que depende de cada visitante (pedido, vehiculo) viaja como query param.
 import { slug, slugDeProducto } from './slug';
-import { nombreCategoriaEn, traducirProducto } from '../i18n/catalogo';
-import { idiomaDelDocumento } from '../i18n/idiomas';
+import { nombreCategoria, traducirProducto } from '../i18n/catalogo';
+import { IDIOMAS, IDIOMA_BASE, datos, idiomaDelDocumento, prefijo } from '../i18n';
 
 export const rutas = {
   home: '/',
@@ -25,24 +25,30 @@ export const rutas = {
   adminAjustes: '/admin/ajustes',
 };
 
-// Las paginas publicas tambien existen en ingles, con URL traducida (practica P3-4):
+// Las paginas publicas existen en cada idioma de astro.config.mjs, con prefijo y segmentos traducidos que vienen de
+// la seccion "rutas" de su JSON (src/i18n/idiomas/<codigo>.json). Con espanol e ingles:
 //   /                      ->  /en/
 //   /categoria/frenos/     ->  /en/category/brakes/
 //   /producto/bc-4021-...  ->  /en/product/bc-4021-front-ceramic-brake-pads/
 //   /categoria?q=          ->  /en/search?q=
 //   /carrito               ->  /en/cart
-// Cuenta, pago y panel solo existen en espanol: en ingles se usan las mismas rutas.
-const RUTAS_EN = {
-  ...rutas,
-  home: '/en/',
-  categoria: (_id, nombre) => `/en/category/${slug(nombreCategoriaEn(nombre))}/`,
-  producto: (producto) => `/en/product/${slugDeProducto(traducirProducto(producto, 'en'))}/`,
-  busqueda: (texto) => `/en/search?q=${encodeURIComponent(texto)}`,
-  carrito: '/en/cart',
-};
-
+// Cuenta, pago y panel solo existen en el idioma base: en los demas se usan las mismas rutas.
+const porIdioma = {};
 export function rutasPara(idioma) {
-  return idioma === 'en' ? RUTAS_EN : rutas;
+  if (idioma === IDIOMA_BASE || !IDIOMAS.includes(idioma)) return rutas;
+  porIdioma[idioma] ??= (() => {
+    const pre = prefijo(idioma);
+    const seg = datos(idioma).rutas;
+    return {
+      ...rutas,
+      home: `${pre}/`,
+      categoria: (_id, nombre) => `${pre}/${seg.categoria}/${slug(nombreCategoria(nombre, idioma))}/`,
+      producto: (producto) => `${pre}/${seg.producto}/${slugDeProducto(traducirProducto(producto, idioma))}/`,
+      busqueda: (texto) => `${pre}/${seg.busqueda}?q=${encodeURIComponent(texto)}`,
+      carrito: `${pre}/${seg.carrito}`,
+    };
+  })();
+  return porIdioma[idioma];
 }
 
 // Para las acciones del store (siempre en el navegador): las rutas del idioma de la pagina abierta.
@@ -50,8 +56,8 @@ export function rutasDeLaPagina() {
   return rutasPara(idiomaDelDocumento());
 }
 
-// La pagina de busqueda en cualquier idioma.
-export const esBusqueda = (ruta) => /^\/(categoria|en\/search)\/?$/.test(ruta);
+// La pagina de busqueda en cualquier idioma (/categoria, /en/search...).
+export const esBusqueda = (ruta) => IDIOMAS.some((idioma) => ruta.replace(/\/$/, '') === rutasPara(idioma).busqueda('').split('?')[0]);
 
 export function navegar(url) {
   window.location.assign(url);

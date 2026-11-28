@@ -4,7 +4,7 @@ import { Car, ChartBar, ChevronsUpDown, Globe, LogIn, LogOut, Moon, Receipt, Sea
 import { useTienda } from '../store/useTienda';
 import { esBusqueda, leerParametros, rutas, rutasPara } from '../lib/rutas';
 import { useIdioma, useRutas, useT } from '../i18n/react';
-import { NOMBRE_IDIOMA } from '../i18n/idiomas';
+import { IDIOMAS, datos } from '../i18n';
 import { cambiarTema, temaActual } from '../lib/tema';
 import { graphqlRequest } from '../graphql/client';
 import { QUERY_YO } from '../graphql/queries';
@@ -29,6 +29,22 @@ function TopBar({ ruta = '/', alternos = null }) {
   const [tema, setTema] = useState('claro');
   const [consulta, setConsulta] = useState('');
   const campo = useRef(null);
+  const menuIdiomas = useRef(null);
+
+  // El menu de idiomas se cierra con Escape o al hacer clic fuera.
+  useEffect(() => {
+    const cerrar = (evento) => {
+      const menu = menuIdiomas.current;
+      if (!menu?.open) return;
+      if (evento.type === 'keydown' ? evento.key === 'Escape' : !menu.contains(evento.target)) menu.open = false;
+    };
+    document.addEventListener('click', cerrar);
+    document.addEventListener('keydown', cerrar);
+    return () => {
+      document.removeEventListener('click', cerrar);
+      document.removeEventListener('keydown', cerrar);
+    };
+  }, []);
 
   useEffect(() => {
     setBusqueda(leerParametros().q);
@@ -53,7 +69,7 @@ function TopBar({ ruta = '/', alternos = null }) {
   const piezasAnteriores = useRef(null);
   useEffect(() => {
     if (piezasAnteriores.current !== null && piezasAnteriores.current !== totalItems) {
-      setAnuncioNota(totalItems === 1 ? t('Tu nota lleva 1 pieza') : t('Tu nota lleva {n} piezas', { n: totalItems }));
+      setAnuncioNota(totalItems === 1 ? t('barra.anuncioUnaPieza') : t('barra.anuncioPiezas', { n: totalItems }));
     }
     piezasAnteriores.current = totalItems;
   }, [totalItems, t]);
@@ -86,13 +102,13 @@ function TopBar({ ruta = '/', alternos = null }) {
   const enPanel = ruta.startsWith('/admin');
   // El panel es para el personal: EMPLEADO ve mostrador y pedidos; ADMIN, todo.
   const esPersonal = sesion?.usuario.rol === 'ADMIN' || sesion?.usuario.rol === 'EMPLEADO';
-  const otroIdioma = idioma === 'en' ? 'es' : 'en';
-  const enOtroIdioma = (alternos?.[otroIdioma] ?? rutasPara(otroIdioma).home) + consulta;
+  // La misma pagina en cada idioma de astro.config.mjs; si no existe en otro idioma (cuenta, pago), su inicio.
+  const enIdioma = (codigo) => (alternos?.[codigo] ?? rutasPara(codigo).home) + consulta;
 
   return (
     <header className="cabecera">
       <div className="rejilla cabecera-fila">
-        <a className="marca" href={r.home} aria-label={t('EnCaja Autopartes, inicio')}>
+        <a className="marca" href={r.home} aria-label={t('barra.inicio')}>
           <span className="marca-logo" aria-hidden="true" />
         </a>
 
@@ -105,8 +121,8 @@ function TopBar({ ruta = '/', alternos = null }) {
             type="search"
             name="q"
             value={busqueda}
-            aria-label={t('Buscar refacciones')}
-            placeholder={t('Pieza o número de parte')}
+            aria-label={t('barra.buscar')}
+            placeholder={t('barra.buscarEjemplo')}
             onChange={(evento) => setBusqueda(evento.target.value)}
           />
           <AnimatePresence>
@@ -118,16 +134,16 @@ function TopBar({ ruta = '/', alternos = null }) {
           </AnimatePresence>
         </form>
 
-        <nav className="cab-acciones" aria-label={t('Cuenta y navegación')}>
+        <nav className="cab-acciones" aria-label={t('barra.navegacion')}>
           {esPersonal && (
             <a
               className={enPanel ? 'cab-enlace activo' : 'cab-enlace'}
               aria-current={enPanel ? 'page' : undefined}
-              aria-label={t('Panel de administración')}
+              aria-label={t('barra.panelAdministracion')}
               href={rutas.admin}
             >
               <ChartBar />
-              <span>{t('Panel')}</span>
+              <span>{t('barra.panel')}</span>
             </a>
           )}
 
@@ -144,7 +160,7 @@ function TopBar({ ruta = '/', alternos = null }) {
           <button
             className={vehiculoActivo ? 'cab-enlace placa' : 'cab-enlace placa placa-vacia'}
             onClick={() => ir('abrirSelectorVehiculo')}
-            aria-label={vehiculoActivo ? t('Vehículo activo: {auto}. Cambiar', { auto: `${vehiculoActivo.marca} ${vehiculoActivo.modelo} ${vehiculoActivo.anio}` }) : t('Elegir vehículo')}
+            aria-label={vehiculoActivo ? t('barra.vehiculoActivo', { auto: `${vehiculoActivo.marca} ${vehiculoActivo.modelo} ${vehiculoActivo.anio}` }) : t('barra.elegirVehiculo')}
           >
             <Car />
             <span>
@@ -154,7 +170,7 @@ function TopBar({ ruta = '/', alternos = null }) {
                   <span className="placa-anio mono"> {vehiculoActivo.anio}</span>
                 </>
               ) : (
-                t('Elegir vehículo')
+                t('barra.elegirVehiculo')
               )}
             </span>
             <ChevronsUpDown size={14} />
@@ -163,9 +179,9 @@ function TopBar({ ruta = '/', alternos = null }) {
           <span className="solo-lectores" aria-live="polite">
             {anuncioNota}
           </span>
-          <a className="cab-enlace" href={r.carrito} aria-label={t('Nota, {n} piezas', { n: totalItems })}>
+          <a className="cab-enlace" href={r.carrito} aria-label={t('barra.notaConPiezas', { n: totalItems })}>
             <Receipt />
-            <span>{t('Nota')}</span>
+            <span>{t('comun.nota')}</span>
             <AnimatePresence initial={false} mode="popLayout">
               {totalItems > 0 && (
                 <motion.span
@@ -187,39 +203,45 @@ function TopBar({ ruta = '/', alternos = null }) {
               <span className="cuenta-nombre" title={sesion.usuario.email}>
                 {sesion.usuario.nombre.split(' ')[0]}
               </span>
-              <button className="btn-icono" onClick={cerrarSesion} aria-label={t('Cerrar sesión')} title={t('Cerrar sesión')}>
+              <button className="btn-icono" onClick={cerrarSesion} aria-label={t('barra.cerrarSesion')} title={t('barra.cerrarSesion')}>
                 <LogOut />
               </button>
             </span>
           ) : (
-            <button className="cab-enlace" onClick={() => ir('abrirEntrar')} aria-label={t('Entrar')}>
+            <button className="cab-enlace" onClick={() => ir('abrirEntrar')} aria-label={t('comun.entrar')}>
               <LogIn />
-              <span>{t('Entrar')}</span>
+              <span>{t('comun.entrar')}</span>
             </button>
           )}
 
           <button
             className="btn-icono"
             onClick={alternarTema}
-            aria-label={tema === 'oscuro' ? t('Cambiar a modo claro') : t('Cambiar a modo oscuro')}
-            title={tema === 'oscuro' ? t('Modo claro') : t('Modo oscuro')}
+            aria-label={tema === 'oscuro' ? t('barra.cambiarModoClaro') : t('barra.cambiarModoOscuro')}
+            title={tema === 'oscuro' ? t('barra.modoClaro') : t('barra.modoOscuro')}
           >
             {tema === 'oscuro' ? <Sun /> : <Moon />}
           </button>
 
-          {/* Selector de idioma: la misma pagina en el otro idioma (hreflang/lang para lectores y buscadores). */}
-          <a
-            className="cab-enlace idioma"
-            href={enOtroIdioma}
-            hrefLang={otroIdioma}
-            lang={otroIdioma}
-            // El nombre accesible incluye el codigo visible (WCAG 2.5.3): "English (EN)" / "Español (ES)".
-            aria-label={`${NOMBRE_IDIOMA[otroIdioma]} (${otroIdioma.toUpperCase()})`}
-            title={otroIdioma === 'en' ? 'Read this page in English' : 'Ver esta página en español'}
-          >
-            <Globe />
-            <span className="idioma-codigo">{otroIdioma.toUpperCase()}</span>
-          </a>
+          {/* Selector de idioma: todos los idiomas de astro.config.mjs, cada uno con la misma pagina en su idioma.
+              <details> funciona antes de hidratar (sin JavaScript); hreflang/lang para lectores y buscadores. */}
+          <details className="idiomas" ref={menuIdiomas}>
+            {/* El nombre accesible incluye el codigo visible (WCAG 2.5.3): "Idioma: Español (ES)". */}
+            <summary className="cab-enlace idioma" aria-label={t('barra.idioma', { idioma: `${datos(idioma).idioma.nombre} (${idioma.toUpperCase()})` })}>
+              <Globe />
+              <span className="idioma-codigo">{idioma.toUpperCase()}</span>
+            </summary>
+            <ul className="idiomas-lista">
+              {IDIOMAS.map((codigo) => (
+                <li key={codigo}>
+                  <a href={enIdioma(codigo)} hrefLang={codigo} lang={codigo} aria-current={codigo === idioma ? 'true' : undefined}>
+                    {datos(codigo).idioma.nombre}
+                    <span className="mono">{codigo.toUpperCase()}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </details>
         </nav>
       </div>
     </header>

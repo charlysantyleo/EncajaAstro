@@ -1,33 +1,33 @@
 ---
-// Pagina de una pieza (/producto/bc-4021-balatas-delanteras-ceramicas/ y /en/product/bc-4021-front-ceramic-brake-pads/),
+// Pagina de una pieza en cada idioma (/producto/bc-4021-balatas-delanteras-ceramicas/, /en/product/bc-4021-front-ceramic-brake-pads/...),
 // generada en el build: el HTML ya trae nombre, foto, precio y compatibilidades, y los datos estructurados
 // (JSON-LD Product) para los buscadores. Una pieza agregada despues del build la atiende la pagina de respaldo
-// (?slug=, ver public/_redirects) hasta el siguiente deploy.
+// (?slug=, ver redireccionesPorIdioma en astro.config.mjs) hasta el siguiente deploy.
 import Base from '../layouts/Base.astro';
 import FichaProducto from '../components/FichaProducto.jsx';
 import Nota from '../components/Nota.jsx';
 import StockEnVivo from '../components/StockEnVivo.jsx';
 import { imagenDe } from '../imagenes';
 import { describir } from '../lib/compat';
-import { alternosDeProducto, rutaDeCategoria } from '../lib/paginas';
-import { traducir } from '../i18n/textos';
-import { LOCALE } from '../i18n/idiomas';
+import { alternos, rutaDeCategoria, rutaDeProducto } from '../lib/paginas';
+import { rutasPara } from '../lib/rutas';
+import { locale, traducir } from '../i18n';
 import { traducirProducto } from '../i18n/catalogo';
 
 const { producto: original, idioma } = Astro.props;
-const t = (texto: string, variables?: Record<string, unknown>) => traducir(idioma, texto, variables);
+const t = (clave: string, variables?: Record<string, unknown>) => traducir(idioma, clave, variables);
 const producto = traducirProducto(original, idioma);
-const alternos = alternosDeProducto(original);
+const versiones = alternos((i) => rutaDeProducto(original, i));
 
 const url = new URL(Astro.url.pathname, Astro.site).href;
 const imagen = imagenDe(producto);
 const imagenAbsoluta = imagen ? new URL(imagen, Astro.site).href : null;
-// Los precios son en pesos mexicanos en los dos idiomas.
+// Los precios son en pesos mexicanos en todos los idiomas.
 const precio = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(producto.precio);
 
 const titulo = `${producto.nombre} ${producto.marca ?? ''} ${producto.numeroParte}`.replace(/\s+/g, ' ').trim();
 const tituloPagina = titulo.length > 46 ? `${titulo.slice(0, 45).trim()}… | EnCaja` : `${titulo} | EnCaja`;
-const descripcion = t('{descripcion} {precio} con IVA. N.º de parte {np}. Envío en Guadalajara.', {
+const descripcion = t('seo.descripcionProducto', {
   descripcion: producto.descripcion ?? producto.nombre,
   precio,
   np: producto.numeroParte,
@@ -38,7 +38,7 @@ const jsonLd = [
   {
     '@context': 'https://schema.org',
     '@type': 'Product',
-    inLanguage: LOCALE[idioma],
+    inLanguage: locale(idioma),
     name: producto.nombre,
     description: producto.descripcion ?? producto.nombre,
     sku: producto.numeroParte,
@@ -64,7 +64,7 @@ const jsonLd = [
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     itemListElement: [
-      { '@type': 'ListItem', position: 1, name: t('Inicio'), item: new URL(idioma === 'en' ? '/en/' : '/', Astro.site).href },
+      { '@type': 'ListItem', position: 1, name: t('comun.inicio'), item: new URL(rutasPara(idioma).home, Astro.site).href },
       ...(original.categoria
         ? [{ '@type': 'ListItem', position: 2, name: producto.categoria.nombre, item: new URL(rutaDeCategoria(original.categoria, idioma), Astro.site).href }]
         : []),
@@ -74,7 +74,7 @@ const jsonLd = [
 ];
 ---
 
-<Base titulo={tituloPagina} descripcion={descripcion.slice(0, 160)} imagen={imagen} tipo="product" jsonLd={jsonLd} alternos={alternos}>
+<Base titulo={tituloPagina} descripcion={descripcion.slice(0, 160)} imagen={imagen} tipo="product" jsonLd={jsonLd} alternos={versiones}>
   <!-- client:idle: el HTML ya esta completo; el boton de la nota y las existencias se activan al quedar libre el navegador. -->
   <FichaProducto client:idle idioma={idioma} producto={producto} />
   <Nota client:idle idioma={idioma} />

@@ -31,7 +31,7 @@ export default function Avisos() {
             <Check size={18} strokeWidth={2.6} />
             <span>{aviso.texto}</span>
             <button className="btn btn-texto btn-chico" onClick={() => ir('irACarrito')}>
-              {t('Ver nota')}
+              {t('nota.verNota')}
             </button>
           </motion.div>
         )}

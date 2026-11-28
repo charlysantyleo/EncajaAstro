@@ -31,8 +31,8 @@ export default function CampoPassword({ id, etiqueta, ayuda, error, visible, onA
           type="button"
           className="btn-icono"
           aria-pressed={seVe}
-          aria-label={seVe ? t('Ocultar contraseña') : t('Mostrar contraseña')}
-          title={seVe ? t('Ocultar contraseña') : t('Mostrar contraseña')}
+          aria-label={seVe ? t('cuenta.ocultarContrasena') : t('cuenta.mostrarContrasena')}
+          title={seVe ? t('cuenta.ocultarContrasena') : t('cuenta.mostrarContrasena')}
           onClick={alternar}
         >
           {seVe ? <EyeOff /> : <Eye />}

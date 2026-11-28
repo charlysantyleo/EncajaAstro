@@ -40,7 +40,7 @@ function Nota({ conLateral = false }) {
   }, [abierta]);
 
   return (
-    <aside className={['nota-franja', abierta && 'abierta', conLateral && 'con-lateral'].filter(Boolean).join(' ')} aria-label={t('Tu nota')}>
+    <aside className={['nota-franja', abierta && 'abierta', conLateral && 'con-lateral'].filter(Boolean).join(' ')} aria-label={t('nota.tuNota')}>
       <AnimatePresence initial={false}>
         {abierta && (
           <motion.div
@@ -70,7 +70,7 @@ function Nota({ conLateral = false }) {
                     <button
                       className="btn-icono"
                       onClick={() => quitarDelCarrito(item.productoId)}
-                      aria-label={t('Quitar {nombre}', { nombre: nombreDeLinea(item, idioma) })}
+                      aria-label={t('nota.quitar', { nombre: nombreDeLinea(item, idioma) })}
                     >
                       <X size={16} />
                     </button>
@@ -100,14 +100,14 @@ function Nota({ conLateral = false }) {
           aria-controls="nota-detalle"
           onClick={() => setAbierta((valor) => !valor)}
         >
-          <span className="nota-titulo">{t('Nota')}</span>
+          <span className="nota-titulo">{t('comun.nota')}</span>
           <span className="nota-piezas mono">{piezas}</span>
           <span className="nota-estado">
             {carrito.length === 0
-              ? t('Vacía. Envío gratis desde {monto} en la zona metropolitana de Guadalajara.', { monto: pesos(gratisDesde) })
+              ? t('nota.vaciaFranja', { monto: pesos(gratisDesde) })
               : falta > 0
-                ? t('Te faltan {monto} para el envío gratis.', { monto: pesos(falta) })
-                : t('Tu pedido ya lleva envío gratis.')}
+                ? t('nota.teFaltanEnvio', { monto: pesos(falta) })
+                : t('nota.yaEnvioGratis')}
           </span>
           {carrito.length > 0 && <ChevronsUpDown size={16} />}
         </button>
@@ -117,7 +117,7 @@ function Nota({ conLateral = false }) {
         </strong>
 
         <button className="btn btn-primario nota-pagar" disabled={carrito.length === 0} onClick={() => ir('finalizarCompra')}>
-          {t('Ir a pagar')}
+          {t('nota.irPagar')}
           <ArrowRight size={18} />
         </button>
       </div>

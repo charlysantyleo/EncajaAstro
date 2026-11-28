@@ -1,13 +1,15 @@
 ---
-// La nota (/carrito y /en/cart).
+// La nota en cada idioma (/carrito, /en/cart...).
 import Base from '../layouts/Base.astro';
 import CarritoView from '../components/CarritoView.jsx';
-import { traducir } from '../i18n/textos';
+import { traducir } from '../i18n';
+import { alternos } from '../lib/paginas';
+import { rutasPara } from '../lib/rutas';
 
 const { idioma } = Astro.props;
 ---
 
-<Base titulo={traducir(idioma, 'Carrito | EnCaja Autopartes')} alternos={{ es: '/carrito/', en: '/en/cart/' }} noindex>
+<Base titulo={traducir(idioma, 'seo.tituloCarrito')} alternos={alternos((i) => rutasPara(i).carrito)} noindex>
   <!-- client:only: la nota vive en localStorage; pintarla en el build mostraria "vacia" por un instante. -->
   <CarritoView client:only="react" idioma={idioma} />
 </Base>

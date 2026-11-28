@@ -1,20 +1,22 @@
 ---
-// Resultados de busqueda (?q=) y URL viejas o sistemas nuevos (?id=, ?slug=): /categoria y /en/search.
+// Resultados de busqueda (?q=) y URL viejas o sistemas nuevos (?id=, ?slug=) en cada idioma: /categoria, /en/search...
 // Cambian con cada visitante: no se indexan.
 import Base from '../layouts/Base.astro';
 import CategoriaView from '../components/CategoriaView.jsx';
 import Nota from '../components/Nota.jsx';
 import StockEnVivo from '../components/StockEnVivo.jsx';
-import { traducir } from '../i18n/textos';
+import { traducir } from '../i18n';
+import { alternos } from '../lib/paginas';
+import { rutasPara } from '../lib/rutas';
 
 const { idioma } = Astro.props;
-const t = (texto: string) => traducir(idioma, texto);
+const t = (clave: string) => traducir(idioma, clave);
 ---
 
 <Base
-  titulo={t('Buscar refacciones | EnCaja Autopartes')}
-  descripcion={t('Busca refacciones por nombre o número de parte en EnCaja Autopartes.')}
-  alternos={{ es: '/categoria', en: '/en/search' }}
+  titulo={t('seo.tituloBusqueda')}
+  descripcion={t('seo.descripcionBusqueda')}
+  alternos={alternos((i) => rutasPara(i).busqueda('').split('?')[0])}
   noindex
 >
   <!-- client:only: el titulo y el filtro salen de la URL, que el build no conoce. -->

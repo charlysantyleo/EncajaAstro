@@ -1,0 +1,14 @@
+---
+// Paginas de cada sistema y de cada pieza, en cada idioma, con la seccion y el slug traducidos:
+//   /categoria/frenos/   /en/category/brakes/
+//   /producto/bc-4021-balatas-delanteras-ceramicas/   /en/product/bc-4021-front-ceramic-brake-pads/
+// Los segmentos salen de "rutas" en src/i18n/idiomas/<codigo>.json.
+import Categoria from '../../../vistas/Categoria.astro';
+import Producto from '../../../vistas/Producto.astro';
+import { rutasDeSecciones } from '../../../lib/paginas';
+
+export const getStaticPaths = rutasDeSecciones;
+const { tipo, ...datos } = Astro.props;
+---
+
+{tipo === 'categoria' ? <Categoria {...datos} /> : <Producto {...datos} />}

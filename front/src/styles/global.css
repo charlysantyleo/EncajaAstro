@@ -380,6 +380,16 @@ textarea.input { padding: var(--e3); min-height: 88px; resize: vertical; }
 .cab-enlace.placa { flex: 0 1 auto; min-width: 0; }
 .cab-enlace.placa > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .idioma-codigo { font-family: var(--f-mono); font-size: var(--t-meta); font-weight: 600; }
+/* Menu de idiomas (<details>): lista desplegable bajo el boton, con todos los idiomas configurados. */
+.idiomas { position: relative; }
+.idiomas > summary { list-style: none; cursor: pointer; }
+.idiomas > summary::-webkit-details-marker { display: none; }
+.idiomas[open] > summary { background: var(--n2); }
+.idiomas-lista { position: absolute; right: 0; top: calc(100% + 6px); z-index: 40; min-width: 190px; margin: 0; padding: var(--e1) 0; list-style: none; background: var(--superficie); border: 1px solid var(--regla); box-shadow: 0 8px 24px rgb(0 0 0 / 0.12); }
+.idiomas-lista a { display: flex; align-items: center; justify-content: space-between; gap: var(--e4); min-height: 44px; padding: 0 var(--e4); color: var(--tinta); font-weight: 500; text-decoration: none; }
+.idiomas-lista a[aria-current] { font-weight: 700; box-shadow: inset 3px 0 0 var(--rojo); }
+.idiomas-lista .mono { font-size: var(--t-meta); color: var(--tinta-2); }
+@media (hover: hover) and (pointer: fine) { .idiomas-lista a:hover { background: var(--n1); } }
 .insignia {
   display: grid; place-items: center; min-width: 20px; height: 20px; padding: 0 5px;
   background: var(--rojo); color: #fff; font-size: 12px; font-weight: 600;

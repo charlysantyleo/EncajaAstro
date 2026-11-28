@@ -88,19 +88,19 @@ export default function AgregarVehiculoModal() {
   }
 
   return (
-    <Capa titulo={t('Agregar vehículo')} onCerrar={() => ir('cerrarModal')}>
-      <h3>{t('Agregar vehículo')}</h3>
+    <Capa titulo={t('vehiculo.agregarVehiculo')} onCerrar={() => ir('cerrarModal')}>
+      <h3>{t('vehiculo.agregarVehiculo')}</h3>
 
       <form className="formulario" onSubmit={manejarGuardar}>
         <BuscadorDeVehiculo onElegir={({ marca, modelo, anio }) => elegir({ marca, modelo, anio: anio ? String(anio) : '' })} />
 
         <fieldset className="grupo-vehiculo">
-          <legend className="apagado">{t('O elígelo de la lista')}</legend>
+          <legend className="apagado">{t('vehiculo.eligeloLista')}</legend>
           <div className="campos-3">
             <div className="campo">
-              <label htmlFor="vehiculo-marca">{t('Marca')}</label>
+              <label htmlFor="vehiculo-marca">{t('comun.marca')}</label>
               <select id="vehiculo-marca" className="input" required value={formulario.marca} onChange={(e) => elegir({ marca: e.target.value })}>
-                <option value="">{t('Elige…')}</option>
+                <option value="">{t('vehiculo.elige')}</option>
                 {opciones.marcas.map((marca) => (
                   <option key={marca} value={marca}>
                     {marca}
@@ -109,7 +109,7 @@ export default function AgregarVehiculoModal() {
               </select>
             </div>
             <div className="campo">
-              <label htmlFor="vehiculo-modelo">{t('Modelo')}</label>
+              <label htmlFor="vehiculo-modelo">{t('vehiculo.modelo')}</label>
               <select
                 id="vehiculo-modelo"
                 className="input"
@@ -118,7 +118,7 @@ export default function AgregarVehiculoModal() {
                 value={formulario.modelo}
                 onChange={(e) => elegir({ modelo: e.target.value })}
               >
-                <option value="">{formulario.marca ? t('Elige…') : t('Primero la marca')}</option>
+                <option value="">{formulario.marca ? t('vehiculo.elige') : t('vehiculo.primeroMarca')}</option>
                 {opciones.modelos.map((modelo) => (
                   <option key={modelo} value={modelo}>
                     {modelo}
@@ -127,7 +127,7 @@ export default function AgregarVehiculoModal() {
               </select>
             </div>
             <div className="campo">
-              <label htmlFor="vehiculo-anio">{t('Año')}</label>
+              <label htmlFor="vehiculo-anio">{t('vehiculo.anio')}</label>
               <select
                 id="vehiculo-anio"
                 className="input"
@@ -136,7 +136,7 @@ export default function AgregarVehiculoModal() {
                 value={formulario.anio}
                 onChange={(e) => elegir({ anio: e.target.value })}
               >
-                <option value="">{formulario.modelo ? t('Elige…') : t('Primero el modelo')}</option>
+                <option value="">{formulario.modelo ? t('vehiculo.elige') : t('vehiculo.primeroModelo')}</option>
                 {opciones.anios.map((anio) => (
                   <option key={anio} value={String(anio)}>
                     {anio}
@@ -146,11 +146,11 @@ export default function AgregarVehiculoModal() {
             </div>
           </div>
         </fieldset>
-        {opciones.error && <p className="error">{t('No se pudo cargar el catálogo de vehículos. Intenta de nuevo.')}</p>}
+        {opciones.error && <p className="error">{t('vehiculo.errorCatalogo')}</p>}
 
         <div className="campos-2">
           <div className="campo">
-            <label htmlFor="vehiculo-motor">{t('Motor (opcional)')}</label>
+            <label htmlFor="vehiculo-motor">{t('vehiculo.motorOpcional')}</label>
             {esElectrico ? (
               <select id="vehiculo-motor" className="input" value={MOTOR_ELECTRICO} disabled>
                 <option value={MOTOR_ELECTRICO}>{MOTOR_ELECTRICO}</option>
@@ -163,7 +163,7 @@ export default function AgregarVehiculoModal() {
                 value={formulario.motor}
                 onChange={(evento) => elegirMotor(evento.target.value)}
               >
-                <option value="">{t('No lo sé')}</option>
+                <option value="">{t('vehiculo.noLoSe')}</option>
                 {motoresDelCatalogo.length > 0
                   ? motoresDelCatalogo.map((motor) => (
                       <option key={motor} value={motor}>
@@ -171,7 +171,7 @@ export default function AgregarVehiculoModal() {
                       </option>
                     ))
                   : MOTORES_COMUNES.map(([grupo, motores]) => (
-                      <optgroup key={grupo} label={t(grupo)}>
+                      <optgroup key={grupo} label={t.mensaje(grupo)}>
                         {motores.map((motor) => (
                           <option key={motor} value={motor}>
                             {motor}
@@ -183,7 +183,7 @@ export default function AgregarVehiculoModal() {
             )}
           </div>
           <div className="campo">
-            <label htmlFor="vehiculo-combustible">{t('Combustible')}</label>
+            <label htmlFor="vehiculo-combustible">{t('vehiculo.combustible')}</label>
             <select
               id="vehiculo-combustible"
               className="input"
@@ -192,7 +192,7 @@ export default function AgregarVehiculoModal() {
             >
               {COMBUSTIBLES.map(([valor, etiqueta]) => (
                 <option key={valor} value={valor}>
-                  {t(etiqueta)}
+                  {t(`vehiculo.combustibles.${valor}`)}
                 </option>
               ))}
             </select>
@@ -200,23 +200,23 @@ export default function AgregarVehiculoModal() {
         </div>
         {listo && !esElectrico && !formulario.motor && (
           <p className="apagado" style={{ margin: 0 }}>
-            {t('Si eliges el motor, solo verás las piezas que le quedan a tu versión.')}
+            {t('vehiculo.motorAyuda')}
           </p>
         )}
 
         <div className="campos-2">
           <div className="campo">
-            <label htmlFor="vehiculo-apodo">{t('Apodo (opcional)')}</label>
+            <label htmlFor="vehiculo-apodo">{t('vehiculo.apodoOpcional')}</label>
             <input
               id="vehiculo-apodo"
               className="input"
               value={formulario.apodo}
-              placeholder={t('El azul')}
+              placeholder={t('vehiculo.apodoEjemplo')}
               onChange={(evento) => actualizar('apodo', evento.target.value)}
             />
           </div>
           <div className="campo">
-            <label htmlFor="vehiculo-km">{t('Kilometraje (opcional)')}</label>
+            <label htmlFor="vehiculo-km">{t('vehiculo.kilometrajeOpcional')}</label>
             <input
               id="vehiculo-km"
               className="input"
@@ -233,16 +233,16 @@ export default function AgregarVehiculoModal() {
         <button className="btn btn-primario btn-bloque" type="submit" disabled={guardando || !listo}>
           {guardando ? (
             <>
-              <Loader2 size={18} className="girar" /> {t('Guardando…')}
+              <Loader2 size={18} className="girar" /> {t('vehiculo.guardando')}
             </>
           ) : listo ? (
-            t('Guardar mi {auto}', { auto: `${formulario.modelo} ${formulario.anio}` })
+            t('vehiculo.guardarMi', { auto: `${formulario.modelo} ${formulario.anio}` })
           ) : (
-            t('Elige tu vehículo')
+            t('vehiculo.eligeVehiculo')
           )}
         </button>
         <p className="apagado" style={{ margin: 0, textAlign: 'center' }}>
-          {t('¿No aparece? Escríbenos y lo agregamos al catálogo.')}
+          {t('vehiculo.noAparece')}
         </p>
       </form>
     </Capa>

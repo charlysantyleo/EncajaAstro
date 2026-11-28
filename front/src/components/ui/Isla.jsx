@@ -1,6 +1,6 @@
 import { MotionConfig } from 'motion/react';
 import { IdiomaContext } from '../../i18n/react';
-import { idiomaDelDocumento } from '../../i18n/idiomas';
+import { idiomaDelDocumento } from '../../i18n';
 
 // Cada isla de Astro es una raiz de React aparte, asi que cada una necesita su propio MotionConfig
 // para respetar prefers-reduced-motion en las animaciones de transform, y su propio idioma (prop `idioma` que

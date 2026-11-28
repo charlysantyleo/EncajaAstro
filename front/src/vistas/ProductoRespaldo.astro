@@ -1,15 +1,15 @@
 ---
-// Respaldo para piezas agregadas despues del build: /producto/<slug> llega aqui como /producto?slug= y
-// /en/product/<slug> como /en/product?slug= (public/_redirects).
+// Respaldo para piezas agregadas despues del build: /producto/<slug> llega aqui como /producto?slug= (y lo mismo en
+// cada idioma: /en/product?slug=...). Las reglas las escribe redireccionesPorIdioma en astro.config.mjs.
 import Base from '../layouts/Base.astro';
 import FichaProducto from '../components/FichaProducto.jsx';
 import Nota from '../components/Nota.jsx';
-import { traducir } from '../i18n/textos';
+import { traducir } from '../i18n';
 
 const { idioma } = Astro.props;
 ---
 
-<Base titulo={traducir(idioma, 'Pieza | EnCaja Autopartes')} noindex>
+<Base titulo={traducir(idioma, 'seo.tituloPieza')} noindex>
   <FichaProducto client:only="react" idioma={idioma} />
   <Nota client:idle idioma={idioma} />
 </Base>

@@ -55,7 +55,7 @@ export default function BuscadorDeVehiculo({ onElegir, etiqueta, placeholder }) 
 
   return (
     <div className="campo buscador-vehiculo">
-      <label htmlFor={id}>{etiqueta ?? t('Busca tu vehículo')}</label>
+      <label htmlFor={id}>{etiqueta ?? t('vehiculo.buscarEtiqueta')}</label>
       <div className="buscador">
         <Search size={18} />
         <input
@@ -63,14 +63,14 @@ export default function BuscadorDeVehiculo({ onElegir, etiqueta, placeholder }) 
           className="input"
           type="search"
           autoComplete="off"
-          placeholder={placeholder ?? t('Ej. versa 2018')}
+          placeholder={placeholder ?? t('vehiculo.buscarEjemplo')}
           value={texto}
           aria-describedby={`${id}-estado`}
           onChange={(evento) => setTexto(evento.target.value)}
         />
       </div>
       <p id={`${id}-estado`} className="solo-lectores" aria-live="polite">
-        {buscando ? t('Buscando…') : texto.trim().length >= 2 ? t('{n} resultados', { n: resultados.length }) : ''}
+        {buscando ? t('vehiculo.buscando') : texto.trim().length >= 2 ? t('vehiculo.resultados', { n: resultados.length }) : ''}
       </p>
       {resultados.length > 0 && (
         <ul className="resultados-vehiculo">
@@ -91,7 +91,7 @@ export default function BuscadorDeVehiculo({ onElegir, etiqueta, placeholder }) 
           ))}
         </ul>
       )}
-      {sinResultados && <p className="apagado" style={{ margin: 0 }}>{t('No lo encontramos. Prueba solo con el modelo, por ejemplo “tsuru”.')}</p>}
+      {sinResultados && <p className="apagado" style={{ margin: 0 }}>{t('vehiculo.noEncontrado')}</p>}
       {error && <p className="error" style={{ margin: 0 }}>{error}</p>}
     </div>
   );

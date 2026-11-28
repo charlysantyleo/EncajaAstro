@@ -60,20 +60,20 @@ export default function ProductoCard({ producto, indice = 0, abierta = false, on
           </span>
           <span className="col-ajuste">
             {agotada ? (
-              <Sello texto={t('Agotado')} tono="rojo" />
+              <Sello texto={t('comun.agotado')} tono="rojo" />
             ) : ajuste ? (
               <Sello
-                texto={ajuste.tipo === 'DIRECTO' ? t('Embona') : t('Equivalente')}
+                texto={ajuste.tipo === 'DIRECTO' ? t('comun.embona') : t('comun.equivalente')}
                 tono={ajuste.tipo === 'DIRECTO' ? 'amarillo' : 'azul'}
                 retraso={0.15 + Math.min(indice, 12) * 0.03}
               />
             ) : vehiculoActivo ? (
-              <span className="renglon-sin-ajuste">{t('Sin registro')}</span>
+              <span className="renglon-sin-ajuste">{t('catalogo.sinRegistro')}</span>
             ) : null}
           </span>
           <span className={['col-stock', 'renglon-stock', agotada ? 'cero' : '', cambio ? 'cambio' : ''].filter(Boolean).join(' ')}>
             <NumeroGiro valor={producto.stock} />
-            <span className="renglon-stock-txt"> {agotada ? t('sin existencias') : t('en stock')}</span>
+            <span className="renglon-stock-txt"> {agotada ? t('catalogo.sinExistencias') : t('catalogo.enStock')}</span>
           </span>
           <Precio producto={producto} className="col-precio renglon-precio" />
         </button>
@@ -81,8 +81,8 @@ export default function ProductoCard({ producto, indice = 0, abierta = false, on
           type="button"
           className="col-accion renglon-agregar"
           disabled={agotada || sinMas}
-          aria-label={sinMas ? t('Tu nota ya lleva todas las existencias de {nombre}', { nombre: producto.nombre }) : t('Agregar {nombre} a la nota', { nombre: producto.nombre })}
-          title={sinMas ? t('Tu nota ya lleva todas las existencias') : t('Agregar a la nota')}
+          aria-label={sinMas ? t('catalogo.yaTodasExistenciasDe', { nombre: producto.nombre }) : t('catalogo.agregarANota', { nombre: producto.nombre })}
+          title={sinMas ? t('catalogo.yaTodasExistencias') : t('comun.agregarANota')}
           onClick={() => ir('agregarAlCarrito', { producto, cantidad: 1 })}
         >
           <Plus size={20} />
@@ -126,28 +126,28 @@ function Ficha({ productoId, imagen }) {
       </div>
 
       <div className="ficha-cuerpo">
-        {cargando && <p className="apagado">{t('Cargando ficha…')}</p>}
+        {cargando && <p className="apagado">{t('catalogo.cargandoFicha')}</p>}
         {error && (
           <p className="error">
-            {esSinConexion(error) ? t('Sin conexión: esta ficha no está guardada. Ábrela una vez con internet y quedará disponible.') : t('No se pudo cargar la ficha.')}
+            {esSinConexion(error) ? t('catalogo.fichaSinConexion') : t('catalogo.errorFicha')}
           </p>
         )}
         {producto && (
           <>
             <dl className="ficha-datos">
               <div>
-                <dt>{t('N.º de parte')}</dt>
+                <dt>{t('catalogo.numeroParte')}</dt>
                 <dd className="mono">{producto.numeroParte}</dd>
               </div>
               {producto.marca && (
                 <div>
-                  <dt>{t('Marca')}</dt>
+                  <dt>{t('comun.marca')}</dt>
                   <dd>{producto.marca}</dd>
                 </div>
               )}
               {producto.categoria?.nombre && (
                 <div>
-                  <dt>{t('Sistema')}</dt>
+                  <dt>{t('catalogo.sistema')}</dt>
                   <dd>{producto.categoria.nombre}</dd>
                 </div>
               )}
@@ -156,14 +156,14 @@ function Ficha({ productoId, imagen }) {
             {producto.descripcion && <p className="ficha-descripcion">{producto.descripcion}</p>}
 
             <div className="ficha-compat">
-              <p className="titulo-chico">{t('Compatible con')}</p>
+              <p className="titulo-chico">{t('comun.compatibleCon')}</p>
               <ul>
                 {producto.compatibilidades.map((compatibilidad, i) => {
                   const mio = Boolean(vehiculoActivo && cubre(compatibilidad, vehiculoActivo));
                   return (
                     <li key={i} className={mio ? 'mio' : undefined}>
                       <span>{describir(compatibilidad)}</span>
-                      <span className="ficha-tipo">{compatibilidad.tipo === 'DIRECTO' ? t('Directo') : t('Equivalencia')}</span>
+                      <span className="ficha-tipo">{compatibilidad.tipo === 'DIRECTO' ? t('comun.directo') : t('comun.equivalencia')}</span>
                       {compatibilidad.nota && <span className="ficha-nota">{compatibilidad.nota}</span>}
                     </li>
                   );
@@ -180,16 +180,16 @@ function Ficha({ productoId, imagen }) {
             >
               <Cantidad valor={cantidad} min={1} max={Math.max(1, caben)} onCambio={setCantidad} />
               <button className="btn btn-primario" type="submit" disabled={caben === 0}>
-                {t('Agregar a la nota')} · {pesos((producto.precioParaTi ?? producto.precio) * cantidad)}
+                {t('comun.agregarANota')} · {pesos((producto.precioParaTi ?? producto.precio) * cantidad)}
               </button>
               {yaEnNota > 0 && (
                 <span className="apagado" style={{ alignSelf: 'center' }}>
-                  {caben === 0 ? t('Tu nota ya lleva todas las existencias.') : t('Ya llevas {n} en tu nota.', { n: yaEnNota })}
+                  {caben === 0 ? t('comun.yaTodasExistencias') : t('comun.yaLlevas', { n: yaEnNota })}
                 </span>
               )}
             </form>
             <a className="btn btn-texto ficha-enlace" href={rutas.producto(producto)}>
-              {t('Ver la ficha completa')} <ArrowUpRight size={16} />
+              {t('comun.verFichaCompleta')} <ArrowUpRight size={16} />
             </a>
           </>
         )}

@@ -1,0 +1,396 @@
+{
+  "idioma": {
+    "nombre": "English",
+    "locale": "en-US",
+    "og": "en_US"
+  },
+  "rutas": {
+    "categoria": "category",
+    "producto": "product",
+    "carrito": "cart",
+    "busqueda": "search"
+  },
+  "app": {
+    "nombre": "EnCaja Auto Parts",
+    "nombreCorto": "EnCaja",
+    "descripcion": "Parts for your car with fitment verified by make, model and year."
+  },
+  "textos": {
+    "barra": {
+      "anuncioPiezas": "Your note has {n} items",
+      "anuncioUnaPieza": "Your note has 1 item",
+      "buscar": "Search parts",
+      "buscarEjemplo": "Part or part number",
+      "cambiarModoClaro": "Switch to light mode",
+      "cambiarModoOscuro": "Switch to dark mode",
+      "cerrarSesion": "Sign out",
+      "elegirVehiculo": "Choose vehicle",
+      "idioma": "Language: {idioma}",
+      "inicio": "EnCaja Auto Parts, home",
+      "modoClaro": "Light mode",
+      "modoOscuro": "Dark mode",
+      "navegacion": "Account and navigation",
+      "notaConPiezas": "Note, {n} items",
+      "panel": "Admin",
+      "panelAdministracion": "Admin panel",
+      "vehiculoActivo": "Active vehicle: {auto}. Change"
+    },
+    "catalogo": {
+      "agregarANota": "Add {nombre} to the note",
+      "ajuste": "Fit",
+      "cambiarVehiculo": "Change active vehicle",
+      "cargando": "Loading…",
+      "cargandoFicha": "Loading details…",
+      "catalogo": "Catalog",
+      "enStock": "in stock",
+      "errorCatalogo": "The catalog could not be loaded.",
+      "errorFicha": "The details could not be loaded.",
+      "existencias": "Stock",
+      "fichaSinConexion": "Offline: these details are not saved. Open them once with internet and they will be available.",
+      "filtradoPor": "Filtered by fit with your {auto}.",
+      "numeroParte": "Part no.",
+      "ordenAsc": ", lowest to highest",
+      "ordenDesc": ", highest to lowest",
+      "ordenarPor": "Sort by {columna}",
+      "pieza": "Part",
+      "piezas": "Parts",
+      "precio": "Price",
+      "resultadosPara": "Results for “{texto}”",
+      "sinCoincidencias": "No parts match this filter.",
+      "sinExistencias": "out of stock",
+      "sinPiezas": "No parts listed for this filter.",
+      "sinRegistro": "Not listed",
+      "sistema": "System",
+      "sistemas": "Systems",
+      "soloAjusteDirecto": "Direct fit only",
+      "soloExistencias": "In stock only",
+      "todoCatalogo": "Full catalog",
+      "yaTodasExistencias": "Your note already has all the stock",
+      "yaTodasExistenciasDe": "Your note already has all the stock of {nombre}"
+    },
+    "comun": {
+      "agotado": "Out of stock",
+      "agregarANota": "Add to note",
+      "agregarPieza": "Add one",
+      "cantidad": "Quantity",
+      "cantidadDe": "Quantity of {nombre}",
+      "cargando": "Loading",
+      "cerrar": "Close",
+      "compatibleCon": "Fits",
+      "directo": "Direct",
+      "embona": "Fits",
+      "entrar": "Sign in",
+      "equivalencia": "Equivalent",
+      "equivalente": "Equivalent",
+      "inicio": "Home",
+      "marca": "Make",
+      "nota": "Note",
+      "pieza": "part",
+      "piezas": "parts",
+      "precioLista": "List price {precio}",
+      "quitarPieza": "Remove one",
+      "reintentar": "Try again",
+      "verFichaCompleta": "See full details",
+      "yaLlevas": "You already have {n} in your note.",
+      "yaTodasExistencias": "Your note already has all the stock."
+    },
+    "cuenta": {
+      "confirmarContrasena": "Confirm password",
+      "continuarGoogle": "Continue with Google",
+      "contrasena": "Password",
+      "contrasenasNoCoinciden": "The passwords don't match.",
+      "correo": "Email",
+      "crearCuenta": "Create account",
+      "mandarmeEnlace": "Send me the link",
+      "minimo8": "At least 8 characters.",
+      "mostrarContrasena": "Show password",
+      "noTienesCuenta": "Don't have an account? Create one",
+      "nombre": "Name",
+      "oConCorreo": "or with your email",
+      "ocultarContrasena": "Hide password",
+      "olvidasteContrasena": "Forgot your password?",
+      "paraQueSirve": "Your account keeps your garage and each vehicle's log. You don't need an account to buy.",
+      "recuperarContrasena": "Recover password",
+      "recuperarTexto": "Enter your account email and we will send you a link to choose a new password. It also works if you bought as a guest and want to set a password.",
+      "revisaCorreo": "Check your inbox and spam folder. The link lasts one hour and works only once.",
+      "siHayCuenta": "If there is an account with",
+      "teMandamosEnlace": ", we sent you a link to choose a new password.",
+      "tienesCuentaEntra": "Already have an account? Sign in",
+      "volverEntrar": "Back to sign in",
+      "yaMeAcorde": "I remember it, let me sign in"
+    },
+    "ficha": {
+      "agotadoPorAhora": "Out of stock for now",
+      "ajusteDirecto": "direct fit",
+      "descripcion": "Description",
+      "detallePieza": "Part details",
+      "disponibles": "available",
+      "embonaEnTu": "Fits your {auto} ({tipo})",
+      "enExistencia": "{n} in stock",
+      "equivalencia": "equivalent",
+      "errorPieza": "The part could not be loaded.",
+      "ivaIncluido": "VAT included",
+      "noCompatible": "Not listed as compatible with your {auto}.",
+      "noEncontrada": "We couldn't find that part",
+      "np": "P/N",
+      "numeroParte": "Part no. {np}",
+      "rutaNavegacion": "Breadcrumb",
+      "sinCompatibilidades": "We haven't listed which vehicles it fits yet. Ask us about your model.",
+      "verCatalogo": "Browse the catalog",
+      "yaTodasExistencias": "Your note already has all the stock of this part."
+    },
+    "nota": {
+      "agregado": "{nombre} added to your note",
+      "ajustaCantidades": "Adjust the quantities that exceed the stock.",
+      "envioGratisDesde": "Free shipping over {monto} in the Guadalajara metro area.",
+      "irPagar": "Checkout",
+      "nPiezas": "{n} items",
+      "paraEnvioGratis": "more for free shipping.",
+      "piezasEnTuNota": "Parts in your note",
+      "quitar": "Remove {nombre}",
+      "resumen": "Summary",
+      "revisandoExistencias": "Checking stock…",
+      "seAgoto": "Sold out: remove it from your note.",
+      "seValidara": "Fit with your {auto} will be checked when you confirm.",
+      "seguirComprando": "Keep shopping",
+      "soloQuedaban": "Only {cantidad} of {nombre} were left; they were added to your note",
+      "soloQuedan": "Only {n} left in stock.",
+      "teFaltan": "Add",
+      "teFaltanEnvio": "{monto} more for free shipping.",
+      "total": "Total",
+      "tuNota": "Your note",
+      "unaPieza": "1 item",
+      "vacia": "Your note is empty",
+      "vaciaFranja": "Empty. Free shipping over {monto} in the Guadalajara metro area.",
+      "vaciaLateral1": "Nothing here yet. Add parts with the",
+      "vaciaLateral2": "on each row and your total shows up here.",
+      "vaciaTexto": "Add parts from the catalog or from your vehicle's page.",
+      "verCatalogo": "Browse catalog",
+      "verNota": "View note",
+      "yaEnvioGratis": "Your order ships free.",
+      "yaTodasExistencias": "Your note already has all the stock of {nombre} ({stock})"
+    },
+    "pedido": {
+      "anotarBitacora": "Add to the log",
+      "cerrarConfirmacion": "Close confirmation",
+      "estado": {
+        "CANCELADO": "Cancelled",
+        "ENTREGADO": "Delivered",
+        "ENVIADO": "Shipped",
+        "PAGADO": "Paid",
+        "PENDIENTE": "Awaiting payment"
+      },
+      "folio": "ORDER NO. {id}",
+      "registrado": "Order placed",
+      "verComoPagar": "See how to pay",
+      "verPedido": "View order"
+    },
+    "pie": {
+      "instalarApp": "Install the app",
+      "instalarTexto": "Keep it one tap away: install EnCaja on your phone or computer.",
+      "lema": "Auto parts with verified fitment.",
+      "ubicacion": "Guadalajara, Jalisco. PWII capstone project."
+    },
+    "red": {
+      "actualizando": "Updating…",
+      "actualizar": "Update",
+      "busquedaNoGuardada": "Offline: this search isn't saved on your device. It will show up when you're back online.",
+      "cambioNoGuardado": "Offline: the change was not saved. Check your connection and try again.",
+      "datoNoGuardado": "Offline: this information isn't saved on your device. Open it once with internet and it will be available.",
+      "listoSinConexion": "Ready: what you open from now on will also work offline.",
+      "servicioEnviado": "The service you logged offline was saved.",
+      "servicioRechazado": "A log entry could not be saved: {motivo}",
+      "serviciosEnviados": "The {n} services you logged offline were saved.",
+      "sinConexion": "You're offline. You're seeing what you already opened; prices and stock may have changed.",
+      "sinContacto": "Offline: we couldn't reach the store. Check your connection and try again.",
+      "versionNueva": "A new version of EnCaja is available.",
+      "volvioLaRed": "You're back online."
+    },
+    "seo": {
+      "descripcionBusqueda": "Search parts by name or part number at EnCaja Auto Parts.",
+      "descripcionCategoria": "{nombre}: {detalle}. {n} parts with verified fitment, shipping in Guadalajara.",
+      "descripcionGeneral": "Parts for your car with fitment verified by make, model and year. Shipping in Guadalajara or in-store pickup.",
+      "descripcionInicio": "Parts for your car in Guadalajara: brake pads, filters, suspension and more, with fitment verified by make, model and year.",
+      "descripcionProducto": "{descripcion} {precio} incl. VAT. Part no. {np}. Shipping in Guadalajara.",
+      "refacciones": "parts",
+      "tituloBusqueda": "Search parts | EnCaja Auto Parts",
+      "tituloCarrito": "Cart | EnCaja Auto Parts",
+      "tituloCategoria": "{nombre} | EnCaja Auto Parts",
+      "tituloInicio": "EnCaja Auto Parts | Parts with verified fitment",
+      "tituloPieza": "Part | EnCaja Auto Parts"
+    },
+    "vehiculo": {
+      "activo": "Active",
+      "agregarVehiculo": "Add vehicle",
+      "anio": "Year",
+      "apodoEjemplo": "The blue one",
+      "apodoOpcional": "Nickname (optional)",
+      "buscando": "Searching…",
+      "buscarEjemplo": "E.g. versa 2018",
+      "buscarEtiqueta": "Find your vehicle",
+      "cambiarVehiculo": "Change vehicle",
+      "combustible": "Fuel",
+      "combustibles": {
+        "DIESEL": "Diesel",
+        "ELECTRICO": "Electric",
+        "GASOLINA": "Gasoline",
+        "HIBRIDO": "Hybrid"
+      },
+      "elige": "Choose…",
+      "eligeVehiculo": "Choose your vehicle",
+      "eligeloLista": "Or pick it from the list",
+      "embonanEnTu": "Parts that fit your",
+      "entraParaUsar": "Sign in to use the vehicles in your garage.",
+      "entrarCrearCuenta": "Sign in or create an account",
+      "errorCatalogo": "The vehicle catalog could not be loaded. Try again.",
+      "errorGarage": "Your garage could not be loaded.",
+      "fichaBitacora": "Details and log",
+      "gruposMotor": {
+        "de5a6": "5 and 6 cylinders",
+        "de8": "8 cylinders",
+        "hasta4": "4 cylinders or fewer"
+      },
+      "guardando": "Saving…",
+      "guardarMi": "Save my {auto}",
+      "kilometrajeOpcional": "Mileage (optional)",
+      "modelo": "Model",
+      "motor": "Engine",
+      "motorAyuda": "If you choose the engine, you'll only see the parts that fit your version.",
+      "motorNoEspecificado": "engine not specified",
+      "motorOpcional": "Engine (optional)",
+      "noAparece": "Not listed? Write to us and we'll add it to the catalog.",
+      "noEncontrado": "We couldn't find it. Try just the model, for example “tsuru”.",
+      "noLoSe": "I don't know",
+      "odometro": "Odometer",
+      "pregunta": "What car do you drive?",
+      "preguntaTexto": "Tell us the make, model and year once and we show you what fits. No guessing part numbers.",
+      "primeroMarca": "Make first",
+      "primeroModelo": "Model first",
+      "resultados": "{n} results",
+      "selectorTexto": "The active vehicle filters the catalog and checks every order.",
+      "sinVehiculos": "You haven't added any vehicles yet.",
+      "vehiculoActivo": "Active vehicle",
+      "verCatalogoCompleto": "See full catalog"
+    }
+  },
+  "offline": {
+    "titulo": "Offline | EnCaja Auto Parts",
+    "etiqueta": "Offline",
+    "encabezado": "This page isn’t saved",
+    "antesDeRuta": "There’s no internet and",
+    "estaPagina": "this page",
+    "despuesDeRuta": "isn’t saved on your device yet. Pages you already opened with internet do work offline.",
+    "nota": "Your note is safe: it’s stored on this device and you can review it offline. You do need a connection to pay.",
+    "reintentar": "Try again",
+    "verNota": "View my note",
+    "guardadas": "Available offline",
+    "guardadasTexto": "Pages you already visited that are saved on this device:",
+    "inicio": "Home"
+  },
+  "catalogo": {
+    "categorias": {
+      "frenos": {
+        "nombre": "Brakes",
+        "descripcion": "Pads, rotors and braking system components"
+      },
+      "filtros": {
+        "nombre": "Filters",
+        "descripcion": "Oil, air and cabin filters"
+      },
+      "suspension": {
+        "nombre": "Suspension",
+        "descripcion": "Shocks, springs and steering"
+      },
+      "motor": {
+        "nombre": "Engine",
+        "descripcion": "Spark plugs, belts and internal components"
+      },
+      "enfriamiento": {
+        "nombre": "Cooling",
+        "descripcion": "Water pumps, thermostats and hoses"
+      },
+      "electrico": {
+        "nombre": "Electrical",
+        "descripcion": "Batteries, alternators and lighting"
+      }
+    },
+    "productos": {
+      "BC-4021": {
+        "nombre": "Front ceramic brake pads",
+        "descripcion": "High-performance front brake pad set, low noise and low dust."
+      },
+      "BC-4099": {
+        "nombre": "Rear semi-metallic brake pads",
+        "descripcion": "Long-lasting rear brake pad set."
+      },
+      "DF-1187": {
+        "nombre": "Vented brake rotor",
+        "descripcion": "Vented front rotor, sold individually."
+      },
+      "FA-0231": {
+        "nombre": "Oil filter",
+        "descripcion": "Spin-on oil filter with anti-drainback valve."
+      },
+      "FA-0450": {
+        "nombre": "Air filter",
+        "descripcion": "High-flow panel air filter."
+      },
+      "FA-0512": {
+        "nombre": "Cabin filter",
+        "descripcion": "Pollen and dust filter for the cabin."
+      },
+      "AM-3301": {
+        "nombre": "Front shock absorber",
+        "descripcion": "Front gas shock absorber, sold individually."
+      },
+      "AM-3302": {
+        "nombre": "Rear shock absorber",
+        "descripcion": "Rear gas shock absorber, sold individually."
+      },
+      "TD-0871": {
+        "nombre": "Tie rod end",
+        "descripcion": "Outer tie rod end for the steering rack."
+      },
+      "BJ-1002": {
+        "nombre": "Iridium spark plug",
+        "descripcion": "Iridium ignition spark plug, sold individually."
+      },
+      "BD-2210": {
+        "nombre": "Timing belt kit",
+        "descripcion": "Timing belt kit with tensioner."
+      },
+      "BA-3120": {
+        "nombre": "Water pump",
+        "descripcion": "Cooling system water pump."
+      },
+      "TM-0044": {
+        "nombre": "Thermostat",
+        "descripcion": "Thermostat with gasket included."
+      },
+      "BT-4500": {
+        "nombre": "12V 45Ah battery",
+        "descripcion": "Maintenance-free battery, 12V 45Ah."
+      },
+      "AL-7701": {
+        "nombre": "Remanufactured alternator",
+        "descripcion": "Remanufactured alternator with a one-year warranty."
+      },
+      "FH-0100": {
+        "nombre": "H4 bulb",
+        "descripcion": "H4 halogen bulb, sold in pairs."
+      }
+    },
+    "notas": {
+      "Ajuste original de fabrica": "Original factory fit",
+      "Cambio recomendado cada 80,000 km": "Replacement recommended every 80,000 km",
+      "Se requieren cuatro piezas": "Four pieces required",
+      "Se requieren dos piezas": "Two pieces required",
+      "Compatible con la misma rosca": "Compatible with the same thread",
+      "Equivale al disco original, verificar espesor minimo": "Equivalent to the original rotor; check minimum thickness",
+      "Misma medida, cambia el sensor de desgaste": "Same size; the wear sensor changes"
+    },
+    "reemplazos": {
+      "cil.": "cyl."
+    }
+  }
+}

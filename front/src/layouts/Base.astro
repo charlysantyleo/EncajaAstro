@@ -7,8 +7,7 @@ import '../styles/global.css';
 import TopBar from '../components/TopBar.jsx';
 import Capas from '../components/Capas.jsx';
 import Pie from '../components/Pie.astro';
-import { traducir } from '../i18n/textos';
-import { idiomaDeRuta } from '../i18n/idiomas';
+import { IDIOMAS, IDIOMA_BASE, datos, idiomaDeRuta, traducir } from '../i18n';
 
 // Marco comun de todas las paginas. Cada pieza carga solo lo que necesita y cuando lo necesita:
 //   TopBar  client:idle   su HTML viene completo del build (enlaces y buscador funcionan sin JS); el menu de
@@ -20,9 +19,10 @@ import { idiomaDeRuta } from '../i18n/idiomas';
 // SEO: cada pagina manda su titulo (<= 60 caracteres) y su descripcion (<= 160). La canonical y Open Graph
 // salen de aqui; las paginas privadas (sesion, pedidos, panel) van con noindex.
 //
-// Idiomas (practica P3-4): el idioma sale de la URL (Astro.currentLocale: /en/... es ingles). `alternos` trae la
-// misma pagina en cada idioma ({ es, en }): con ella se escriben los hreflang y el selector de idioma apunta ahi.
-// Las paginas que solo existen en espanol (cuenta, pago, panel) no la mandan.
+// Idiomas (practica P3-4): el idioma sale de la URL (Astro.currentLocale: /en/... es 'en'). `alternos` trae la
+// misma pagina en cada idioma de astro.config.mjs ({ es: '/categoria/frenos/', en: '/en/category/brakes/' }): con
+// ella se escriben los hreflang y el selector de idioma apunta ahi. Las paginas que solo existen en el idioma base
+// (cuenta, pago, panel) no la mandan.
 interface Props {
   titulo?: string;
   descripcion?: string;
@@ -30,13 +30,13 @@ interface Props {
   tipo?: 'website' | 'product';
   noindex?: boolean;
   jsonLd?: object | null;
-  alternos?: { es: string; en: string } | null;
+  alternos?: Record<string, string> | null;
 }
-const idioma = Astro.currentLocale === 'en' || idiomaDeRuta(Astro.url.pathname) === 'en' ? 'en' : 'es';
-const t = (texto: string) => traducir(idioma, texto);
+const idioma = IDIOMAS.includes(Astro.currentLocale ?? '') ? Astro.currentLocale! : idiomaDeRuta(Astro.url.pathname);
+const t = (clave: string) => traducir(idioma, clave);
 const {
   titulo = 'EnCaja Autopartes',
-  descripcion = t('Refacciones para tu auto con compatibilidad verificada por marca, modelo y año. Envío en Guadalajara o recoge en mostrador.'),
+  descripcion = t('seo.descripcionGeneral'),
   imagen = '/marca/icono-512.png',
   tipo = 'website',
   noindex = false,
@@ -60,13 +60,13 @@ const absoluta = (ruta: string) => new URL(ruta, Astro.site).href;
     <meta name="description" content={descripcion} />
     <link rel="canonical" href={canonical} />
     {noindex && <meta name="robots" content="noindex, follow" />}
-    <!-- Versiones por idioma para los buscadores (solo en las paginas indexables que existen en los dos). -->
-    {alternos && !noindex && <link rel="alternate" hreflang="es" href={absoluta(alternos.es)} />}
-    {alternos && !noindex && <link rel="alternate" hreflang="en" href={absoluta(alternos.en)} />}
-    {alternos && !noindex && <link rel="alternate" hreflang="x-default" href={absoluta(alternos.es)} />}
+    <!-- Versiones por idioma para los buscadores (solo en las paginas indexables que existen en todos los idiomas);
+         x-default es la del idioma base. -->
+    {alternos && !noindex && Object.entries(alternos).map(([codigo, ruta]) => <link rel="alternate" hreflang={codigo} href={absoluta(ruta)} />)}
+    {alternos && !noindex && <link rel="alternate" hreflang="x-default" href={absoluta(alternos[IDIOMA_BASE])} />}
     <meta property="og:site_name" content="EnCaja Autopartes" />
-    <meta property="og:locale" content={idioma === 'en' ? 'en_US' : 'es_MX'} />
-    {alternos && <meta property="og:locale:alternate" content={idioma === 'en' ? 'es_MX' : 'en_US'} />}
+    <meta property="og:locale" content={datos(idioma).idioma.og} />
+    {alternos && IDIOMAS.filter((codigo) => codigo !== idioma).map((codigo) => <meta property="og:locale:alternate" content={datos(codigo).idioma.og} />)}
     <meta property="og:type" content={tipo} />
     <meta property="og:title" content={titulo} />
     <meta property="og:description" content={descripcion} />
@@ -74,9 +74,9 @@ const absoluta = (ruta: string) => new URL(ruta, Astro.site).href;
     {imagenAbsoluta && <meta property="og:image" content={imagenAbsoluta} />}
     <meta name="twitter:card" content={imagenAbsoluta ? 'summary_large_image' : 'summary'} />
     {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
-    <!-- PWA: el manifiesto (nombre, iconos, colores) lo genera @vite-pwa/astro en el build (no existe en `astro dev`).
-         En ingles, el manifiesto traducido (src/pages/en/manifest.webmanifest.js). -->
-    {idioma === 'en' ? <link rel="manifest" href="/en/manifest.webmanifest" /> : pwaInfo && <Fragment set:html={pwaInfo.webManifest.linkTag} />}
+    <!-- PWA: el manifiesto (nombre, iconos, colores) del idioma base lo genera @vite-pwa/astro en el build (no existe en
+         `astro dev`); el de los demas idiomas, src/pages/[...idioma]/manifest.webmanifest.js. -->
+    {idioma !== IDIOMA_BASE ? <link rel="manifest" href={`/${idioma}/manifest.webmanifest`} /> : pwaInfo && <Fragment set:html={pwaInfo.webManifest.linkTag} />}
     <!-- Ya instalada (ventana propia), la barra de titulo va en el rojo de la marca (--rojo, igual que theme_color del
          manifiesto); en el navegador se funde con la barra superior. Gana la primera etiqueta cuyo media coincide. -->
     <meta name="theme-color" content="#E10600" media="(display-mode: standalone)" />
@@ -116,15 +116,15 @@ const absoluta = (ruta: string) => new URL(ruta, Astro.site).href;
       // En `astro dev` el modulo no registra nada (el service worker solo existe en el build).
       import { registerSW } from 'virtual:pwa-register';
       import { useTienda } from '../store/useTienda';
-      import { traducir } from '../i18n/textos';
-      import { idiomaDelDocumento } from '../i18n/idiomas';
+      import { traducir } from '../i18n';
+      import { idiomaDelDocumento } from '../i18n';
 
       // Los avisos van en el idioma de la pagina (lang de <html>).
       const t = (mensaje, variables) => traducir(idiomaDelDocumento(), mensaje, variables);
       const franja = document.querySelector('[data-red]');
       const texto = franja.querySelector('[data-red-texto]');
       const boton = franja.querySelector('[data-red-boton]');
-      const SIN_RED = t('Sin conexión. Ves lo que ya habías abierto; precios y existencias pueden haber cambiado.');
+      const SIN_RED = t('red.sinConexion');
       let temporizador;
 
       // segundos > 0: el aviso se va solo (y si sigue sin red, vuelve el de "sin conexion").
@@ -142,7 +142,7 @@ const absoluta = (ruta: string) => new URL(ruta, Astro.site).href;
       if (!navigator.onLine) mostrar(SIN_RED, { sinRed: true });
       window.addEventListener('offline', () => mostrar(SIN_RED, { sinRed: true }));
       window.addEventListener('online', () => {
-        mostrar(t('Volvió la conexión.'), { segundos: 3 });
+        mostrar(t('red.volvioLaRed'), { segundos: 3 });
         // Respaldo de Background Sync: envia lo que se guardo sin red (bitacora).
         navigator.serviceWorker?.controller?.postMessage({ type: 'REINTENTAR_COLA' });
       });
@@ -158,19 +158,19 @@ const absoluta = (ruta: string) => new URL(ruta, Astro.site).href;
       const actualizar = registerSW({
         immediate: true,
         onNeedRefresh() {
-          mostrar(t('Hay una versión nueva de EnCaja.'), {
+          mostrar(t('red.versionNueva'), {
             accion: {
-              texto: t('Actualizar'),
+              texto: t('red.actualizar'),
               alPulsar: () => {
                 actualizando = true;
-                mostrar(t('Actualizando…'));
+                mostrar(t('red.actualizando'));
                 actualizar(); // manda SKIP_WAITING al service worker que espera
               },
             },
           });
         },
         onOfflineReady() {
-          mostrar(t('Listo: lo que abras desde ahora también se podrá ver sin conexión.'), { segundos: 6 });
+          mostrar(t('red.listoSinConexion'), { segundos: 6 });
         },
       });
 
@@ -181,10 +181,10 @@ const absoluta = (ruta: string) => new URL(ruta, Astro.site).href;
         useTienda.getState().refrescar();
         mostrar(
           rechazados.length
-            ? t('No se pudo guardar un servicio de la bitácora: {motivo}', { motivo: rechazados[0] })
+            ? t('red.servicioRechazado', { motivo: rechazados[0] })
             : enviados === 1
-              ? t('Se guardó el servicio que anotaste sin conexión.')
-              : t('Se guardaron los {n} servicios que anotaste sin conexión.', { n: enviados }),
+              ? t('red.servicioEnviado')
+              : t('red.serviciosEnviados', { n: enviados }),
           { segundos: 6 }
         );
       });

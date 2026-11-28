@@ -75,7 +75,7 @@ export default function Capa({ lado = 'centro', titulo, onCerrar, children }) {
         exit={lateral ? { x: '100%' } : { opacity: 0, y: 16, scale: 0.97 }}
         transition={{ type: 'spring', stiffness: 380, damping: 36 }}
       >
-        <button className="btn-icono capa-cerrar" onClick={onCerrar} aria-label={t('Cerrar')}>
+        <button className="btn-icono capa-cerrar" onClick={onCerrar} aria-label={t('comun.cerrar')}>
           <X size={20} strokeWidth={2.2} />
         </button>
         {children}

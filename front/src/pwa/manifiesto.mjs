@@ -1,5 +1,6 @@
-// Manifiesto de la PWA en cada idioma (P3-2 instalable, P3-4 multi-idioma). El espanol lo genera @vite-pwa/astro
-// (astro.config.mjs) y el ingles lo sirve src/pages/en/manifest.webmanifest.js. Mismo id ('/'): es la misma app,
+// Manifiesto de la PWA (P3-2 instalable, P3-4 multi-idioma). Los textos salen del JSON de cada idioma
+// (src/i18n/idiomas/<codigo>.json, seccion "app" e "idioma"): el del idioma base lo genera @vite-pwa/astro
+// (astro.config.mjs) y los demas, src/pages/[...idioma]/manifest.webmanifest.js. Mismo id ('/'): es la misma app,
 // solo cambian el nombre, la descripcion, el idioma y la pagina de inicio.
 
 // Valor de un token de color del primer :root (tema claro) de global.css.
@@ -11,31 +12,19 @@ export function tokenDe(css, nombre) {
   return valor.toLowerCase();
 }
 
-const TEXTOS = {
-  es: {
-    name: 'EnCaja Autopartes',
-    description: 'Refacciones para tu auto con compatibilidad verificada por marca, modelo y año.',
-    lang: 'es-MX',
-    start_url: '/',
-  },
-  en: {
-    name: 'EnCaja Auto Parts',
-    description: 'Parts for your car with fitment verified by make, model and year.',
-    lang: 'en-US',
-    start_url: '/en/',
-  },
-};
-
-export function manifiesto(idioma, { rojo, papel }) {
-  const textos = TEXTOS[idioma] ?? TEXTOS.es;
+/**
+ * @param datosIdioma el JSON del idioma (src/i18n/idiomas/<codigo>.json)
+ * @param prefijo     '' para el idioma base, '/en' para los demas
+ */
+export function manifiesto(datosIdioma, prefijo, { rojo, papel }) {
   return {
     id: '/',
-    name: textos.name,
-    short_name: 'EnCaja',
-    description: textos.description,
-    lang: textos.lang,
+    name: datosIdioma.app.nombre,
+    short_name: datosIdioma.app.nombreCorto,
+    description: datosIdioma.app.descripcion,
+    lang: datosIdioma.idioma.locale,
     dir: 'ltr',
-    start_url: textos.start_url,
+    start_url: `${prefijo}/`,
     scope: '/',
     display: 'standalone', // ventana propia, sin barra de direcciones ni pestanas
     theme_color: rojo, // --rojo: barra de titulo de la ventana instalada

@@ -1,9 +1,0 @@
----
-// /producto/<numero-de-parte>-<nombre>/ (espanol). La version en ingles: src/pages/en/product/[slug].astro.
-import Producto from '../../vistas/Producto.astro';
-import { rutasDeProductos } from '../../lib/paginas';
-
-export const getStaticPaths = () => rutasDeProductos('es');
----
-
-<Producto {...Astro.props} idioma="es" />

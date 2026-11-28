@@ -32,7 +32,7 @@ function CategoriaView({ categoria = null, categorias = [], productosIniciales =
     iniciales: productosIniciales,
   });
 
-  const titulo = texto ? t('Resultados para “{texto}”', { texto }) : (categoriaNombre ?? t('Catálogo'));
+  const titulo = texto ? t('catalogo.resultadosPara', { texto }) : (categoriaNombre ?? t('catalogo.catalogo'));
 
   return (
     <CatalogoLayout categorias={categorias} activa={texto ? null : (categoriaId ?? 'todo')}>
@@ -45,7 +45,7 @@ function CategoriaView({ categoria = null, categorias = [], productosIniciales =
         )}
         {vehiculoActivo && (
           <p className="apagado" style={{ marginTop: 12, marginBottom: 0 }}>
-            {t('Filtrado por compatibilidad con tu {auto}.', { auto: `${vehiculoActivo.marca} ${vehiculoActivo.modelo} ${vehiculoActivo.anio}` })}
+            {t('catalogo.filtradoPor', { auto: `${vehiculoActivo.marca} ${vehiculoActivo.modelo} ${vehiculoActivo.anio}` })}
           </p>
         )}
       </div>
@@ -57,10 +57,10 @@ function CategoriaView({ categoria = null, categorias = [], productosIniciales =
         recargar={recargar}
         vacio={
           <>
-            <p>{t('No hay piezas que coincidan con este filtro.')}</p>
+            <p>{t('catalogo.sinCoincidencias')}</p>
             {vehiculoActivo && (
               <button className="btn btn-secundario" onClick={() => ir('abrirSelectorVehiculo')}>
-                {t('Cambiar vehículo activo')}
+                {t('catalogo.cambiarVehiculo')}
               </button>
             )}
           </>

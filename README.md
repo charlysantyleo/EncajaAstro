@@ -128,8 +128,29 @@ inglés.
 | Áreas seguras | `env(safe-area-inset-*)` en la cabecera (arriba), los márgenes laterales (`--lado-izq`/`--lado-der`), la nota fija y los diálogos (abajo) |
 | PWA instalada | `@media (display-mode: standalone)`; la ventana es redimensionable y usa los mismos cortes |
 
-**Multi-idioma** (i18n nativo de Astro en `front/astro.config.mjs`: `defaultLocale: 'es'`, `locales: ['es', 'en']`,
-`prefixDefaultLocale: false`)
+**Multi-idioma** (i18n nativo de Astro en `front/astro.config.mjs`: `defaultLocale` es el primero de
+`const IDIOMAS = ['es', 'en']`, `locales: IDIOMAS`, `prefixDefaultLocale: false`)
+
+Cada idioma es **un archivo**: `front/src/i18n/idiomas/<codigo>.json`. Trae todo lo de ese idioma:
+
+| Sección del JSON | Qué es |
+|---|---|
+| `idioma` | Nombre para el selector (`"English"`), `locale` (`en-US`) y `og` (`en_US`) |
+| `rutas` | Los segmentos de URL en ese idioma: `categoria`, `producto`, `carrito`, `busqueda` |
+| `app` | Nombre y descripción de la app instalada (manifiesto) |
+| `textos` | La interfaz, por área y clave: `"barra": { "buscar": "Search parts" }`; en el código, `t('barra.buscar')` |
+| `offline` | Los textos de `offline.html` |
+| `catalogo` | Traducción de sistemas (por slug), piezas (por número de parte) y notas de compatibilidad |
+
+Todo lo demás se arma solo desde esa lista y esos archivos:
+
+- las páginas, con `src/pages/[...idioma]/`, que se generan una vez por idioma (sin copiar archivos);
+- las rutas traducidas;
+- `<html lang>`, `hreflang` (cada idioma y `x-default`) y `og:locale`;
+- el menú de idiomas de la barra, que lleva a la misma página en el idioma elegido;
+- el manifiesto de cada idioma (`/en/manifest.webmanifest`);
+- `offline.html`;
+- el *shell* del service worker, el sitemap, `robots.txt` y los `_redirects` de Netlify.
 
 | Página | Español | Inglés |
 |---|---|---|
@@ -139,14 +160,23 @@ inglés.
 | Nota | `/carrito` | `/en/cart` |
 | Búsqueda | `/categoria?q=` | `/en/search?q=` |
 
-- Cada página lleva `<html lang>`, `hreflang` (es, en y `x-default`) y un selector de idioma en la barra que lleva a la misma página en el otro idioma.
-- Las páginas de `src/pages/` y `src/pages/en/` son envoltorios: el contenido está en `src/vistas/` y recibe el idioma.
-- Textos de la interfaz: `src/i18n/textos.js` (la clave es el texto en español: `t('Agregar a la nota')`). Nombres y descripciones del catálogo: `src/i18n/catalogo.js` (por número de parte y por sistema).
-- El manifiesto de la PWA también se traduce: `/en/manifest.webmanifest` (nombre, descripción, `lang` y `start_url: /en/`).
-- Cuenta, garage, pago, comprobante y panel siguen solo en español. Una pieza agregada desde el panel sin traducción se ve con su nombre en español, y la búsqueda compara contra los nombres en español de la base.
+**Agregar un idioma** (por ejemplo, francés):
+
+```bash
+npm run i18n:nuevo fr
+```
+
+1. Traduce `src/i18n/idiomas/fr.json`. El script lo crea como copia del español, así que la tienda funciona mientras tanto.
+2. Agrega `'fr'` a `const IDIOMAS` en `astro.config.mjs`.
+3. Revisa con `npm run i18n:revisar`: claves que faltan, `{variables}` distintas, textos sin traducir y claves usadas en el código que no existen.
+
+No hay que tocar páginas ni componentes.
+
+Cuenta, garage, pago, comprobante y panel siguen solo en el idioma base. Una pieza agregada desde el panel sin
+traducción se ve con su nombre en español, y la búsqueda compara contra los nombres en español de la base.
 
 Para revisarlo: `npm run build` y `npm run preview`, y en Chrome `DevTools → Toggle device toolbar` para los
-anchos y la orientación. Para probarlo instalada, instala la app y cambia el idioma desde la barra (`ES`/`EN`).
+anchos y la orientación. Para probarlo instalada, instala la app y cambia el idioma desde el menú de la barra.
 
 ## Crear un Postgres gratis en Neon
 

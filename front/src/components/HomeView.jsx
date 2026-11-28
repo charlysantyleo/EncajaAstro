@@ -32,7 +32,7 @@ function HomeView({ categorias = [], productosIniciales = null }) {
         cargando={cargando}
         error={error}
         recargar={recargar}
-        vacio={<p>{t('No hay piezas registradas para este filtro.')}</p>}
+        vacio={<p>{t('catalogo.sinPiezas')}</p>}
       />
     </CatalogoLayout>
   );

@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
-    "preview": "astro preview"
+    "preview": "astro preview",
+    "i18n:nuevo": "node scripts/i18n.mjs nuevo",
+    "i18n:revisar": "node scripts/i18n.mjs revisar"
   },
   "dependencies": {
     "@astrojs/react": "^7.0.0",

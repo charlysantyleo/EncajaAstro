@@ -1,0 +1,15 @@
+---
+// Paginas de un solo segmento en cada idioma: la nota (/carrito, /en/cart), la busqueda (/categoria?q=,
+// /en/search?q=) y el respaldo de piezas agregadas despues del build (/producto?slug=, /en/product?slug=).
+import Carrito from '../../vistas/Carrito.astro';
+import Busqueda from '../../vistas/Busqueda.astro';
+import ProductoRespaldo from '../../vistas/ProductoRespaldo.astro';
+import { rutasDePaginas } from '../../lib/paginas';
+
+export const getStaticPaths = rutasDePaginas;
+const { tipo, idioma } = Astro.props;
+---
+
+{tipo === 'carrito' && <Carrito idioma={idioma} />}
+{tipo === 'busqueda' && <Busqueda idioma={idioma} />}
+{tipo === 'respaldo' && <ProductoRespaldo idioma={idioma} />}

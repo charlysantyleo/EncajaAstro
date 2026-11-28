@@ -34,9 +34,9 @@ export default function ProductoModal() {
   }
 
   return (
-    <Capa lado="derecha" titulo={producto?.nombre ?? t('Detalle de la pieza')} onCerrar={() => ir('cerrarModal')}>
+    <Capa lado="derecha" titulo={producto?.nombre ?? t('ficha.detallePieza')} onCerrar={() => ir('cerrarModal')}>
       {cargando && <Cargando filas={3} alto={56} />}
-      {error && <ErrorConReintento mensaje={t('No se pudo cargar la pieza.')} onReintentar={recargar} />}
+      {error && <ErrorConReintento mensaje={t('ficha.errorPieza')} onReintentar={recargar} />}
 
       {producto && (
         <>
@@ -44,7 +44,7 @@ export default function ProductoModal() {
             {imagen ? <img src={imagen} alt={producto.nombre} /> : producto.nombre.slice(0, 2).toUpperCase()}
             {ajusteActivo && (
               <Sello
-                texto={ajusteActivo.tipo === 'DIRECTO' ? t('Embona') : t('Equivalente')}
+                texto={ajusteActivo.tipo === 'DIRECTO' ? t('comun.embona') : t('comun.equivalente')}
                 tono={ajusteActivo.tipo === 'DIRECTO' ? 'amarillo' : 'azul'}
                 retraso={0.3}
               />
@@ -54,7 +54,7 @@ export default function ProductoModal() {
           <h3>{producto.nombre}</h3>
           <p className="folio apagado" style={{ margin: 0 }}>
             {producto.categoria?.nombre ? `${producto.categoria.nombre} · ` : ''}
-            {producto.marca ? `${producto.marca} · ` : ''}{t('N.P.')} {producto.numeroParte}
+            {producto.marca ? `${producto.marca} · ` : ''}{t('ficha.np')} {producto.numeroParte}
           </p>
 
           {producto.descripcion && <p style={{ margin: 0 }}>{producto.descripcion}</p>}
@@ -65,10 +65,10 @@ export default function ProductoModal() {
               <span className="punto" aria-hidden="true" />
               {producto.stock > 0 ? (
                 <>
-                  <NumeroGiro valor={producto.stock} /> {t('disponibles')}
+                  <NumeroGiro valor={producto.stock} /> {t('ficha.disponibles')}
                 </>
               ) : (
-                t('Agotado')
+                t('comun.agotado')
               )}
             </span>
           </div>
@@ -81,17 +81,17 @@ export default function ProductoModal() {
               {ajusteActivo ? <CircleCheck size={18} color="var(--rojo)" style={{ flex: 'none', marginTop: 2 }} /> : <CircleAlert size={18} style={{ flex: 'none', marginTop: 2 }} />}
               <span>
                 {ajusteActivo
-                  ? t('Embona en tu {auto} ({tipo})', { auto: `${vehiculoActivo.modelo} ${vehiculoActivo.anio}`, tipo: ajusteActivo.tipo === 'DIRECTO' ? t('ajuste directo') : t('equivalencia') })
-                  : t('No está registrada como compatible con tu {auto}.', { auto: `${vehiculoActivo.modelo} ${vehiculoActivo.anio}` })}
+                  ? t('ficha.embonaEnTu', { auto: `${vehiculoActivo.modelo} ${vehiculoActivo.anio}`, tipo: ajusteActivo.tipo === 'DIRECTO' ? t('ficha.ajusteDirecto') : t('ficha.equivalencia') })
+                  : t('ficha.noCompatible', { auto: `${vehiculoActivo.modelo} ${vehiculoActivo.anio}` })}
               </span>
             </p>
           )}
 
           <div>
             <a className="btn btn-texto" href={rutas.producto(producto)} style={{ alignSelf: 'flex-start' }}>
-              {t('Ver la ficha completa')} <ArrowUpRight size={16} />
+              {t('comun.verFichaCompleta')} <ArrowUpRight size={16} />
             </a>
-            <h4 style={{ marginBottom: 4, marginTop: 8, fontSize: 'var(--t-meta)' }}>{t('Compatible con')}</h4>
+            <h4 style={{ marginBottom: 4, marginTop: 8, fontSize: 'var(--t-meta)' }}>{t('comun.compatibleCon')}</h4>
             <ul className="ajustes">
               {producto.compatibilidades.map((compatibilidad, indice) => (
                 <li
@@ -100,7 +100,7 @@ export default function ProductoModal() {
                 >
                   <span>{describir(compatibilidad)}</span>
                   <span className={compatibilidad.tipo === 'DIRECTO' ? 'etiqueta sello-azul' : 'etiqueta rojo'}>
-                    {compatibilidad.tipo === 'DIRECTO' ? t('Directo') : t('Equivalencia')}
+                    {compatibilidad.tipo === 'DIRECTO' ? t('comun.directo') : t('comun.equivalencia')}
                   </span>
                   {compatibilidad.nota && <span className="ajuste-nota">{compatibilidad.nota}</span>}
                 </li>
@@ -110,13 +110,13 @@ export default function ProductoModal() {
 
           {yaEnNota > 0 && (
             <p className="apagado" style={{ margin: 'auto 0 0' }}>
-              {caben === 0 ? t('Tu nota ya lleva todas las existencias de esta pieza.') : t('Ya llevas {n} en tu nota.', { n: yaEnNota })}
+              {caben === 0 ? t('ficha.yaTodasExistencias') : t('comun.yaLlevas', { n: yaEnNota })}
             </p>
           )}
           <form className="agregar-fila" onSubmit={manejarAgregar} style={{ marginTop: yaEnNota > 0 ? 0 : 'auto', paddingTop: 12 }}>
             <Cantidad valor={cantidad} min={1} max={Math.max(1, caben)} onCambio={setCantidad} />
             <button className="btn btn-primario btn-isla" type="submit" disabled={caben === 0}>
-              {t('Agregar a la nota')}
+              {t('comun.agregarANota')}
               <span className="btn-isla-icono" aria-hidden="true">
                 <Plus size={16} />
               </span>

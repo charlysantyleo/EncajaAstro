@@ -1,19 +1,21 @@
 ---
-// Pagina de inicio en el idioma que se pida: / (es) y /en/ (en).
+// Pagina de inicio en el idioma que se pida: / (idioma base), /en/, /fr/...
 import Base from '../layouts/Base.astro';
 import HomeView from '../components/HomeView.jsx';
 import Nota from '../components/Nota.jsx';
 import StockEnVivo from '../components/StockEnVivo.jsx';
 import { catalogoDeBuild } from '../lib/datosDeBuild';
 import { paraLista } from '../lib/paraLista';
-import { traducir } from '../i18n/textos';
+import { traducir } from '../i18n';
 import { traducirCategoria, traducirProducto } from '../i18n/catalogo';
+import { alternos } from '../lib/paginas';
+import { rutasPara } from '../lib/rutas';
 
 interface Props {
-  idioma: 'es' | 'en';
+  idioma: string;
 }
 const { idioma } = Astro.props;
-const t = (texto: string) => traducir(idioma, texto);
+const t = (clave: string) => traducir(idioma, clave);
 
 // El indice de sistemas y las primeras piezas se leen en el build: el HTML ya los trae (sin esqueletos),
 // y los enlaces a cada sistema quedan a la vista de un buscador.
@@ -23,9 +25,9 @@ const iniciales = productos.slice(0, 12).map((p) => paraLista(traducirProducto(p
 ---
 
 <Base
-  titulo={t('EnCaja Autopartes | Refacciones con compatibilidad verificada')}
-  descripcion={t('Refacciones para tu auto en Guadalajara: balatas, filtros, suspensión y más, con compatibilidad verificada por marca, modelo y año.')}
-  alternos={{ es: '/', en: '/en/' }}
+  titulo={t('seo.tituloInicio')}
+  descripcion={t('seo.descripcionInicio')}
+  alternos={alternos((i) => rutasPara(i).home)}
 >
   <!-- client:idle: el HTML ya trae el titulo, los sistemas y las piezas; React se activa al quedar libre el navegador
        (sus ~150 KB de JavaScript ya no compiten con el primer pintado). -->

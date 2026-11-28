@@ -1,7 +1,7 @@
 ---
 // Pie de pagina: HTML generado en el build. No es una isla de React; solo lleva el script corto del boton de
 // instalar la PWA. Textos en el idioma de la pagina.
-import { traducir } from '../i18n/textos';
+import { traducir } from '../i18n';
 
 const { idioma = 'es' } = Astro.props;
 const t = (texto: string) => traducir(idioma, texto);
@@ -12,12 +12,12 @@ const t = (texto: string) => traducir(idioma, texto);
     <p class="pie-marca">
       <span class="marca-logo" role="img" aria-label="EnCaja Autopartes"></span>
     </p>
-    <p class="pie-texto">{t('Refacciones con compatibilidad verificada.')}</p>
-    <p class="pie-texto">{t('Guadalajara, Jalisco. Proyecto integrador PWII.')}</p>
+    <p class="pie-texto">{t('pie.lema')}</p>
+    <p class="pie-texto">{t('pie.ubicacion')}</p>
     <!-- Oculto hasta que el navegador avisa (beforeinstallprompt) que la tienda se puede instalar. -->
     <div class="pie-instalar" data-instalar hidden>
-      <p class="pie-texto">{t('Tenla a un toque: instala EnCaja en tu teléfono o computadora.')}</p>
-      <button type="button" class="btn btn-secundario btn-chico">{t('Instalar la app')}</button>
+      <p class="pie-texto">{t('pie.instalarTexto')}</p>
+      <button type="button" class="btn btn-secundario btn-chico">{t('pie.instalarApp')}</button>
     </div>
   </div>
 </footer>

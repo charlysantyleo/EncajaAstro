@@ -1,30 +1,30 @@
 ---
-// Pagina de un sistema (/categoria/frenos/ y /en/category/brakes/), generada en el build con sus piezas: el HTML ya
+// Pagina de un sistema en cada idioma (/categoria/frenos/, /en/category/brakes/...), generada en el build con sus piezas: el HTML ya
 // trae el titulo y la lista, asi no hay pantalla vacia ni brinco de contenido al cargar. Las existencias y el filtro
 // por vehiculo se ponen al dia en el navegador. Un sistema creado despues del build lo atiende la busqueda
-// (?slug=, ver public/_redirects).
+// (?slug=, ver redireccionesPorIdioma en astro.config.mjs).
 import Base from '../layouts/Base.astro';
 import CategoriaView from '../components/CategoriaView.jsx';
 import Nota from '../components/Nota.jsx';
 import StockEnVivo from '../components/StockEnVivo.jsx';
 import { paraLista } from '../lib/paraLista';
-import { alternosDeCategoria } from '../lib/paginas';
-import { traducir } from '../i18n/textos';
+import { alternos, rutaDeCategoria } from '../lib/paginas';
+import { traducir } from '../i18n';
 import { traducirCategoria, traducirProducto } from '../i18n/catalogo';
 
 const { categoria: original, categorias, productos, idioma } = Astro.props;
-const t = (texto: string, variables?: Record<string, unknown>) => traducir(idioma, texto, variables);
+const t = (clave: string, variables?: Record<string, unknown>) => traducir(idioma, clave, variables);
 
 const categoria = traducirCategoria(original, idioma);
 const lista = productos.map((p: any) => paraLista(traducirProducto(p, idioma)));
-const descripcion = t('{nombre}: {detalle}. {n} piezas con compatibilidad verificada, envío en Guadalajara.', {
+const descripcion = t('seo.descripcionCategoria', {
   nombre: categoria.nombre,
-  detalle: categoria.descripcion ?? t('refacciones'),
+  detalle: categoria.descripcion ?? t('seo.refacciones'),
   n: productos.length,
 });
 ---
 
-<Base titulo={t('{nombre} | Refacciones EnCaja Autopartes', { nombre: categoria.nombre })} descripcion={descripcion.slice(0, 160)} alternos={alternosDeCategoria(original)}>
+<Base titulo={t('seo.tituloCategoria', { nombre: categoria.nombre })} descripcion={descripcion.slice(0, 160)} alternos={alternos((i) => rutaDeCategoria(original, i))}>
   <!-- client:idle: el HTML ya trae el titulo y la lista; el filtro por vehiculo y la nota se activan despues. -->
   <CategoriaView
     client:idle

@@ -1,3 +1,4 @@
+import { readFileSync, writeFileSync } from 'node:fs';
 import { defineConfig } from 'astro/config';
 import react from '@astrojs/react';
 import sitemap from '@astrojs/sitemap';
@@ -5,18 +6,53 @@ import { AstroPWAIntegration } from '@vite-pwa/astro';
 import { token } from './scripts/tokens.mjs';
 import { manifiesto } from './src/pwa/manifiesto.mjs';
 
-// Paginas que no van en el sitemap ni deben indexarse: dependen de la sesion o de un pedido, o son la busqueda
-// (/categoria/, /en/search/) y el respaldo de piezas nuevas (/producto/, /en/product/), que llevan noindex.
-// Con o sin el prefijo /en.
-const PRIVADAS =
-  /^\/(en\/)?((admin|carrito|cart|checkout|pago|comprobante|entrar|restablecer|garage|vehiculo|search)(\/|$)|(categoria|producto|product|category)\/?$)/;
+// ---------------------------------------------------------------- idiomas (practica P3-4)
+// Los idiomas de la tienda. El primero es el base: va sin prefijo (/categoria/frenos/); los demas con su codigo
+// (/en/category/brakes/). Cada uno necesita su archivo src/i18n/idiomas/<codigo>.json.
+// Agregar uno: `npm run i18n:nuevo fr`, traducir src/i18n/idiomas/fr.json y agregar 'fr' aqui. Nada mas.
+const IDIOMAS = ['es', 'en'];
+const [IDIOMA_BASE] = IDIOMAS;
+const DATOS = Object.fromEntries(
+  IDIOMAS.map((codigo) => [codigo, JSON.parse(readFileSync(new URL(`./src/i18n/idiomas/${codigo}.json`, import.meta.url), 'utf-8'))])
+);
+const prefijo = (codigo) => (codigo === IDIOMA_BASE ? '' : `/${codigo}`);
 
-// PWA instalable (practica P3-2) y sin conexion (P3-3). El manifiesto le da a la tienda nombre, icono y ventana
-// propia al instalarla.
-// Los colores salen de los tokens de src/styles/global.css. Los iconos se generan con `node scripts/iconos-pwa.mjs`.
-// El manifiesto en espanol lo genera el plugin; el de ingles, src/pages/en/manifest.webmanifest.js (P3-4).
+// Paginas que no van en el sitemap ni deben indexarse: las de cada visitante (cuenta, pedidos, panel; solo en el
+// idioma base) y, en cada idioma, la nota, la busqueda y los respaldos /producto y /categoria sin slug.
+const SOLO_BASE = ['admin', 'checkout', 'pago', 'comprobante', 'entrar', 'restablecer', 'garage', 'vehiculo'];
+function esPrivada(ruta) {
+  const limpia = ruta.replace(/\/$/, '') || '/';
+  if (SOLO_BASE.some((p) => limpia === `/${p}` || limpia.startsWith(`/${p}/`))) return true;
+  return IDIOMAS.some((codigo) => {
+    const { carrito, busqueda, producto, categoria } = DATOS[codigo].rutas;
+    return [carrito, busqueda, producto, categoria].some((segmento) => limpia === `${prefijo(codigo)}/${segmento}`);
+  });
+}
+
+// Netlify: una pieza o sistema creado despues del build no tiene pagina generada; su URL limpia se resuelve en el
+// navegador con la pagina de respaldo de su idioma (?slug=). Se escribe dist/_redirects desde los mismos datos.
+function redireccionesPorIdioma() {
+  return {
+    name: 'encaja-redirecciones',
+    hooks: {
+      'astro:build:done': ({ dir }) => {
+        const lineas = IDIOMAS.flatMap((codigo) => {
+          const { categoria, producto, busqueda } = DATOS[codigo].rutas;
+          const pre = prefijo(codigo);
+          return [`${pre}/${categoria}/*  ${pre}/${busqueda}?slug=:splat  302`, `${pre}/${producto}/*  ${pre}/${producto}?slug=:splat  302`];
+        });
+        writeFileSync(new URL('_redirects', dir), `# Generado en el build (astro.config.mjs): respaldo de paginas nuevas por idioma.\n${lineas.join('\n')}\n`);
+      },
+    },
+  };
+}
+
+// ---------------------------------------------------------------- PWA (practicas P3-2 y P3-3)
+// El manifiesto le da a la tienda nombre, icono y ventana propia al instalarla. Los colores salen de los tokens de
+// src/styles/global.css y los textos del JSON del idioma; el de los demas idiomas lo sirve
+// src/pages/[...idioma]/manifest.webmanifest.js. Los iconos se generan con `node scripts/iconos-pwa.mjs`.
 const pwa = AstroPWAIntegration({
-  manifest: manifiesto('es', { rojo: token('rojo'), papel: token('papel') }),
+  manifest: manifiesto(DATOS[IDIOMA_BASE], '', { rojo: token('rojo'), papel: token('papel') }),
   // Sin conexion (practica P3-3): service worker propio (src/sw.js) con el ciclo install -> activate -> fetch
   // escrito a mano. El plugin lo compila y le inyecta la lista del shell (self.__WB_MANIFEST).
   strategies: 'buildSW',
@@ -26,14 +62,15 @@ const pwa = AstroPWAIntegration({
   registerType: 'prompt',
   buildSW: {
     swSrc: 'src/sw.js',
-    // El shell que se guarda al instalar: inicio, la nota (funciona sin red) y offline.html; todo el JavaScript;
-    // la fuente del texto (solo latin); el logo. El CSS va dentro del HTML (build.inlineStylesheets) y los
-    // iconos y el manifiesto los agrega el plugin.
+    // El shell que se guarda al instalar: el inicio y la nota de cada idioma (la nota funciona sin red) y
+    // offline.html; todo el JavaScript; la fuente del texto (solo latin); el logo. El CSS va dentro del HTML
+    // (build.inlineStylesheets) y los iconos y el manifiesto los agrega el plugin.
     globPatterns: [
-      'index.html',
-      'carrito/index.html',
-      'en/index.html',
-      'en/cart/index.html',
+      ...IDIOMAS.flatMap((codigo) => {
+        const carpeta = prefijo(codigo).slice(1);
+        const en = (ruta) => (carpeta ? `${carpeta}/${ruta}` : ruta);
+        return [en('index.html'), en(`${DATOS[codigo].rutas.carrito}/index.html`)];
+      }),
       'offline.html',
       '_astro/**/*.{js,css}',
       '_astro/geist-latin-wght-normal.*.woff2',
@@ -61,16 +98,17 @@ export default defineConfig({
   // URL publica de la tienda: canonical, Open Graph y sitemap.xml la necesitan absoluta.
   // Netlify define URL en cada build; SITE_URL permite fijarla a mano (por ejemplo, un dominio propio).
   site: process.env.SITE_URL || process.env.URL || 'http://localhost:4321',
-  // Multi-idioma (practica P3-4): espanol sin prefijo (/categoria/frenos/) e ingles con /en (/en/category/brakes/).
+  // Multi-idioma: i18n nativo de Astro. Los componentes leen esta misma lista (astro:config/client).
   i18n: {
-    defaultLocale: 'es',
-    locales: ['es', 'en'],
+    defaultLocale: IDIOMA_BASE,
+    locales: IDIOMAS,
     routing: { prefixDefaultLocale: false },
   },
   integrations: [
     react(),
-    sitemap({ filter: (pagina) => !PRIVADAS.test(new URL(pagina).pathname) && !/\.[a-z]+$/.test(new URL(pagina).pathname) }),
+    sitemap({ filter: (pagina) => !esPrivada(new URL(pagina).pathname) && !/\.[a-z]+$/.test(new URL(pagina).pathname) }),
     pwa,
+    redireccionesPorIdioma(),
   ],
   // El CSS va dentro del HTML: sin la peticion extra que bloqueaba el primer pintado (~450 ms en mobile).
   build: { inlineStylesheets: 'always' },
